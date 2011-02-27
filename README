@@ -3,6 +3,12 @@ HigherExplosives
 
 A very simple plugin to control the destructive potential of explosions in Minecraft, for use with the Craftbukkit and Bukkit modding system. In its default configuration it doubles the size of TNT explosions.
 
+Versions
+------------
+
+HigherExplosives v1.0 was coded against Bukkit version 417 (http://ci.bukkit.org/job/dev-Bukkit/org.bukkit$bukkit/417/artifact/org.bukkit/bukkit/0.0.1-SNAPSHOT/bukkit-0.0.1-SNAPSHOT.jar).
+It was tested with a CraftBukkit server version 456 (http://ci.bukkit.org/job/dev-CraftBukkit/456/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar) and a Minecraft 1.3_01 client.
+
 Installation
 ------------
 
