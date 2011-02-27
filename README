@@ -57,7 +57,7 @@ For example, the following will only let the TNTPrimed explosions be modified wh
 More restrictive bounding boxes can be specified. For example, the following will neutralize creepers within some protected 20x20x20 cuboid zone:
 
     Creeper:
-        radiusMultiplier: 1.0
+        radiusMultiplier: 0.0
         activeBounds:
             max:
                 x: 10
