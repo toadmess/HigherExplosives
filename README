@@ -1,17 +1,17 @@
 HigherExplosives
-======
+================
 
 A very simple plugin to control the destructive potential of explosions in Minecraft, for use with the Craftbukkit and Bukkit modding system. In its default configuration it doubles the size of TNT explosions.
 
 Installation
------------
+------------
 
 Installation is a simple matter of placing the HigherExplosives.jar file into your CRAFTBUKKIT/plugins directory. No configuration is necessary to give it a test, but a default configuration will automatically be created as CRAFTBUKKIT/plugins/HigherExplosives/config.yml
 
 Configuration
------------
+------------
 
-This default configuration is: 
+This default configuration is:
 
 everyExplosionYield: 0.3
 entities:
@@ -27,14 +27,14 @@ entities:
 version: '1.0'
 
 
-The everyExplosionYield option dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value applies to explosions coming from any entity. The Minecraft default is 0.3 (30%).
+- The everyExplosionYield option dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value applies to explosions coming from any entity. The Minecraft default is 0.3 (30%).
 
-There are three different entities that create explosions (tell me if this is wrong): TNTPrimed, a Fireball (Ghasts), and a Creeper. Each of these should 
+- There are three different entities that create explosions (tell me if this is wrong): TNTPrimed, a Fireball (Ghasts), and a Creeper. Each of these should
 
-The radiusMultiplier is pretty obvious. 1.0 will use the original blast radius. 0.5 gives half size explosions, whilst 2.0 blasts will be twice as big as normal.
+- The radiusMultiplier is pretty obvious. 1.0 will use the original blast radius. 0.5 gives half size explosions, whilst 2.0 blasts will be twice as big as normal.
 
-The fire property is included for completeness. I didn't see any difference when I tested it myself, but it probably flags whether the explosion causes fire or not.
+- The fire property is included for completeness. I didn't see any difference when I tested it myself, but it probably flags whether the explosion causes fire or not.
 
-The version property is mandatory but it just lets the plugin show a warning if the configuration version is different to the plugin version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
+- The version property is mandatory but it just lets the plugin show a warning if the configuration version is different to the plugin version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
 
 toadmess (https://github.com/toadmess)
