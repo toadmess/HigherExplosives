@@ -34,7 +34,7 @@ entities:
 version: '1.2'
 
 
-- The everyExplosionYield option dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value applies to explosions coming from any entity. The Minecraft default is 0.3 (30%).
+- The everyExplosion.yield option dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value applies to explosions coming from any entity. The Minecraft default is 0.3 (30%).
 
 - There are three different entities that create explosions (tell me if this is wrong): TNTPrimed, a Fireball (Ghasts), and a Creeper. Each of these should
 
