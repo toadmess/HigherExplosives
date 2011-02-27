@@ -12,10 +12,10 @@ public class ExplodingListener extends EntityListener {
 	private final boolean fire;
 
 	public ExplodingListener(final Configuration conf, final Class<? extends Entity> entityType) {	
-		final String confPath = HEMain.CONF_ENTITIES + "." + entityType.getName() + ".";
+		final String confPath = HEMain.CONF_ENTITIES + "." + entityType.getSimpleName() + ".";
 		
 		this.fire = conf.getBoolean(confPath + HEMain.CONF_FIRE, false);
-		this.radiusMultiplier = Math.max(0.0f, (float) conf.getDouble(confPath + HEMain.CONF_RADIUS_MULT, 2.0f));
+		this.radiusMultiplier = Math.max(0.0f, (float) conf.getDouble(confPath + HEMain.CONF_RADIUS_MULT, 3.141f));
 
 		this.entityType = entityType; 
 	}
@@ -23,7 +23,7 @@ public class ExplodingListener extends EntityListener {
 	@Override
 	public void onExplosionPrimed(final ExplosionPrimedEvent event) {
 		final Entity primed = event.getEntity();
-		
+				
 		if(!isValidPrimedEntity(primed)) {
 			return;
 		}

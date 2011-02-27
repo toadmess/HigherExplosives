@@ -43,4 +43,13 @@ version: '1.0'
 
 - The version property is mandatory but it just lets the plugin show a warning if the configuration version is different to the plugin version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
 
+Changelog:
+
+Version 1.1
+- Fixed a bug where all explosions were doubled regardless of configuration.
+
+Version 1.0
+- Can control size of explosions
+- Can control yield of all explosions
+
 toadmess (https://github.com/toadmess)
