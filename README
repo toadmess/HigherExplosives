@@ -4,9 +4,9 @@ HigherExplosives
 A very simple plugin to control the destructive potential of explosions in Minecraft, for use with the Craftbukkit and Bukkit modding system. In its default configuration it doubles the size of TNT explosions.
 
 Versions
-------------
+--------
 
-HigherExplosives v1.0 was coded against Bukkit version 417 (http://ci.bukkit.org/job/dev-Bukkit/org.bukkit$bukkit/417/artifact/org.bukkit/bukkit/0.0.1-SNAPSHOT/bukkit-0.0.1-SNAPSHOT.jar).
+HigherExplosives v1.2 was coded against Bukkit version 417 (http://ci.bukkit.org/job/dev-Bukkit/org.bukkit$bukkit/417/artifact/org.bukkit/bukkit/0.0.1-SNAPSHOT/bukkit-0.0.1-SNAPSHOT.jar).
 It was tested with a CraftBukkit server version 456 (http://ci.bukkit.org/job/dev-CraftBukkit/456/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar) and a Minecraft 1.3_01 client.
 
 Installation
@@ -15,11 +15,12 @@ Installation
 Installation is a simple matter of placing the HigherExplosives.jar file into your CRAFTBUKKIT/plugins directory. No configuration is necessary to give it a test, but a default configuration will automatically be created as CRAFTBUKKIT/plugins/HigherExplosives/config.yml
 
 Configuration
-------------
+-------------
 
 This default configuration is:
 
-everyExplosionYield: 0.3
+everyExplosion:
+    yield: 0.3
 entities:
     Creeper:
         radiusMultiplier: 1.0
@@ -30,20 +31,68 @@ entities:
     Fireball:
         radiusMultiplier: 1.0
         fire: false
-version: '1.0'
+version: '1.2'
 
 
 - The everyExplosionYield option dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value applies to explosions coming from any entity. The Minecraft default is 0.3 (30%).
 
 - There are three different entities that create explosions (tell me if this is wrong): TNTPrimed, a Fireball (Ghasts), and a Creeper. Each of these should
 
-- The radiusMultiplier is pretty obvious. 1.0 will use the original blast radius. 0.5 gives half size explosions, whilst 2.0 blasts will be twice as big as normal.
+- The radiusMultiplier is pretty obvious. 1.0 will use the original blast radius. 0.5 gives half size explosions, whilst 2.0 blasts will be twice as big as normal. After igniting TNT by hand, you can run away in time when it's set to a multiplier of 2, but with a multiplier of 3 there's not enough time to run away!
 
 - The fire property is included for completeness. I didn't see any difference when I tested it myself, but it probably flags whether the explosion causes fire or not.
 
 - The version property is mandatory but it just lets the plugin show a warning if the configuration version is different to the plugin version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
 
+
+There is an optional configuration property (called "activeBounds") for restricting the explosion modifications to those whose epicentre's lie within some configured bounds..
+For example, the following will only let the TNTPrimed explosions be modified when the epicentre's Y coordinate is below 10 (i.e. explosions only modified if the TNT block's altitude is below 10):
+
+    TNTPrimed:
+        activeBounds:
+            max:
+                y: 10
+
+
+More restrictive bounding boxes can be specified. For example, the following will neutralize creepers within some protected 20x20x20 cuboid zone:
+
+    Creeper:
+        radiusMultiplier: 1.0
+        activeBounds:
+            max:
+                x: 10
+                y: 10
+                z: 10
+            min:
+                x: -10
+                y: -10
+                z: -10
+
+Any of the bounds may be left off to relax the restrictions.
+
+If an entity has no activeBounds property then the explosion modifications will always be applied no matter where it happens.
+
+
+Unfortunately in the current version, the yield modifications of explosions is applied to every single explosion regardless of whether it's within its activeBounds or not.
+Some coarse grained control can be had over this by applying some general bounds in which explosions (of any and all types) will have their yield modified.
+For example, the following configuration fragment will make all explosions below an altitude of 10 yield no objects (perhaps useful to avoid nuclear sized underground explosions from hurting the server with too many items?). Any explosion above this altitude will not have its yield modified:
+
+everyExplosion:
+    yield: 0.0
+    yieldChangeActiveBounds:
+        max:
+            y: 10
+
+
+
 Changelog:
+---------
+
+Version 1.2
+- Added optional bounds checking for explosions (the "activeBounds" property). If the explosion epicentre is within the allowed bounds then the explosion modifications are applied.
+- The "everyExplosionYield" configuration key has changed to "everyExplosion.yield".
+- New "everyExplosion.yieldChangeActiveBounds" property controls areas in which explosions will have their yield modified
+- Config files are automatically upgraded from versions 1.0 and 1.1 to 1.2.
 
 Version 1.1
 - Fixed a bug where all explosions were doubled regardless of configuration.
