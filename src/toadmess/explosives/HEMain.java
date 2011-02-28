@@ -37,12 +37,12 @@ public class HEMain extends JavaPlugin {
 		final ExplodedListener explodedlistener = new ExplodedListener(this.getConfiguration());
 		pm.registerEvent(Event.Type.ENTITY_EXPLODE, explodedlistener, Event.Priority.Normal, this);
 		
-		System.out.println(pluginDescription() + " enabled");
+		System.out.println(pluginDescription() + " primed and ready");
 	}
 
 	@Override
 	public void onDisable() {
-		System.out.println(pluginDescription() + " disabled");
+		System.out.println(pluginDescription() + " defused and disabled");
 	}
 	
 	private void regExplodingListener(final PluginManager pm, final Class<? extends Entity> entityClass) {

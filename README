@@ -36,7 +36,7 @@ version: '1.2'
 
 - The everyExplosion.yield option dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value applies to explosions coming from any entity. The Minecraft default is 0.3 (30%).
 
-- There are three different entities that create explosions (tell me if this is wrong): TNTPrimed, a Fireball (Ghasts), and a Creeper. Each of these should
+- There are three different entities that create explosions (tell me if this is wrong): TNTPrimed, a Fireball (Ghasts), and a Creeper. Each of these are individually configured.
 
 - The radiusMultiplier is pretty obvious. 1.0 will use the original blast radius. 0.5 gives half size explosions, whilst 2.0 blasts will be twice as big as normal. After igniting TNT by hand, you can run away in time when it's set to a multiplier of 2, but with a multiplier of 3 there's not enough time to run away!
 
