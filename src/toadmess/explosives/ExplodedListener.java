@@ -27,11 +27,10 @@ public class ExplodedListener extends EntityListener {
 		
 		this.otherWorldConfs = new HashMap<String, ExplodedConf>();
 		for(final String worldName : conf.getKeys(HEMain.CONF_WORLDS)) {
-			final String worldPath = HEMain.CONF_WORLDS + "." + worldName;
+			final String worldConfPath = HEMain.CONF_WORLDS + "." + worldName + "." + HEMain.CONF_EVERY;
 
-			final boolean worldHasYieldConf = (null != conf.getProperty(worldPath + "." + HEMain.CONF_EVERY_YIELD));
-			if(worldHasYieldConf) {				
-				final ExplodedConf worldConf = new ExplodedConf(conf, worldPath);
+			if(null != conf.getProperty(worldConfPath)) {				
+				final ExplodedConf worldConf = new ExplodedConf(conf, worldConfPath);
 				
 				this.otherWorldConfs.put(worldName, worldConf);
 				if(HEMain.IS_DEBUG_CONF) {
@@ -73,10 +72,10 @@ public class ExplodedListener extends EntityListener {
 		
 		public final Bounds yieldChangeAllowedBounds;
 		
-		public ExplodedConf(final Configuration conf, final String pathToWorld) {
-			this.yield = Math.max(0.0f, Math.min(1.0f, (float) conf.getDouble(HEMain.CONF_EVERY + "." + HEMain.CONF_EVERY_YIELD, 0.3f)));
+		public ExplodedConf(final Configuration conf, final String confPath) {
+			this.yield = Math.max(0.0f, Math.min(1.0f, (float) conf.getDouble(confPath + "." + HEMain.CONF_EVERY_YIELD, 0.3f)));
 			
-			this.yieldChangeAllowedBounds = new Bounds(conf, HEMain.CONF_EVERY + "." + HEMain.CONF_EVERY_YIELD_BOUNDS);
+			this.yieldChangeAllowedBounds = new Bounds(conf, confPath + "." + HEMain.CONF_EVERY_YIELD_BOUNDS);
 		}
 		
 		@Override
