@@ -74,4 +74,20 @@ public class Bounds {
 		
 		return conf.getDouble(confPath, 0.0D);
 	}
+	
+	@Override
+	public String toString() {
+		final StringBuffer sb = new StringBuffer("Bounds(");
+		
+		if(null != allowedBoundsMinX) sb.append("minx=").append(allowedBoundsMinX);
+		if(null != allowedBoundsMinY) sb.append(" miny=").append(allowedBoundsMinY);
+		if(null != allowedBoundsMinZ) sb.append(" minz=").append(allowedBoundsMinZ);
+
+		if(null != allowedBoundsMaxX) sb.append(" maxx=").append(allowedBoundsMaxX);
+		if(null != allowedBoundsMaxY) sb.append(" maxy=").append(allowedBoundsMaxY);
+		if(null != allowedBoundsMaxZ) sb.append(" maxz=").append(allowedBoundsMaxZ);
+		
+		sb.append(")");
+		return sb.toString();
+	}
 }

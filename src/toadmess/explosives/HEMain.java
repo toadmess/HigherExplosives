@@ -12,6 +12,7 @@ import org.bukkit.util.config.Configuration;
 
 public class HEMain extends JavaPlugin {
 	protected static final String CONF_VERSION = "version";
+	protected static final String CONF_DEBUGCONFIG = "debugConfig";
 	
 	protected static final String CONF_EVERY = "everyExplosion";
 	protected static final String CONF_EVERY_YIELD = "yield";
@@ -26,9 +27,15 @@ public class HEMain extends JavaPlugin {
 	protected static final String CONF_BOUNDS_MAX = "max";
 	protected static final String CONF_BOUNDS_MIN = "min";
 
+	protected static final String CONF_WORLDS = "worlds";
+	
+	/** True if we should print out some debugging of the configuration */
+	public static boolean IS_DEBUG_CONF;
+	
 	@Override
 	public void onEnable() {
 		final PluginManager pm = getServer().getPluginManager();
+		IS_DEBUG_CONF = this.getConfiguration().getBoolean(HEMain.CONF_DEBUGCONFIG, false);
 		
 		regExplodingListener(pm, TNTPrimed.class);
 		regExplodingListener(pm, Creeper.class);
@@ -80,14 +87,20 @@ public class HEMain extends JavaPlugin {
 		} else if(!configVersion.equalsIgnoreCase(pluginVersion)) {
 			System.out.println(pluginDescription() + ": Warning! Found a configuration file for a different version ("+configVersion+"). Going to try using it anyway.");
 
-			upgradeOldYieldConfig(conf);
+			upgrade1_0and1_1to1_2(conf);
+			upgrade1_2to1_3(conf);
+			
+			System.out.println(pluginDescription() + ": Updating configuration version to "+getDescription().getVersion());
+			conf.setProperty(CONF_VERSION, getDescription().getVersion());
+			
+			conf.save();
 		} 
 
 		return conf;
 	}
 	
-	private void upgradeOldYieldConfig(final Configuration conf) {
-		// Versions prior to 1.2 used to have the "everyExplosionYield" property, but this has now changed to
+	private void upgrade1_0and1_1to1_2(final Configuration conf) {
+		// Versions 1.0 and 1.1 used to have the "everyExplosionYield" property, but this has now changed to
 		// be "everyExplosion.yield". Update this automagically.
 		final String oldYieldConfKey = "everyExplosionYield";
 		if(null != conf.getProperty(oldYieldConfKey)) {
@@ -104,11 +117,9 @@ public class HEMain extends JavaPlugin {
 			
 			System.out.println(pluginDescription() + ": Removing old \""+oldYieldConfKey+"\" configuration key.");
 			conf.removeProperty(oldYieldConfKey);
-			
-			System.out.println(pluginDescription() + ": Updating configuration version to "+getDescription().getVersion());
-			conf.setProperty(CONF_VERSION, getDescription().getVersion());
-
-			conf.save();
 		}
+	}
+	private void upgrade1_2to1_3(final Configuration conf) {
+		// No changes to the config. There's only new config in version 1.3.
 	}
 }

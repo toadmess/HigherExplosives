@@ -1,5 +1,9 @@
 package toadmess.explosives;
 
+import java.util.HashMap;
+
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.entity.EntityListener;
 import org.bukkit.event.entity.ExplosionPrimedEvent;
@@ -26,23 +30,36 @@ import org.bukkit.util.config.Configuration;
 public class ExplodingListener extends EntityListener {
 	private final Class<?> entityType;
 	
-	private final float radiusMultiplier;
-	private final boolean fire;
-
-	private final Bounds allowedBounds;
-
+	private final ExplodingConf defWorldConf;
+	
+	private final HashMap<String, ExplodingConf> otherWorldConfs;
+	
 	public ExplodingListener(final Configuration conf, final Class<? extends Entity> entityType) {
 		// Get the unqualified class name of the entity. This is used for looking it up in the configuration.
 		final String entityName = entityType.getName().substring(entityType.getName().lastIndexOf('.')+1);
 		
-		final String confPath = HEMain.CONF_ENTITIES + "." + entityName + ".";
+		final String confEntityPath = HEMain.CONF_ENTITIES + "." + entityName;
+		
+		this.defWorldConf = new ExplodingConf(conf, confEntityPath);
+		if(HEMain.IS_DEBUG_CONF) {
+			System.out.println("Default config for " + entityName + " is " + this.defWorldConf);
+		}
+		
+		this.otherWorldConfs = new HashMap<String, ExplodingConf>();
+		for(final String worldName : conf.getKeys(HEMain.CONF_WORLDS)) {
+			final String worldEntityPath = HEMain.CONF_WORLDS + "." + worldName + "." + confEntityPath;
+		
+			if(null != conf.getProperty(worldEntityPath)) {				
+				final ExplodingConf worldConf = new ExplodingConf(conf, worldEntityPath);
+				
+				this.otherWorldConfs.put(worldName, worldConf);
+				if(HEMain.IS_DEBUG_CONF) {
+					System.out.println(worldName + " config for " + entityName + " is " + worldConf);
+				}
+			}
+		}
 		
 		this.entityType = entityType; 
-
-		this.fire = conf.getBoolean(confPath + HEMain.CONF_FIRE, false);
-		this.radiusMultiplier = Math.max(0.0f, (float) conf.getDouble(confPath + HEMain.CONF_ENTITY_RADIUS_MULT, 1.0f));
-		
-		this.allowedBounds = new Bounds(conf, confPath + HEMain.CONF_BOUNDS);
 	}
 
 	@Override
@@ -53,15 +70,45 @@ public class ExplodingListener extends EntityListener {
 			return;
 		}
 
-		if(!this.allowedBounds.isWithinBounds(primed.getLocation())) {
+		final Location epicentre = primed.getLocation();
+		final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
+		
+		if(!worldConf.allowedBounds.isWithinBounds(epicentre)) {
 			return;
 		}
 		
-		event.setRadius(this.radiusMultiplier * event.getRadius());
-		event.setFire(this.fire);
+		event.setRadius(worldConf.radiusMultiplier * event.getRadius());
+		event.setFire(worldConf.fire);
 	}
 
 	private boolean isValidPrimedEntity(final Entity e) {
 		return (null != e && this.entityType.isInstance(e));
+	}
+	
+	private ExplodingConf findWorldConf(final World world) {
+		final String worldName = world.getName();
+		if(this.otherWorldConfs.containsKey(worldName)) {
+			return this.otherWorldConfs.get(worldName);
+		}
+		
+		return this.defWorldConf;
+	}
+	
+	protected class ExplodingConf {
+		public final float radiusMultiplier;
+		private final Bounds allowedBounds;
+		private final boolean fire;
+
+		public ExplodingConf(final Configuration conf, final String pathToEntity) {
+			this.allowedBounds = new Bounds(conf, pathToEntity + "." + HEMain.CONF_BOUNDS);
+			
+			this.radiusMultiplier = Math.max(0.0f, (float) conf.getDouble(pathToEntity + "." + HEMain.CONF_ENTITY_RADIUS_MULT, 1.0f));
+			this.fire = conf.getBoolean(pathToEntity + "." + HEMain.CONF_FIRE, false);
+		}
+		
+		@Override
+		public String toString() {
+			return "ExplodingConf("+HEMain.CONF_ENTITY_RADIUS_MULT+"="+radiusMultiplier+","+HEMain.CONF_FIRE+"="+fire+","+HEMain.CONF_BOUNDS+"="+allowedBounds+")";
+		}
 	}
 }
