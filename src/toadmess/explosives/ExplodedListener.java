@@ -19,7 +19,7 @@ public class ExplodedListener extends EntityListener {
 	private final HashMap<String, ExplodedConf> otherWorldConfs;
 	
 	public ExplodedListener(final Configuration conf) {
-		this.defConf = new ExplodedConf(conf, "");
+		this.defConf = new ExplodedConf(conf, HEMain.CONF_EVERY);
 		
 		if(HEMain.IS_DEBUG_CONF) {
 			System.out.println("Default yield config is " + this.defConf);
