@@ -2,13 +2,13 @@ HigherExplosives
 ================
 
 A very simple plugin to control the destructive potential of explosions in Minecraft, for use with the Craftbukkit and Bukkit modding system.
-In its default configuration it doubles the size of TNT explosions. TNT, creepers, and fireballs can all have their size and yield (percentage of destoyed items dropped) tweaked. 
+In its default configuration it doubles the size of TNT explosions. TNT, creepers, and fireballs can all have their size and yield (percentage of destoyed items dropped) tweaked.
 These tweaks can be selectively applied to several different worlds.
 
 Versions
 --------
 
-HigherExplosives v1.3 was tested with a CraftBukkit server version 456 (http://ci.bukkit.org/job/dev-CraftBukkit/456/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar) and a Minecraft 1.3_01 client.
+HigherExplosives v1.3.1 was tested with a CraftBukkit server version 456 (http://ci.bukkit.org/job/dev-CraftBukkit/456/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar) and a Minecraft 1.3_01 client.
 
 It was coded against Bukkit version 417 (http://ci.bukkit.org/job/dev-Bukkit/org.bukkit$bukkit/417/artifact/org.bukkit/bukkit/0.0.1-SNAPSHOT/bukkit-0.0.1-SNAPSHOT.jar).
 
@@ -34,7 +34,7 @@ entities:
     Fireball:
         radiusMultiplier: 1.0
         fire: false
-version: '1.3'
+version: '1.3.1'
 
 
 - The everyExplosion.yield option dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value applies to explosions coming from any entity. The Minecraft default is 0.3 (30%).
@@ -135,6 +135,9 @@ everyExplosion:
 
 Changelog:
 ---------
+
+Version 1.3.1
+- Fixed a configuration bug with single world configurations.
 
 Version 1.3
 - Support for multiple world configurations

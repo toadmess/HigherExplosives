@@ -1,6 +1,7 @@
 package toadmess.explosives;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -46,15 +47,18 @@ public class ExplodingListener extends EntityListener {
 		}
 		
 		this.otherWorldConfs = new HashMap<String, ExplodingConf>();
-		for(final String worldName : conf.getKeys(HEMain.CONF_WORLDS)) {
-			final String worldEntityPath = HEMain.CONF_WORLDS + "." + worldName + "." + confEntityPath;
-		
-			if(null != conf.getProperty(worldEntityPath)) {				
-				final ExplodingConf worldConf = new ExplodingConf(conf, worldEntityPath);
-				
-				this.otherWorldConfs.put(worldName, worldConf);
-				if(HEMain.IS_DEBUG_CONF) {
-					System.out.println(worldName + " config for " + entityName + " is " + worldConf);
+		final List<String> worldNames = conf.getKeys(HEMain.CONF_WORLDS);
+		if(null != worldNames) {
+			for(final String worldName : conf.getKeys(HEMain.CONF_WORLDS)) {
+				final String worldEntityPath = HEMain.CONF_WORLDS + "." + worldName + "." + confEntityPath;
+			
+				if(null != conf.getProperty(worldEntityPath)) {				
+					final ExplodingConf worldConf = new ExplodingConf(conf, worldEntityPath);
+					
+					this.otherWorldConfs.put(worldName, worldConf);
+					if(HEMain.IS_DEBUG_CONF) {
+						System.out.println(worldName + " config for " + entityName + " is " + worldConf);
+					}
 				}
 			}
 		}
