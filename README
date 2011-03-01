@@ -1,13 +1,16 @@
 HigherExplosives
 ================
 
-A very simple plugin to control the destructive potential of explosions in Minecraft, for use with the Craftbukkit and Bukkit modding system. In its default configuration it doubles the size of TNT explosions.
+A very simple plugin to control the destructive potential of explosions in Minecraft, for use with the Craftbukkit and Bukkit modding system.
+In its default configuration it doubles the size of TNT explosions. TNT, creepers, and fireballs can all have their size and yield (percentage of destoyed items dropped) tweaked. 
+These tweaks can be selectively applied to several different worlds.
 
 Versions
 --------
 
-HigherExplosives v1.2 was coded against Bukkit version 417 (http://ci.bukkit.org/job/dev-Bukkit/org.bukkit$bukkit/417/artifact/org.bukkit/bukkit/0.0.1-SNAPSHOT/bukkit-0.0.1-SNAPSHOT.jar).
-It was tested with a CraftBukkit server version 456 (http://ci.bukkit.org/job/dev-CraftBukkit/456/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar) and a Minecraft 1.3_01 client.
+HigherExplosives v1.3 was tested with a CraftBukkit server version 456 (http://ci.bukkit.org/job/dev-CraftBukkit/456/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar) and a Minecraft 1.3_01 client.
+
+It was coded against Bukkit version 417 (http://ci.bukkit.org/job/dev-Bukkit/org.bukkit$bukkit/417/artifact/org.bukkit/bukkit/0.0.1-SNAPSHOT/bukkit-0.0.1-SNAPSHOT.jar).
 
 Installation
 ------------
@@ -31,7 +34,7 @@ entities:
     Fireball:
         radiusMultiplier: 1.0
         fire: false
-version: '1.2'
+version: '1.3'
 
 
 - The everyExplosion.yield option dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value applies to explosions coming from any entity. The Minecraft default is 0.3 (30%).
@@ -44,6 +47,52 @@ version: '1.2'
 
 - The version property is mandatory but it just lets the plugin show a warning if the configuration version is different to the plugin version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
 
+
+To help check and/or diagnose what the plugin thinks the configuration is, use the "debugConfig: true" property. It defaults to false if not specified.
+
+
+Multi world configuration
+-------------------------
+
+The configuration above is the default for all worlds.
+
+It's possible to make specific worlds behave differently. e.g. a configuration like..
+
+worlds:
+    netherworld:
+        everyExplosion:
+            yield: 0.0
+        entities:
+            TNTPrimed:
+                radiusMultiplier: 0.25
+
+..would render TNT fairly impotent in the world called "netherworld".
+If the other entities are not given a configuration for this world, then they will take on the default configuration for all worlds. Likewise for the activebounds property.
+The same is true for explosion yields (and yield bounds) if the "everyExplosion" property is not given for the specific world.
+
+Just to be sure, add the "debugConfig: true" property to see what the plugin will be using.
+
+You can add as many specific worlds as you like. e.g.:
+
+worlds:
+    netherworld:
+        blah blah..
+    nuclearCreeper:
+        entities:
+            Creeper:
+                radiusMultiplier: 2.0
+    survivalIsland:
+        entities:
+            Creeper:
+                radiusMultiplier: 1.0
+                fire: true
+            TNTPrimed:
+                radiusMultiplier: 0.0
+debugConfig: true
+
+
+Optional bounds configuration
+-----------------------------
 
 There is an optional configuration property (called "activeBounds") for restricting the explosion modifications to those whose epicentre's lie within some configured bounds..
 For example, the following will only let the TNTPrimed explosions be modified when the epicentre's Y coordinate is below 10 (i.e. explosions only modified if the TNT block's altitude is below 10):
@@ -84,9 +133,12 @@ everyExplosion:
             y: 10
 
 
-
 Changelog:
 ---------
+
+Version 1.3
+- Support for multiple world configurations
+- Added a debugConfig boolean configuration property for checking and diagnosing the configuration.
 
 Version 1.2
 - Added optional bounds checking for explosions (the "activeBounds" property). If the explosion epicentre is within the allowed bounds then the explosion modifications are applied.
