@@ -2,15 +2,15 @@ HigherExplosives
 ================
 
 A very simple plugin to control the destructive potential of explosions in Minecraft, for use with the Craftbukkit and Bukkit modding system.
-In its default configuration it doubles the size of TNT explosions. TNT, creepers, and fireballs can all have their size and yield (percentage of destoyed items dropped) tweaked.
+In its default vanilla configuration it just doubles the size of TNT explosions.
+
+TNT, creepers, and fireballs can all have their size and yield (percentage of destoyed items dropped) tweaked. The size can optionally be chosen from a list of different sizes, according to specified probabilities.
 These tweaks can be selectively applied to several different worlds.
 
 Versions
 --------
 
-HigherExplosives v1.3.1 was tested with a CraftBukkit server version 456 (http://ci.bukkit.org/job/dev-CraftBukkit/456/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar) and a Minecraft 1.3_01 client.
-
-It was coded against Bukkit version 417 (http://ci.bukkit.org/job/dev-Bukkit/org.bukkit$bukkit/417/artifact/org.bukkit/bukkit/0.0.1-SNAPSHOT/bukkit-0.0.1-SNAPSHOT.jar).
+HigherExplosives v1.4 was tested with CraftBukkit server recommended versions 440 and 493 (http://ci.bukkit.org/job/dev-CraftBukkit/493/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar) and a Minecraft 1.3_01 client.
 
 Installation
 ------------
@@ -41,7 +41,7 @@ version: '1.3.1'
 
 - There are three different entities that create explosions (tell me if this is wrong): TNTPrimed, a Fireball (Ghasts), and a Creeper. Each of these are individually configured.
 
-- The radiusMultiplier is pretty obvious. 1.0 will use the original blast radius. 0.5 gives half size explosions, whilst 2.0 blasts will be twice as big as normal. After igniting TNT by hand, you can run away in time when it's set to a multiplier of 2, but with a multiplier of 3 there's not enough time to run away!
+- In its simples form the radiusMultiplier is just a number that will be used to multiply the radius of the blast. 0.5 gives half size explosions, whilst 2.0 blasts will be twice as big as normal. After igniting TNT by hand, you can run away in time when it's set to a multiplier of 2, but with a multiplier of 3 there's not enough time to run away! The readiusMultiplier can also describe a number of different multipliers with different probabilities of being chosen. See the "Random blast radii" section of the README file for more details.
 
 - The fire property is included for completeness. I didn't see any difference when I tested it myself, but it probably flags whether the explosion causes fire or not.
 
@@ -91,6 +91,24 @@ worlds:
 debugConfig: true
 
 
+Random blast radii
+------------------
+
+It's possible to make TNT, creepers or fireballs explode with a random blast radius. This is configured by the radiusMultipler in the following way:
+
+entities:
+    Creeper:
+        radiusMultiplier:
+            - {chance: 0.15, value: 2.0}
+            - {chance: 0.80, value: 1.0}
+            - {chance: 0.05, value: 0.0}
+    TNTPrimed:
+        blah blah
+
+That would make creepers explode normally 80% of the time, explode twice as fiercly 15% of the time, and not explode 5% of the time. There can be any number of these "chance"/"value" pairs in the list, but the chances should all add up to 1.0 (100%).
+
+This list form for the radiusMultiplier also works for entities in multi-world configurations.
+
 Optional bounds configuration
 -----------------------------
 
@@ -135,6 +153,9 @@ everyExplosion:
 
 Changelog:
 ---------
+
+Version 1.4
+- Support for setting probabilities for different blast radii
 
 Version 1.3.1
 - Fixed a configuration bug with single world configurations.
