@@ -1,5 +1,5 @@
 name: HigherExplosives
 author: toadmess
 description: Per world control over size and yield of explosions
-version: 1.3.1
+version: 1.4
 main: toadmess.explosives.HEMain

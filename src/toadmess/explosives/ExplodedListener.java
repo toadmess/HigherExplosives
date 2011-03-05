@@ -29,7 +29,7 @@ public class ExplodedListener extends EntityListener {
 		this.otherWorldConfs = new HashMap<String, ExplodedConf>();
 		final List<String> worldNames = conf.getKeys(HEMain.CONF_WORLDS);
 		if(null != worldNames) {
-			for(final String worldName : conf.getKeys(HEMain.CONF_WORLDS)) {
+			for(final String worldName : worldNames) {
 				final String worldConfPath = HEMain.CONF_WORLDS + "." + worldName + "." + HEMain.CONF_EVERY;
 	
 				if(null != conf.getProperty(worldConfPath)) {				
@@ -79,12 +79,12 @@ public class ExplodedListener extends EntityListener {
 		public ExplodedConf(final Configuration conf, final String confPath) {
 			this.yield = Math.max(0.0f, Math.min(1.0f, (float) conf.getDouble(confPath + "." + HEMain.CONF_EVERY_YIELD, 0.3f)));
 			
-			this.yieldChangeAllowedBounds = new Bounds(conf, confPath + "." + HEMain.CONF_EVERY_YIELD_BOUNDS);
+			this.yieldChangeAllowedBounds = new Bounds(conf, confPath + "." + HEMain.CONF_EVERY_YIELDBOUNDS);
 		}
 		
 		@Override
 		public String toString() {
-			return "ExplodedConf("+HEMain.CONF_EVERY_YIELD+"="+yield+","+HEMain.CONF_EVERY_YIELD_BOUNDS+"="+yieldChangeAllowedBounds+")";
+			return "ExplodedConf("+HEMain.CONF_EVERY_YIELD+"="+yield+","+HEMain.CONF_EVERY_YIELDBOUNDS+"="+yieldChangeAllowedBounds+")";
 		}
 	}
 }

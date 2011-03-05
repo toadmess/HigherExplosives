@@ -16,14 +16,16 @@ public class HEMain extends JavaPlugin {
 	
 	protected static final String CONF_EVERY = "everyExplosion";
 	protected static final String CONF_EVERY_YIELD = "yield";
-	protected static final String CONF_EVERY_YIELD_BOUNDS = "yieldChangeActiveBounds";
+	protected static final String CONF_EVERY_YIELDBOUNDS = "yieldChangeActiveBounds";
 	
 	protected static final String CONF_ENTITIES = "entities";
-	protected static final String CONF_ENTITY_RADIUS_MULT = "radiusMultiplier";
-	protected static final String CONF_FIRE = "fire";
+	protected static final String CONF_ENTITY_FIRE = "fire";
+	protected static final String CONF_ENTITY_RADIUSMULT = "radiusMultiplier";
+	
+	protected static final String CONF_ENTITY_RADIUSMULT_CHANCE = "chance";
+	protected static final String CONF_ENTITY_RADIUSMULT_VALUE = "value";
 	
 	protected static final String CONF_BOUNDS = "activeBounds";
-	
 	protected static final String CONF_BOUNDS_MAX = "max";
 	protected static final String CONF_BOUNDS_MIN = "min";
 
@@ -31,6 +33,7 @@ public class HEMain extends JavaPlugin {
 	
 	/** True if we should print out some debugging of the configuration */
 	public static boolean IS_DEBUG_CONF;
+	
 	
 	@Override
 	public void onEnable() {
@@ -74,14 +77,14 @@ public class HEMain extends JavaPlugin {
 			conf.setProperty(CONF_VERSION, pluginVersion);
 			conf.setProperty(CONF_EVERY + "." + CONF_EVERY_YIELD, 0.3f);
 			
-			conf.setProperty(CONF_ENTITIES + ".TNTPrimed." + CONF_ENTITY_RADIUS_MULT, 2.0f);
-			conf.setProperty(CONF_ENTITIES + ".TNTPrimed." + CONF_FIRE, false);
+			conf.setProperty(CONF_ENTITIES + ".TNTPrimed." + CONF_ENTITY_RADIUSMULT, 2.0f);
+			conf.setProperty(CONF_ENTITIES + ".TNTPrimed." + CONF_ENTITY_FIRE, false);
 
-			conf.setProperty(CONF_ENTITIES + ".Creeper." + CONF_ENTITY_RADIUS_MULT, 1.0f);
-			conf.setProperty(CONF_ENTITIES + ".Creeper." + CONF_FIRE, false);
+			conf.setProperty(CONF_ENTITIES + ".Creeper." + CONF_ENTITY_RADIUSMULT, 1.0f);
+			conf.setProperty(CONF_ENTITIES + ".Creeper." + CONF_ENTITY_FIRE, false);
 
-			conf.setProperty(CONF_ENTITIES + ".Fireball." + CONF_ENTITY_RADIUS_MULT, 1.0f);
-			conf.setProperty(CONF_ENTITIES + ".Fireball." + CONF_FIRE, false);
+			conf.setProperty(CONF_ENTITIES + ".Fireball." + CONF_ENTITY_RADIUSMULT, 1.0f);
+			conf.setProperty(CONF_ENTITIES + ".Fireball." + CONF_ENTITY_FIRE, false);
 			
 			conf.save();
 		} else if(!configVersion.equalsIgnoreCase(pluginVersion)) {

@@ -1,6 +1,7 @@
 package toadmess.explosives;
 
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
 import org.bukkit.util.config.Configuration;
 
 /**
@@ -9,24 +10,20 @@ import org.bukkit.util.config.Configuration;
  * @author John Revill
  */
 public class Bounds {
-	private final Double allowedBoundsMinX;
-	private final Double allowedBoundsMaxX;
-
-	private final Double allowedBoundsMinY;
-	private final Double allowedBoundsMaxY;
-
-	private final Double allowedBoundsMinZ;
-	private final Double allowedBoundsMaxZ;
-
+	private final Vector minVector;
+	private final Vector maxVector;
+	
 	public Bounds(final Configuration conf, final String confPath) {
-		this.allowedBoundsMinX = getOptionalDouble(conf, confPath + "." + HEMain.CONF_BOUNDS_MIN + ".x");
-		this.allowedBoundsMaxX = getOptionalDouble(conf, confPath + "." + HEMain.CONF_BOUNDS_MAX + ".x");
+		final String confPathMin = confPath + "." + HEMain.CONF_BOUNDS_MIN;
+		final String confPathMax = confPath + "." + HEMain.CONF_BOUNDS_MAX;
 		
-		this.allowedBoundsMinY = getOptionalDouble(conf, confPath + "." + HEMain.CONF_BOUNDS_MIN + ".y");
-		this.allowedBoundsMaxY = getOptionalDouble(conf, confPath + "." + HEMain.CONF_BOUNDS_MAX + ".y");
+		this.minVector = new Vector(conf.getDouble(confPathMin + ".x", Double.NEGATIVE_INFINITY), 
+									conf.getDouble(confPathMin + ".y", Double.NEGATIVE_INFINITY), 
+									conf.getDouble(confPathMin + ".z", Double.NEGATIVE_INFINITY));
 		
-		this.allowedBoundsMinZ = getOptionalDouble(conf, confPath + "." + HEMain.CONF_BOUNDS_MIN + ".z");
-		this.allowedBoundsMaxZ = getOptionalDouble(conf, confPath + "." + HEMain.CONF_BOUNDS_MAX + ".z");
+		this.maxVector = new Vector(conf.getDouble(confPathMax + ".x", Double.POSITIVE_INFINITY), 
+									conf.getDouble(confPathMax + ".y", Double.POSITIVE_INFINITY), 
+									conf.getDouble(confPathMax + ".z", Double.POSITIVE_INFINITY));
 	}
 	
 	public boolean isWithinBounds(final Location epicentre) {
@@ -34,60 +31,31 @@ public class Bounds {
 			return false;
 		}
 		
-		final double epicentreX = epicentre.getX();
-		final double epicentreY = epicentre.getY();
-		final double epicentreZ = epicentre.getZ();
-
-		if(null != this.allowedBoundsMinX && epicentreX < this.allowedBoundsMinX) {
-			return false;
-		}
-		if(null != this.allowedBoundsMinY && epicentreY < this.allowedBoundsMinY) {
-			return false;
-		}
-		if(null != this.allowedBoundsMinZ && epicentreZ < this.allowedBoundsMinZ) {
-			return false;
-		}
-
-		if(null != this.allowedBoundsMaxX && epicentreX > this.allowedBoundsMaxX) {
-			return false;
-		}
-		if(null != this.allowedBoundsMaxY && epicentreY > this.allowedBoundsMaxY) {
-			return false;
-		}
-		if(null != this.allowedBoundsMaxZ && epicentreZ > this.allowedBoundsMaxZ) {
-			return false;
-		}
-		
-		return true;
-	}
-	
-	/**
-	 * @param conf The Configuration object to interrogate
-	 * @param confPath The yaml path to the wanted optional parameter, e.g. "entities.TNTPrimed.allowedBounds.max.y"
-	 * 
-	 * @return Null if the configuration at the given path is not specified. If it is specified, a Float of its value is returned.
-	 */
-	private Double getOptionalDouble(final Configuration conf, final String confPath) {
-		if(null == conf.getProperty(confPath)) {
-			return null;
-		}
-		
-		return conf.getDouble(confPath, 0.0D);
+		return epicentre.toVector().isInAABB(this.minVector, this.maxVector);
 	}
 	
 	@Override
 	public String toString() {
 		final StringBuffer sb = new StringBuffer("Bounds(");
 		
-		if(null != allowedBoundsMinX) sb.append("minx=").append(allowedBoundsMinX);
-		if(null != allowedBoundsMinY) sb.append(" miny=").append(allowedBoundsMinY);
-		if(null != allowedBoundsMinZ) sb.append(" minz=").append(allowedBoundsMinZ);
+		if(!Double.isInfinite(minVector.getX())) sb.append("minx=").append(minVector.getX());
+		if(!Double.isInfinite(minVector.getY())) sb.append(" miny=").append(minVector.getY());
+		if(!Double.isInfinite(minVector.getZ())) sb.append(" minz=").append(minVector.getZ());
 
-		if(null != allowedBoundsMaxX) sb.append(" maxx=").append(allowedBoundsMaxX);
-		if(null != allowedBoundsMaxY) sb.append(" maxy=").append(allowedBoundsMaxY);
-		if(null != allowedBoundsMaxZ) sb.append(" maxz=").append(allowedBoundsMaxZ);
+		if(!Double.isInfinite(maxVector.getX())) sb.append(" maxx=").append(maxVector.getX());
+		if(!Double.isInfinite(maxVector.getY())) sb.append(" maxy=").append(maxVector.getY());
+		if(!Double.isInfinite(maxVector.getZ())) sb.append(" maxz=").append(maxVector.getZ());
 		
 		sb.append(")");
 		return sb.toString();
 	}
+
+	// Getters used in unit tests
+	public Double getMinX() { return Double.isInfinite(minVector.getX()) ? null : minVector.getX(); }
+	public Double getMinY() { return Double.isInfinite(minVector.getY()) ? null : minVector.getY(); }
+	public Double getMinZ() { return Double.isInfinite(minVector.getZ()) ? null : minVector.getZ(); }
+	
+	public Double getMaxX() { return Double.isInfinite(maxVector.getX()) ? null : maxVector.getX(); }
+	public Double getMaxY() { return Double.isInfinite(maxVector.getY()) ? null : maxVector.getY(); }
+	public Double getMaxZ() { return Double.isInfinite(maxVector.getZ()) ? null : maxVector.getZ(); }
 }
