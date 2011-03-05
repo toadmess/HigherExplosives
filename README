@@ -105,7 +105,7 @@ entities:
     TNTPrimed:
         blah blah
 
-That would make creepers explode normally 80% of the time, explode twice as fiercly 15% of the time, and not explode 5% of the time. There can be any number of these "chance"/"value" pairs in the list, but the chances should all add up to 1.0 (100%).
+That would make creepers explode normally 80% of the time, explode a lot more fiercly 15% of the time, and fizzle out 5% of the time. There can be any number of these "chance"/"value" pairs in the list, but the chances should all add up to 1.0 (100%).
 
 This list form for the radiusMultiplier also works for entities in multi-world configurations.
 
