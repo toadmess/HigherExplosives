@@ -147,11 +147,11 @@ public class ExplodingListener extends EntityListener {
 				
 				if(Math.abs(totalProb - 1.0F) > 0.0001) {
 					System.out.println("WARN: HigherExplosives: Total probability for radiusMultiplier doesn't quite add up to 1.0. It's " + totalProb);
-				}				
+				}
 			}
 			
 			if(radiusMultipliers.size() == 0) {
-				this.addMultiplier(1.0F, 0.3F);
+				this.addMultiplier(1.0F, 1.0F);
 			}
 			
 			this.fire = conf.getBoolean(pathToEntity + "." + HEMain.CONF_ENTITY_FIRE, false);
