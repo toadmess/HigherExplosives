@@ -21,9 +21,11 @@ public class HEMain extends JavaPlugin {
 	protected static final String CONF_ENTITIES = "entities";
 	protected static final String CONF_ENTITY_FIRE = "fire";
 	protected static final String CONF_ENTITY_RADIUSMULT = "radiusMultiplier";
+	protected static final String CONF_ENTITY_PLAYER_DAMAGEMULT = "playerDamageMultiplier";
+	protected static final String CONF_ENTITY_CREATURE_DAMAGEMULT = "creatureDamageMultiplier";
 	
-	protected static final String CONF_ENTITY_RADIUSMULT_CHANCE = "chance";
-	protected static final String CONF_ENTITY_RADIUSMULT_VALUE = "value";
+	protected static final String CONF_MULTIPLIER_CHANCE = "chance";
+	protected static final String CONF_MULTIPLIER_VALUE = "value";
 	
 	protected static final String CONF_BOUNDS = "activeBounds";
 	protected static final String CONF_BOUNDS_MAX = "max";
@@ -58,6 +60,7 @@ public class HEMain extends JavaPlugin {
 	private void regExplodingListener(final PluginManager pm, final Class<? extends Entity> entityClass) {
 		final ExplodingListener primedListener = new ExplodingListener(this.getConfiguration(), entityClass);
 		pm.registerEvent(Event.Type.EXPLOSION_PRIMED, primedListener, Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.ENTITY_DAMAGED, primedListener, Event.Priority.Normal, this);
 	}
 	
 	private String pluginDescription() {

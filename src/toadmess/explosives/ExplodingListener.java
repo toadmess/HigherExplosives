@@ -1,15 +1,14 @@
 package toadmess.explosives;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityListener;
 import org.bukkit.event.entity.ExplosionPrimedEvent;
 import org.bukkit.util.config.Configuration;
@@ -74,22 +73,48 @@ public class ExplodingListener extends EntityListener {
 	public void onExplosionPrimed(final ExplosionPrimedEvent event) {
 		final Entity primed = event.getEntity();
 
-		if(!isValidPrimedEntity(primed)) {
+		if(!isCorrectEntity(primed)) {
 			return;
 		}
 
 		final Location epicentre = primed.getLocation();
 		final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
 		
-		if(!worldConf.allowedBounds.isWithinBounds(epicentre)) {
+		if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
 			return;
 		}
 		
-		event.setRadius(worldConf.getNextMultiplier() * event.getRadius());
-		event.setFire(worldConf.fire);
+		event.setRadius(worldConf.getNextRadiusMultiplier() * event.getRadius());
+		event.setFire(worldConf.getFire());
 	}
 
-	private boolean isValidPrimedEntity(final Entity e) {
+	@Override
+	public void onEntityDamage(final EntityDamageEvent event) {
+		Object damager = null;
+		if(event instanceof EntityDamageByBlockEvent) {
+			damager = ((EntityDamageByBlockEvent) event).getDamager();
+		} else if(event instanceof EntityDamageByEntityEvent) {
+			damager = ((EntityDamageByEntityEvent) event).getDamager();
+		} else {
+			//return;
+		}
+		
+		if(event.getCause() != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION && 
+		   event.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+			return;
+		}
+		
+		System.out.println("===========");
+		System.out.println("onEntityDamage, getClass().getName()="+event.getClass().getName());
+		System.out.println("onEntityDamage, damager="+damager);
+		System.out.println("onEntityDamage, eventName = " + event.getEventName());
+		System.out.println("onEntityDamage, eventType = " + event.getType());
+		System.out.println("onEntityDamage, cause = " + event.getCause());
+		System.out.println("onEntityDamage, damage = " + event.getDamage());
+		System.out.println("onEntityDamage, entity = " + event.getEntity());
+	}
+	
+	private boolean isCorrectEntity(final Entity e) {
 		return (null != e && this.entityType.isInstance(e));
 	}
 	
@@ -100,119 +125,5 @@ public class ExplodingListener extends EntityListener {
 		}
 		
 		return this.defWorldConf;
-	}
-	
-	protected class ExplodingConf {
-		/** 
-		 * List of pairs (sorted by chance of happening, highest first), where each
-		 * pair contains the cumulative chance (first) and the multiplier (second). 
-		 */
-		private final List<List<Float>> radiusMultipliers = new ArrayList<List<Float>>();
-		
-		private final Bounds allowedBounds;
-		private final boolean fire;
-		
-		private Random rng = new Random();
-
-		public ExplodingConf(final Configuration conf, final String pathToEntity) {
-			this.allowedBounds = new Bounds(conf, pathToEntity + "." + HEMain.CONF_BOUNDS);
-			
-			final String radiusPath = pathToEntity + "." + HEMain.CONF_ENTITY_RADIUSMULT;
-			
-			final Object radiusProp = conf.getProperty(radiusPath);
-			if(radiusProp instanceof Number) {
-				this.addMultiplier(1.0F, (Math.max(0.0f, (float) conf.getDouble(radiusPath, 1.0f))));
-			} else if(radiusProp instanceof List) {
-				for(final Object el : (List<?>) radiusProp) {
-					if(el instanceof HashMap) {
-						final HashMap<?, ?> probAndValue = (HashMap<?, ?>) el;
-
-						final Object chance = probAndValue.get(HEMain.CONF_ENTITY_RADIUSMULT_CHANCE);
-						final Object value = probAndValue.get(HEMain.CONF_ENTITY_RADIUSMULT_VALUE);
-						
-						if(chance instanceof Double && value instanceof Double) {
-							this.addMultiplier((float) Math.min(1.0D, Math.max(0D, (Double) chance)), (float) Math.max(0.0D, (Double) value));							
-						} else {
-							System.out.println("WARN: HigherExplosives: Ignoring list item in the radiusMultiplier list (either the "+HEMain.CONF_ENTITY_RADIUSMULT_CHANCE+" of ("+chance+") or the "+HEMain.CONF_ENTITY_RADIUSMULT_VALUE+" of ("+value+") doesn't look like a number, was expecting a double)");						
-						}
-					} else {
-						System.out.println("WARN: HigherExplosives: Ignoring strange list item in the radiusMultiplier list. Was expecting "+HEMain.CONF_ENTITY_RADIUSMULT_CHANCE+" and "+HEMain.CONF_ENTITY_RADIUSMULT_VALUE+" keys");
-					}
-				}
-
-				float totalProb = 0.0F;
-				for(List<Float> pair : this.radiusMultipliers) {
-					totalProb += pair.get(0);
-				}
-				
-				if(Math.abs(totalProb - 1.0F) > 0.0001) {
-					System.out.println("WARN: HigherExplosives: Total probability for radiusMultiplier doesn't quite add up to 1.0. It's " + totalProb);
-				}
-			}
-			
-			if(radiusMultipliers.size() == 0) {
-				this.addMultiplier(1.0F, 1.0F);
-			}
-			
-			this.fire = conf.getBoolean(pathToEntity + "." + HEMain.CONF_ENTITY_FIRE, false);
-		}
-		
-		private void addMultiplier(float chance, float multiplier) {
-			final List<Float> pair = new ArrayList<Float>(2);
-			
-			pair.add(chance);
-			pair.add(multiplier);
-		
-			this.radiusMultipliers.add(pair);
-
-			final Comparator<List<Float>> cmp = new Comparator<List<Float>>() {
-				@Override
-				public int compare(final List<Float> a, final List<Float> b) {
-					if(a.get(0) == b.get(0)) {
-						return 0;
-					}
-					
-					if(a.get(0) < b.get(0)) return 1;
-					
-					return -1;
-				}
-			};
-			Collections.sort(this.radiusMultipliers, cmp);
-		}
-
-		private float getNextMultiplier() {
-			// Walk through the list until the number is exceeded
-			float choice = rng.nextFloat();
-
-			float cumulativeProb = 0.0F;
-			for(final List<Float> pair : this.radiusMultipliers) {
-				cumulativeProb += pair.get(0);
-				
-				if(cumulativeProb > choice) {
-					return pair.get(1);
-				}
-			}
-			
-			// Shouldn't really be here if the probabilities all added up to one..
-			return radiusMultipliers.get(0).get(1);
-		}
-		
-		@Override
-		public String toString() {
-			final StringBuffer sb = new StringBuffer("ExplodingConf(");
-			
-			sb.append(HEMain.CONF_ENTITY_RADIUSMULT);
-			sb.append("={");
-			for(final List<Float> pair : radiusMultipliers) {
-				sb.append("(").append(HEMain.CONF_ENTITY_RADIUSMULT).append(":");
-				sb.append(pair.get(0));
-				sb.append(",value:").append(pair.get(1)).append(")");
-			}
-			sb.append("},");
-			sb.append(HEMain.CONF_ENTITY_FIRE).append("=").append(fire);
-			sb.append(",").append(HEMain.CONF_BOUNDS).append("=").append(allowedBounds).append(")");
-			
-			return sb.toString();
-		}
 	}
 }
