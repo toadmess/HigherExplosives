@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.craftbukkit.entity.CraftCreature;
+import org.bukkit.craftbukkit.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
-import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityListener;
@@ -90,28 +92,54 @@ public class ExplodingListener extends EntityListener {
 
 	@Override
 	public void onEntityDamage(final EntityDamageEvent event) {
-		Object damager = null;
-		if(event instanceof EntityDamageByBlockEvent) {
-			damager = ((EntityDamageByBlockEvent) event).getDamager();
-		} else if(event instanceof EntityDamageByEntityEvent) {
+		final Entity damager;
+		if(event instanceof EntityDamageByEntityEvent) {
 			damager = ((EntityDamageByEntityEvent) event).getDamager();
+			if(!isCorrectEntity(damager)) {
+				return;
+			}
 		} else {
-			//return;
+			return;
 		}
 		
-		if(event.getCause() != EntityDamageEvent.DamageCause.BLOCK_EXPLOSION && 
-		   event.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+		if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
+			return;
+		}
+		
+		final Entity damagee = event.getEntity();
+		if(!(damagee instanceof CraftLivingEntity)) {
+			return;
+		}
+
+		final Location epicentre = damager.getLocation();
+		final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
+		
+		if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
 			return;
 		}
 		
 		System.out.println("===========");
+		final float damageMultiplier;
+		if(damagee instanceof CraftPlayer) {
+			System.out.println("Player was hit by "  + this.entityType.getName());
+			damageMultiplier = worldConf.getNextPlayerDamageMultiplier();
+		} else {
+			System.out.println("Creature was hit by " + this.entityType.getName());
+			damageMultiplier = worldConf.getNextCreatureDamageMultiplier();
+		}
+		
+		
+		System.out.println("onEntityDamage, this listener is for " + this.entityType.getName());
 		System.out.println("onEntityDamage, getClass().getName()="+event.getClass().getName());
 		System.out.println("onEntityDamage, damager="+damager);
-		System.out.println("onEntityDamage, eventName = " + event.getEventName());
-		System.out.println("onEntityDamage, eventType = " + event.getType());
 		System.out.println("onEntityDamage, cause = " + event.getCause());
 		System.out.println("onEntityDamage, damage = " + event.getDamage());
 		System.out.println("onEntityDamage, entity = " + event.getEntity());
+		System.out.println("onEntityDamage, entity ID = " + event.getEntity().getEntityId());
+		
+		System.out.println("applying multiplier of " + damageMultiplier + " to get " + ((int) (event.getDamage() * damageMultiplier)));
+		event.setDamage((int) (event.getDamage() * damageMultiplier));
+		System.out.println("onEntityDamage, rejiggled damage = " + event.getDamage());
 	}
 	
 	private boolean isCorrectEntity(final Entity e) {
