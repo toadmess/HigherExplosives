@@ -19,11 +19,11 @@ public class PredicatableNumGen extends Random {
 	public float getLastFloat() { return (float) counter; }
 	public double getLastDouble() { return counter; }
 
-	public int peekNextInt() { return (int) (counter+increment); }
-	public long peekNextLong() { return (long) (counter+increment); }
+	public int peekNextInt() { return (int) ((counter+increment)%modulo); }
+	public long peekNextLong() { return (long) ((counter+increment)%modulo); }
 	
-	public float peekNextFloat() { return (float) (counter+increment); }
-	public double peekNextDouble() { return (double) (counter+increment); }
+	public float peekNextFloat() { return (float) ((counter+increment)%modulo); }
+	public double peekNextDouble() { return (double) ((counter+increment)%modulo); }
 	
 	private void increment() {
 		this.counter += this.increment;
