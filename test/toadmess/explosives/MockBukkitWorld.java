@@ -285,4 +285,16 @@ public class MockBukkitWorld implements World {
 		return false;
 	}
 
+	@Override
+	public boolean refreshChunk(int arg0, int arg1) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean regenerateChunk(int arg0, int arg1) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

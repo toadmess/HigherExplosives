@@ -10,33 +10,59 @@ import java.util.Random;
 import org.bukkit.util.config.Configuration;
 
 public class ExplodingConf {
+	/** 
+	 * A sorted list of pairs of floats representing the radius multipliers to apply when modifying the explosion radius. 
+	 * The pair's head is the chance (0.0 to 1.0) and tail is the multiplier (0.0 and above). 
+	 * The list is sorted according to the pair's chance, pairs with higher chances coming first.
+	 * If null, the configuration provided no radius multipliers. 
+	 */
 	private final List<List<Float>> radiusMultipliers;
+	/**
+	 * A sorted list of pairs of floats representing the damage multipliers to apply when modifying explosion damage to the player.
+	 * If null, the configuration provided no player damage multipliers.
+	 */
 	private final List<List<Float>> playerDamageMultipliers;
+	/**
+	 * A sorted list of pairs of floats representing the damage multipliers to apply when modifying explosion damage to creatures.
+	 * If null, the configuration provided no creature damage multipliers.
+	 */
 	private final List<List<Float>> creatureDamageMultipliers;
 
 	private final Bounds allowedBounds;
-	private final boolean fire;
+	private final Boolean fire;
 
-	private final Random rng = new Random();
+	private final Random rng;
 
 	public ExplodingConf(final Configuration conf, final String confPathPrefix) {
+		this(conf, confPathPrefix, new Random());
+	}
+	
+	public ExplodingConf(final Configuration conf, final String confPathPrefix, final Random rng) {
+		this.rng = rng;
+		
 		this.allowedBounds = new Bounds(conf, confPathPrefix + "." + HEMain.CONF_BOUNDS);
 
 		this.radiusMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_RADIUSMULT);
 		this.playerDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_PLAYER_DAMAGEMULT);
 		this.creatureDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT);
 
-		this.fire = conf.getBoolean(confPathPrefix + "." + HEMain.CONF_ENTITY_FIRE, false);
+		final Object fireProp = conf.getProperty(confPathPrefix + "." + HEMain.CONF_ENTITY_FIRE);
+		if(null != fireProp && fireProp instanceof Boolean) {
+			this.fire = (Boolean) fireProp;
+		} else {			
+			this.fire = null;
+		}
 	}
 
 	/**
-	 * Extracts a list of chance/multipler pairs from some place in the configuration. 
+	 * Extracts a list of chance/multiplier pairs from some place in the configuration. 
 	 * It detects whether the configuration contains just a single multiplier, or if there are several chance/multipliers listed.
 	 * 
 	 * @param conf
 	 * @param pathToMultiplier The configuration path prefix up to where the chance/value(s) are listed.
 	 * 
-	 * @return A list of pairs of floats. Each pair is a chance (head) and multiplier (tail). 
+	 * @return null if no multiplier configuration was found at the given path. 
+	 * OTherwise, a list of pairs of floats. Each pair is a chance (head) and multiplier (tail). 
 	 */
 	private List<List<Float>> getMultipliers(final Configuration conf, final String pathToMultiplier) {
 		final List<List<Float>> multipliers = new ArrayList<List<Float>>(); // A list of pairs of floats. Each pair is a chance (head) and multiplier (tail).
@@ -75,9 +101,8 @@ public class ExplodingConf {
 
 		}
 
-		// Add in a default multiplier if nothing was found in the configuration
 		if (multipliers.size() == 0) {
-			addMultiplier(multipliers, 1.0F, 1.0F);
+			return null;
 		}
 
 		return multipliers;
@@ -116,6 +141,11 @@ public class ExplodingConf {
 	}
 
 	private float getNextMultiplier(final List<List<Float>> sortedMultipliers) {
+		if(sortedMultipliers == null || sortedMultipliers.size() == 0) {
+			// Default to 1.0 to be safe
+			return 1.0F;
+		}
+		
 		final float randomNum = this.rng.nextFloat();
 		float cumulativeChance = 0.0F;
 
@@ -127,23 +157,23 @@ public class ExplodingConf {
 			}
 		}
 
-		// Well, the chance values didn't add up to 1.0. Just return the most likely multiplier (the first)
+		// Well, the chance values didn't add up to 1.0. Just return the most likely multiplier (the first in the list)
 		return sortedMultipliers.get(0).get(1);
 	}
 
 	public String toString() {
 		String str = "ExplodingConf(";
 
-		str = str + "radiusMultiplier={" + multiplersToString(this.radiusMultipliers) + "},";
-		str = str + "playerDamageMultiplier={" + multiplersToString(this.playerDamageMultipliers) + "},";
-		str = str + "creatureDamageMultiplier={" + multiplersToString(this.creatureDamageMultipliers) + "},";
+		str = str + "radiusMultiplier={" + multipliersToString(this.radiusMultipliers) + "},";
+		str = str + "playerDamageMultiplier={" + multipliersToString(this.playerDamageMultipliers) + "},";
+		str = str + "creatureDamageMultiplier={" + multipliersToString(this.creatureDamageMultipliers) + "},";
 		str = str + "fire=" + this.fire + ",";
 		str = str + "activeBounds=" + this.allowedBounds + ")";
 
 		return str;
 	}
 
-	private String multiplersToString(final List<List<Float>> paramList) {
+	private String multipliersToString(final List<List<Float>> paramList) {
 		String str = "";
 		for (final List<?> localList : paramList) {
 			str = str + "(chance:" + localList.get(0);
@@ -157,7 +187,7 @@ public class ExplodingConf {
 	}
 
 	public boolean getFire() {
-		return this.fire;
+		return this.fire == null ? false : this.fire;
 	}
 
 	public float getNextRadiusMultiplier() {
@@ -170,5 +200,21 @@ public class ExplodingConf {
 
 	public float getNextCreatureDamageMultiplier() {
 		return getNextMultiplier(this.creatureDamageMultipliers);
+	}
+	
+	public boolean hasFireConfig() {
+		return this.fire != null;
+	}
+	
+	public boolean hasRadiusConfig() {
+		return this.radiusMultipliers != null; 
+	}
+	
+	public boolean hasCreatureDamageConfig() {
+		return this.creatureDamageMultipliers != null; 
+	}
+	
+	public boolean hasPlayerDamageConfig() {
+		return this.playerDamageMultipliers != null;
 	}
 }
