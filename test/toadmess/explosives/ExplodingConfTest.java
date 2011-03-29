@@ -78,7 +78,14 @@ public class ExplodingConfTest {
 		checkMultipliers(eMultiplierType.RADIUS);
 	}
 
-	private enum eMultiplierType { RADIUS, PLAYER_DMG, CREATURE_DMG };
+	private enum eMultiplierType { 
+		RADIUS(HEMain.CONF_ENTITY_RADIUSMULT), 
+		PLAYER_DMG(HEMain.CONF_ENTITY_PLAYER_DAMAGEMULT), 
+		CREATURE_DMG(HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT);
+		private final String confKey;
+		private eMultiplierType(final String confKey) { this.confKey = confKey;}
+		protected String getConfKey() { return this.confKey; }
+	};
 	private void checkMultipliers(final eMultiplierType multiplerType) {
 		final String confPrefix = "someentity";
 		
@@ -108,7 +115,7 @@ public class ExplodingConfTest {
 		thirdMultiplier.put(HEMain.CONF_MULTIPLIER_CHANCE, 0.1D); 
 		thirdMultiplier.put(HEMain.CONF_MULTIPLIER_VALUE, 0.0D);
 		
-		conf.setProperty(confPrefix + "." + HEMain.CONF_ENTITY_RADIUSMULT, listOMultipliers);
+		conf.setProperty(confPrefix + "." + multiplerType.getConfKey(), listOMultipliers);
 		
 		final PredicatableNumGen rng = new PredicatableNumGen(0.01D, 1.0D);
 		final ExplodingConf ec = new ExplodingConf(conf, confPrefix, rng);
@@ -139,7 +146,11 @@ public class ExplodingConfTest {
 	
 	@Test
 	public void testPlayerDmgMultiplierSingle() {
-		fail("TODO");
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_PLAYER_DAMAGEMULT, 0.23F);
+		final ExplodingConf ec = new ExplodingConf(conf, "someentity");
+		checkPlayerDmgMultiplier(ec, 0.23F, true);
+		checkPlayerDmgMultiplier(ec, 0.23F, true);
+		checkPlayerDmgMultiplier(ec, 0.23F, true);
 	}
 
 	@Test
@@ -149,7 +160,11 @@ public class ExplodingConfTest {
 
 	@Test
 	public void testCreatureDmgMultiplierSingle() {
-		fail("TODO");
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT, 0.23F);
+		final ExplodingConf ec = new ExplodingConf(conf, "someentity");
+		checkCreatureDmgMultiplier(ec, 0.23F, true);
+		checkCreatureDmgMultiplier(ec, 0.23F, true);
+		checkCreatureDmgMultiplier(ec, 0.23F, true);
 	}
 
 	@Test
@@ -163,12 +178,12 @@ public class ExplodingConfTest {
 	}
 	
 	private void checkPlayerDmgMultiplier(final ExplodingConf ec, final float expectMultiplier, final boolean expectPlayerDmgConfig) {
-		assertEquals((Float) expectMultiplier, (Float) ec.getNextRadiusMultiplier());
+		assertEquals((Float) expectMultiplier, (Float) ec.getNextPlayerDamageMultiplier());
 		assertEquals(expectPlayerDmgConfig, ec.hasPlayerDamageConfig());
 	}
 	
 	private void checkCreatureDmgMultiplier(final ExplodingConf ec, final float expectMultiplier, final boolean expectCreatureDmgConfig) {
-		assertEquals((Float) expectMultiplier, (Float) ec.getNextRadiusMultiplier());
+		assertEquals((Float) expectMultiplier, (Float) ec.getNextCreatureDamageMultiplier());
 		assertEquals(expectCreatureDmgConfig, ec.hasCreatureDamageConfig());
 	}
 
