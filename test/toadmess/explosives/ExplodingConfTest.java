@@ -2,12 +2,10 @@ package toadmess.explosives;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
 
 import org.bukkit.util.config.Configuration;
 import org.junit.Before;

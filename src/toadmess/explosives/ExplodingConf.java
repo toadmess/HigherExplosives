@@ -175,6 +175,9 @@ public class ExplodingConf {
 
 	private String multipliersToString(final List<List<Float>> paramList) {
 		String str = "";
+		
+		if(paramList == null) return str;
+		
 		for (final List<?> localList : paramList) {
 			str = str + "(chance:" + localList.get(0);
 			str = str + ",value:" + localList.get(1) + ")";

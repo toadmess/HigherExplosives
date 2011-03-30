@@ -9,7 +9,6 @@ import org.bukkit.World;
 import org.bukkit.craftbukkit.entity.CraftFish;
 import org.bukkit.craftbukkit.entity.CraftTNTPrimed;
 import org.bukkit.entity.Entity;
-import org.bukkit.event.Event.Type;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.util.config.Configuration;
 import org.junit.Before;
@@ -124,7 +123,7 @@ public class ExplodedListenerTest {
 	public void testWrongEntity() {
 		final ExplodedListener el = new ExplodedListener(conf);
 		
-		testItIsLeftUntouched(el, new EntityExplodeEvent(Type.ENTITY_EXPLODE, entityFish, new Location(worldDefault, 0,0,0), null));
+		testItIsLeftUntouched(el, new EntityExplodeEvent(entityFish, new Location(worldDefault, 0,0,0), null));
 	}
 	
 	private void testItIsLeftUntouched(final ExplodedListener el, final EntityExplodeEvent event) {
@@ -136,7 +135,7 @@ public class ExplodedListenerTest {
 	}
 	
 	private EntityExplodeEvent explodeSomething(final World inThisWorld, final ExplodedListener listener) {
-		final EntityExplodeEvent ev = new EntityExplodeEvent(Type.ENTITY_EXPLODE, entityTNTPrimed, new Location(inThisWorld, 0,0,0), null);
+		final EntityExplodeEvent ev = new EntityExplodeEvent(entityTNTPrimed, new Location(inThisWorld, 0,0,0), null);
 		listener.onEntityExplode(ev);
 		return ev;
 	}

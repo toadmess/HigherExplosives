@@ -22,6 +22,9 @@ import org.bukkit.entity.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
+/**
+ * Massively messy mock World
+ */
 public class MockBukkitWorld implements World {
 	private String worldName;
 

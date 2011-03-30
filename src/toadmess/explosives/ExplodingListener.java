@@ -11,7 +11,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityListener;
-import org.bukkit.event.entity.ExplosionPrimedEvent;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.util.config.Configuration;
 
 /**
@@ -71,7 +71,7 @@ public class ExplodingListener extends EntityListener {
 	}
 
 	@Override
-	public void onExplosionPrimed(final ExplosionPrimedEvent event) {
+	public void onExplosionPrime(final ExplosionPrimeEvent event) {
 		final Entity primed = event.getEntity();
 
 		if(!isCorrectEntity(primed)) {
@@ -117,28 +117,14 @@ public class ExplodingListener extends EntityListener {
 			return;
 		}
 		
-		System.out.println("===========");
 		final float damageMultiplier;
 		if(damagee instanceof CraftPlayer) {
-			System.out.println("Player was hit by "  + this.entityType.getName());
 			damageMultiplier = worldConf.getNextPlayerDamageMultiplier();
 		} else {
-			System.out.println("Creature was hit by " + this.entityType.getName());
 			damageMultiplier = worldConf.getNextCreatureDamageMultiplier();
 		}
 		
-		
-		System.out.println("onEntityDamage, this listener is for " + this.entityType.getName());
-		System.out.println("onEntityDamage, getClass().getName()="+event.getClass().getName());
-		System.out.println("onEntityDamage, damager="+damager);
-		System.out.println("onEntityDamage, cause = " + event.getCause());
-		System.out.println("onEntityDamage, damage = " + event.getDamage());
-		System.out.println("onEntityDamage, entity = " + event.getEntity());
-		System.out.println("onEntityDamage, entity ID = " + event.getEntity().getEntityId());
-		
-		System.out.println("applying multiplier of " + damageMultiplier + " to get " + ((int) (event.getDamage() * damageMultiplier)));
 		event.setDamage((int) (event.getDamage() * damageMultiplier));
-		System.out.println("onEntityDamage, rejiggled damage = " + event.getDamage());
 	}
 	
 	private boolean isCorrectEntity(final Entity e) {

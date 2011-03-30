@@ -18,6 +18,9 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.util.Vector;
 
+/**
+ * Massively messy mock Entity
+ */
 public class MockEntity implements Entity {
 	final net.minecraft.server.Entity minecraftEntity;
 	
@@ -175,6 +178,78 @@ public class MockEntity implements Entity {
 			// TODO Auto-generated method stub
 			return null;
 		}
+
+		@Override
+		public int getLastDamage() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public int getMaximumNoDamageTicks() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public int getNoDamageTicks() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public void setLastDamage(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void setMaximumNoDamageTicks(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void setNoDamageTicks(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public boolean eject() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public Entity getPassenger() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public boolean isEmpty() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean setPassenger(Entity arg0) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean teleport(Location arg0) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean teleport(Entity arg0) {
+			// TODO Auto-generated method stub
+			return false;
+		}
 		
 	}
 	
@@ -200,5 +275,41 @@ public class MockEntity implements Entity {
 	public void setVelocity(Vector arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public boolean eject() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Entity getPassenger() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean setPassenger(Entity arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean teleport(Location arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean teleport(Entity arg0) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

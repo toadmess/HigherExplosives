@@ -13,8 +13,7 @@ import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.TNTPrimed;
-import org.bukkit.event.Event.Type;
-import org.bukkit.event.entity.ExplosionPrimedEvent;
+import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.util.config.Configuration;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,7 +85,7 @@ public class ExplodingListenerTest {
 	public void testSingleWorld_defaults() {
 		initListeners();
 
-		ExplosionPrimedEvent ev = prime(entityCreeperInDefWorld, 0.23F, true, creeperListener);
+		ExplosionPrimeEvent ev = prime(entityCreeperInDefWorld, 0.23F, true, creeperListener);
 		Assert.assertEquals(0.23D, ev.getRadius(), acceptableDelta);
 		Assert.assertEquals(false, ev.getFire());
 
@@ -99,9 +98,9 @@ public class ExplodingListenerTest {
 		Assert.assertEquals(false, ev.getFire());
 	}
 
-	private ExplosionPrimedEvent prime(final Entity e, final float radius, final boolean fire, final ExplodingListener l) {
-		final ExplosionPrimedEvent ev = new ExplosionPrimedEvent(Type.EXPLOSION_PRIMED, e, radius, fire);
-		l.onExplosionPrimed(ev);
+	private ExplosionPrimeEvent prime(final Entity e, final float radius, final boolean fire, final ExplodingListener l) {
+		final ExplosionPrimeEvent ev = new ExplosionPrimeEvent(e, radius, fire);
+		l.onExplosionPrime(ev);
 		return ev;
 	}
 
@@ -114,7 +113,7 @@ public class ExplodingListenerTest {
 
 		initListeners();
 		
-		ExplosionPrimedEvent ev = prime(entityCreeperInDefWorld, 0.23F, true, creeperListener);
+		ExplosionPrimeEvent ev = prime(entityCreeperInDefWorld, 0.23F, true, creeperListener);
 		Assert.assertEquals(0.46D, ev.getRadius(), acceptableDelta);
 		Assert.assertEquals(false, ev.getFire());
 
@@ -135,7 +134,7 @@ public class ExplodingListenerTest {
 
 		initListeners();
 		
-		ExplosionPrimedEvent ev = prime(entityCreeperInDefWorld, 0.23F, true, creeperListener);
+		ExplosionPrimeEvent ev = prime(entityCreeperInDefWorld, 0.23F, true, creeperListener);
 		Assert.assertEquals(0.23D, ev.getRadius(), acceptableDelta);
 		Assert.assertEquals(true, ev.getFire());
 
@@ -160,7 +159,7 @@ public class ExplodingListenerTest {
 
 		initListeners();
 		
-		ExplosionPrimedEvent ev = prime(entityCreeperInDefWorld, 0.23F, true, creeperListener);
+		ExplosionPrimeEvent ev = prime(entityCreeperInDefWorld, 0.23F, true, creeperListener);
 		Assert.assertEquals(0.23D, ev.getRadius(), acceptableDelta);
 		Assert.assertEquals(true, ev.getFire());
 
@@ -198,7 +197,7 @@ public class ExplodingListenerTest {
 
 		initListeners();
 		
-		ExplosionPrimedEvent ev = prime(entityCreeperInDefWorld, 0.23F, true, creeperListener);
+		ExplosionPrimeEvent ev = prime(entityCreeperInDefWorld, 0.23F, true, creeperListener);
 		Assert.assertEquals(0.46D, ev.getRadius(), acceptableDelta);
 		Assert.assertEquals(true, ev.getFire());
 
@@ -228,9 +227,9 @@ public class ExplodingListenerTest {
 	public void testWrongEntity() {
 		creeperListener = new ExplodingListener(conf, Creeper.class);
 		
-		final ExplosionPrimedEvent ev = new ExplosionPrimedEvent(Type.ENTITY_COMBUST, entityFishInDefWorld, 0.23F, true);
+		final ExplosionPrimeEvent ev = new ExplosionPrimeEvent(entityFishInDefWorld, 0.23F, true);
 		
-		creeperListener.onExplosionPrimed(ev);
+		creeperListener.onExplosionPrime(ev);
 
 		Assert.assertEquals(0.23D, ev.getRadius(), acceptableDelta);
 		Assert.assertEquals(true, ev.getFire());

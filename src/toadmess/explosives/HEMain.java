@@ -5,10 +5,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.Event;
-import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockDamageEvent;
-import org.bukkit.event.block.BlockListener;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -63,8 +59,8 @@ public class HEMain extends JavaPlugin {
 	
 	private void regExplodingListener(final PluginManager pm, final Class<? extends Entity> entityClass) {
 		final ExplodingListener primedListener = new ExplodingListener(this.getConfiguration(), entityClass);
-		pm.registerEvent(Event.Type.EXPLOSION_PRIMED, primedListener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.ENTITY_DAMAGED, primedListener, Event.Priority.Normal, this);
+		pm.registerEvent(Event.Type.EXPLOSION_PRIME, primedListener, Event.Priority.Normal, this);
+		//pm.registerEvent(Event.Type.ENTITY_DAMAGE, primedListener, Event.Priority.Normal, this);
 	}
 	
 	private String pluginDescription() {
