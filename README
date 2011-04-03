@@ -36,7 +36,7 @@ Known Issues
 
 - If you set the yield too high, the server will lag a lot whilst trying to rotate all of the items left in the crater.
 - If the radiusMultiplier is much less than 1, I think the client is rendering the explosions as normal, but then corrects itself a moment afterwards when it hears about what really happened from the server. This has a kind of double-take effect.
-- If the radiusMultiplier is set too high, the shape of the terrain damage takes on a kind of streaking or criss-crossing effect. I think this is to do with the way minecraft creates the explosions ().
+- If the radiusMultiplier is set too high, the shape of the terrain damage takes on a kind of streaking or criss-crossing effect. I think this is to do with the way minecraft creates the explosions (http://www.minecraftwiki.net/wiki/Explosion).
 
 Installation
 ------------
