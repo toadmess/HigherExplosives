@@ -13,10 +13,10 @@ public class Bounds {
 	private final Vector minVector;
 	private final Vector maxVector;
 	
-	public Bounds(final Configuration conf, final String confPath) {
-		final String confPathMin = confPath + "." + HEMain.CONF_BOUNDS_MIN;
-		final String confPathMax = confPath + "." + HEMain.CONF_BOUNDS_MAX;
-		
+	public Bounds(final Configuration conf, final String confPathPrefix) {
+		final String confPathMin = confPathPrefix + "." + HEMain.CONF_BOUNDS + "." + HEMain.CONF_BOUNDS_MIN;
+		final String confPathMax = confPathPrefix + "." + HEMain.CONF_BOUNDS + "." + HEMain.CONF_BOUNDS_MAX;
+
 		this.minVector = new Vector(conf.getDouble(confPathMin + ".x", Double.NEGATIVE_INFINITY), 
 									conf.getDouble(confPathMin + ".y", Double.NEGATIVE_INFINITY), 
 									conf.getDouble(confPathMin + ".z", Double.NEGATIVE_INFINITY));

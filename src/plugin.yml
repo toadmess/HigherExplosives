@@ -1,5 +1,5 @@
 name: HigherExplosives
 author: toadmess
-description: Per world control over size, yield and damage of explosions
+description: Per world control over size, yield and player/creature/terrain damage of explosions
 version: 1.5
 main: toadmess.explosives.HEMain

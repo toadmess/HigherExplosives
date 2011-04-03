@@ -6,10 +6,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import org.bukkit.util.config.Configuration;
 
 public class ExplodingConf {
+	private final Logger log; 
+	
 	/** 
 	 * A sorted list of pairs of floats representing the radius multipliers to apply when modifying the explosion radius. 
 	 * The pair's head is the chance (0.0 to 1.0) and tail is the multiplier (0.0 and above). 
@@ -28,32 +31,55 @@ public class ExplodingConf {
 	 */
 	private final List<List<Float>> creatureDamageMultipliers;
 
-	private final Bounds allowedBounds;
-	private final Boolean fire;
-
+	/** Used when conjuring up a new multiplier based on some random chance */
 	private final Random rng;
 
-	public ExplodingConf(final Configuration conf, final String confPathPrefix) {
-		this(conf, confPathPrefix, new Random());
+	private final Bounds allowedBounds;
+	
+	/** Whether the explosion causes fire */
+	private final Boolean fire;
+	
+	/** Whether the explosion causes terrain damage */
+	private final Boolean preventTerrainDamage;
+
+	/** The percentage (from 0.0 to 1.0) of damaged blocks in the explosion that drop items */
+	private final Float yield;
+	
+	public ExplodingConf(final Configuration conf, final String confPathPrefix, final Logger log) {
+		this(conf, confPathPrefix, log, new Random());
 	}
 	
-	public ExplodingConf(final Configuration conf, final String confPathPrefix, final Random rng) {
+	public ExplodingConf(final Configuration conf, final String confPathPrefix, final Logger log, final Random rng) {
+		this.log = log;
+		
 		this.rng = rng;
 		
-		this.allowedBounds = new Bounds(conf, confPathPrefix + "." + HEMain.CONF_BOUNDS);
+		this.allowedBounds = new Bounds(conf, confPathPrefix);
 
 		this.radiusMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_RADIUSMULT);
 		this.playerDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_PLAYER_DAMAGEMULT);
 		this.creatureDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT);
 
-		final Object fireProp = conf.getProperty(confPathPrefix + "." + HEMain.CONF_ENTITY_FIRE);
-		if(null != fireProp && fireProp instanceof Boolean) {
-			this.fire = (Boolean) fireProp;
-		} else {			
-			this.fire = null;
+		this.fire = (Boolean) conf.getProperty(confPathPrefix + "." + HEMain.CONF_ENTITY_FIRE);
+		this.yield = getOptionalFloat(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_YIELD);			
+		this.preventTerrainDamage = (Boolean) conf.getProperty(confPathPrefix + "." + HEMain.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE);
+		
+		if(null != conf.getProperty("everyExplosion") || 
+		   null != conf.getProperty(confPathPrefix + ".everyExplosion")) {
+			this.log.warning("HigherExplosives: The \"everyExplosion\" configuration is no longer used. Instead, specify the explosion \"yield\" on the individual entities.");
 		}
 	}
 
+	private Float getOptionalFloat(final Configuration conf, final String path) {
+		final Object o = conf.getProperty(path);
+		
+		if(o == null || !(o instanceof Number)) {
+			return null;
+		}
+		
+		return Double.valueOf(conf.getDouble(path, 0.0D)).floatValue();
+	}
+	
 	/**
 	 * Extracts a list of chance/multiplier pairs from some place in the configuration. 
 	 * It detects whether the configuration contains just a single multiplier, or if there are several chance/multipliers listed.
@@ -82,10 +108,10 @@ public class ExplodingConf {
 					if ((chanceProp instanceof Double) && (valueProp instanceof Double)) {
 						addMultiplier(multipliers, (float)Math.min(1.0D, Math.max(0.0D, ((Double)chanceProp).doubleValue())), (float)Math.max(0.0D, ((Double)valueProp).doubleValue()));
 					} else {
-						System.out.println("WARN: HigherExplosives: Config problem. Ignoring list item under " + pathToMultiplier + " as either the " + HEMain.CONF_MULTIPLIER_CHANCE + " of (" + chanceProp + ") or the " + HEMain.CONF_MULTIPLIER_VALUE + " of (" + valueProp + ") doesn't look like a number. Was expecting a double.");
+						this.log.warning("HigherExplosives: Config problem. Ignoring list item under " + pathToMultiplier + " as either the " + HEMain.CONF_MULTIPLIER_CHANCE + " of (" + chanceProp + ") or the " + HEMain.CONF_MULTIPLIER_VALUE + " of (" + valueProp + ") doesn't look like a number. Was expecting a double.");
 					}
 				} else {
-					System.out.println("WARN: HigherExplosives: Config problem. Ignoring strange list item under " + pathToMultiplier + ". Was expecting " + HEMain.CONF_MULTIPLIER_CHANCE + " and " + HEMain.CONF_MULTIPLIER_VALUE + " keys");
+					this.log.warning("HigherExplosives: Config problem. Ignoring strange list item under " + pathToMultiplier + ". Was expecting " + HEMain.CONF_MULTIPLIER_CHANCE + " and " + HEMain.CONF_MULTIPLIER_VALUE + " keys");
 				}
 			}
 
@@ -96,7 +122,7 @@ public class ExplodingConf {
 			}
 
 			if (Math.abs(cumulativeChance - 1.0F) > 0.0001D) {
-				System.out.println("WARN: HigherExplosives: Config problem. Total probability for " + pathToMultiplier + " doesn't quite " + "add up to 1.0. It's " + cumulativeChance);
+				this.log.warning("HigherExplosives: Config problem. Total probability for " + pathToMultiplier + " doesn't quite " + "add up to 1.0. It's " + cumulativeChance);
 			}
 
 		}
@@ -162,25 +188,28 @@ public class ExplodingConf {
 	}
 
 	public String toString() {
-		String str = "ExplodingConf(";
-
-		str = str + "radiusMultiplier={" + multipliersToString(this.radiusMultipliers) + "},";
-		str = str + "playerDamageMultiplier={" + multipliersToString(this.playerDamageMultipliers) + "},";
-		str = str + "creatureDamageMultiplier={" + multipliersToString(this.creatureDamageMultipliers) + "},";
-		str = str + "fire=" + this.fire + ",";
-		str = str + "activeBounds=" + this.allowedBounds + ")";
+		String str = "Conf(";
+		str = str + "\n  radiusMultiplier={\n" + multipliersToString(this.radiusMultipliers) + "  },";
+		str = str + "\n  playerDamageMultiplier={\n" + multipliersToString(this.playerDamageMultipliers) + "  },";
+		str = str + "\n  creatureDamageMultiplier={\n" + multipliersToString(this.creatureDamageMultipliers) + "  },";
+		str = str + "\n  fire=" + (hasFireConfig() ? getFire() : "no fire configured. will leave unaffected") + ",";
+		str = str + "\n  yield=" + (hasYieldConfig() ? getYield() : "no yield configured. will leave unaffected") + ",";
+		str = str + "\n  preventTerrainDamage=" + (hasPreventTerrainDamageConfig() ? getPreventTerrainDamage() : "not configured, terrain damage is as normal") + ",";
+		str = str + "\n  activeBounds=" + this.allowedBounds;
+		str = str + "\n)";
 
 		return str;
 	}
 
 	private String multipliersToString(final List<List<Float>> paramList) {
+		if(paramList == null) {
+			return "    no multiplier configured. will leave unaffected\n";
+		}
+
 		String str = "";
 		
-		if(paramList == null) return str;
-		
 		for (final List<?> localList : paramList) {
-			str = str + "(chance:" + localList.get(0);
-			str = str + ",value:" + localList.get(1) + ")";
+			str = str + "    (chance:" + localList.get(0) + ", value:" + localList.get(1) + ")\n";
 		}
 		return str;
 	}
@@ -190,7 +219,15 @@ public class ExplodingConf {
 	}
 
 	public boolean getFire() {
-		return this.fire == null ? false : this.fire;
+		return hasFireConfig() ? this.fire : false ;
+	}
+	
+	public float getYield() {
+		return hasYieldConfig() ? this.yield.floatValue() : 0.3F ;
+	}
+	
+	public boolean getPreventTerrainDamage() {
+		return hasPreventTerrainDamageConfig() ? this.preventTerrainDamage : false ;
 	}
 
 	public float getNextRadiusMultiplier() {
@@ -219,5 +256,18 @@ public class ExplodingConf {
 	
 	public boolean hasPlayerDamageConfig() {
 		return this.playerDamageMultipliers != null;
+	}
+	
+	public boolean hasYieldConfig() {
+		return this.yield != null;
+	}
+	
+	public boolean hasPreventTerrainDamageConfig() {
+		return this.preventTerrainDamage != null;
+	}
+	
+	public boolean isEmptyConfig() {
+		return !(hasFireConfig() || hasYieldConfig() || hasPreventTerrainDamageConfig() || 
+				 hasRadiusConfig() || hasCreatureDamageConfig() || hasPlayerDamageConfig());
 	}
 }

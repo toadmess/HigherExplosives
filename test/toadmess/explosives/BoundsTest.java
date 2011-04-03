@@ -1,5 +1,7 @@
 package toadmess.explosives;
 
+import static org.junit.Assert.fail;
+
 import org.bukkit.Location;
 import org.bukkit.util.config.Configuration;
 import org.junit.Assert;
@@ -35,20 +37,17 @@ public class BoundsTest {
 		Assert.assertTrue(b.isWithinBounds(locPositive));
 		Assert.assertTrue(b.isWithinBounds(locNegative));
 		Assert.assertTrue(b.isWithinBounds(locFarAway));
-	}
-
-	@Test
-	public void testConfPath_YieldBounds() {
-		testConfPath(HEMain.CONF_EVERY+"."+HEMain.CONF_EVERY_YIELD+"."+HEMain.CONF_EVERY_YIELDBOUNDS);
+		
+		checkToString_DoesNotThrowUp(b);
 	}
 	
 	@Test
 	public void testConfPath_DefaultBounds() {
-		testConfPath(HEMain.CONF_ENTITIES+".Creeper."+HEMain.CONF_BOUNDS);
+		testConfPath(HEMain.CONF_ENTITIES+".Creeper");
 	}
 	
 	private void testConfPath(final String path) {
-		conf.setProperty(path+"."+HEMain.CONF_BOUNDS_MAX+".x", 23D);
+		conf.setProperty(path+"."+HEMain.CONF_BOUNDS+"."+HEMain.CONF_BOUNDS_MAX+".x", 23D);
 		Bounds b = new Bounds(conf, path);
 		
 		Assert.assertTrue(23D == b.getMaxX());
@@ -57,11 +56,11 @@ public class BoundsTest {
 		Assert.assertNull(b.getMinY());
 		Assert.assertNull(b.getMaxZ());
 		Assert.assertNull(b.getMinZ());
-	
 		Assert.assertTrue(b.isWithinBounds(new Location(new MockBukkitWorld(""), 22D, 0, 0)));
 		Assert.assertFalse(b.isWithinBounds(new Location(null, 24D, 0, 0)));
+		checkToString_DoesNotThrowUp(b);
 		
-		conf.setProperty(path+"."+HEMain.CONF_BOUNDS_MAX+".y", 24D);
+		conf.setProperty(path+"."+HEMain.CONF_BOUNDS+"."+HEMain.CONF_BOUNDS_MAX+".y", 24D);
 		b = new Bounds(conf, path);
 
 		Assert.assertTrue(23D == b.getMaxX());
@@ -70,11 +69,11 @@ public class BoundsTest {
 		Assert.assertNull(b.getMinY());
 		Assert.assertNull(b.getMaxZ());
 		Assert.assertNull(b.getMinZ());
-
 		Assert.assertTrue(b.isWithinBounds(new Location(null, 0, 23D, 0)));
 		Assert.assertFalse(b.isWithinBounds(new Location(null, 0, 25D, 0)));
-
-		conf.setProperty(path+"."+HEMain.CONF_BOUNDS_MAX+".z", 25D);
+		checkToString_DoesNotThrowUp(b);
+		
+		conf.setProperty(path+"."+HEMain.CONF_BOUNDS+"."+HEMain.CONF_BOUNDS_MAX+".z", 25D);
 		b = new Bounds(conf, path);
 		
 		Assert.assertTrue(23D == b.getMaxX());
@@ -83,11 +82,11 @@ public class BoundsTest {
 		Assert.assertNull(b.getMinY());
 		Assert.assertTrue(25D == b.getMaxZ());
 		Assert.assertNull(b.getMinZ());
-
 		Assert.assertTrue(b.isWithinBounds(new Location(null, 0, 0, 24D)));
 		Assert.assertFalse(b.isWithinBounds(new Location(null, 0, 0, 26D)));
+		checkToString_DoesNotThrowUp(b);
 		
-		conf.setProperty(path+"."+HEMain.CONF_BOUNDS_MIN+".x", -26D);
+		conf.setProperty(path+"."+HEMain.CONF_BOUNDS+"."+HEMain.CONF_BOUNDS_MIN+".x", -26D);
 		b = new Bounds(conf, path);
 		
 		Assert.assertTrue(23D == b.getMaxX());
@@ -96,15 +95,15 @@ public class BoundsTest {
 		Assert.assertNull(b.getMinY());
 		Assert.assertTrue(25D == b.getMaxZ());
 		Assert.assertNull(b.getMinZ());
-
 		Assert.assertTrue(b.isWithinBounds(new Location(null, -25D, 23D, 24D)));
 		Assert.assertTrue(b.isWithinBounds(new Location(null, -25D, 23D, 24D)));
 		Assert.assertTrue(b.isWithinBounds(new Location(null, -25D, -200D, 24D)));
 		Assert.assertFalse(b.isWithinBounds(new Location(null, -27D, -200D, 24D)));
 		Assert.assertFalse(b.isWithinBounds(new Location(null, -27D, 0, 200D)));
 		Assert.assertFalse(b.isWithinBounds(new Location(null, -27D, 0, 0D)));
+		checkToString_DoesNotThrowUp(b);
 		
-		conf.setProperty(path+"."+HEMain.CONF_BOUNDS_MIN+".y", -27D);
+		conf.setProperty(path+"."+HEMain.CONF_BOUNDS+"."+HEMain.CONF_BOUNDS_MIN+".y", -27D);
 		b = new Bounds(conf, path);
 		
 		Assert.assertTrue(23D == b.getMaxX());
@@ -113,11 +112,11 @@ public class BoundsTest {
 		Assert.assertTrue(-27D == b.getMinY());
 		Assert.assertTrue(25D == b.getMaxZ());
 		Assert.assertNull(b.getMinZ());
-		
 		Assert.assertTrue(b.isWithinBounds(new Location(null, 0, -26D, 0)));
 		Assert.assertFalse(b.isWithinBounds(new Location(null, 0, -28D, 0)));
+		checkToString_DoesNotThrowUp(b);
 		
-		conf.setProperty(path+"."+HEMain.CONF_BOUNDS_MIN+".z", -28D);
+		conf.setProperty(path+"."+HEMain.CONF_BOUNDS+"."+HEMain.CONF_BOUNDS_MIN+".z", -28D);
 		b = new Bounds(conf, path);
 		
 		Assert.assertTrue(23D == b.getMaxX());
@@ -126,7 +125,6 @@ public class BoundsTest {
 		Assert.assertTrue(-27D == b.getMinY());
 		Assert.assertTrue(25D == b.getMaxZ());
 		Assert.assertTrue(-28D == b.getMinZ());
-		
 		Assert.assertTrue(b.isWithinBounds(new Location(null, 0, 0, 0)));
 		Assert.assertFalse(b.isWithinBounds(new Location(null, 0, 0, -100)));
 		Assert.assertFalse(b.isWithinBounds(new Location(null, 0, 0, 100)));
@@ -134,5 +132,20 @@ public class BoundsTest {
 		Assert.assertFalse(b.isWithinBounds(new Location(null, 0, 100, 0)));
 		Assert.assertFalse(b.isWithinBounds(new Location(null, -100, 0, 0)));
 		Assert.assertFalse(b.isWithinBounds(new Location(null, 100, 0, 0)));
+		checkToString_DoesNotThrowUp(b);
+	}
+	
+	public void checkToString_DoesNotThrowUp(final Bounds b) {
+		try {
+			b.toString();
+		} catch(final Throwable t) {
+			fail("toString threw " + t);
+		}
+	}
+	
+	@Test
+	public void checkBounds_NullLocation() {
+		final Bounds b = new Bounds(conf, "");
+		Assert.assertFalse(b.isWithinBounds(null));
 	}
 }

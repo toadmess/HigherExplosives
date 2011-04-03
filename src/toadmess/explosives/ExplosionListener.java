@@ -1,17 +1,24 @@
 package toadmess.explosives;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
+import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityListener;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.util.config.Configuration;
 
 /**
@@ -32,22 +39,32 @@ import org.bukkit.util.config.Configuration;
  * 
  * @author John Revill
  */
-public class ExplodingListener extends EntityListener {
+public class ExplosionListener extends EntityListener {
+	private final Logger log;
+	
 	private final Class<?> entityType;
 	
 	private final ExplodingConf defWorldConf;
 	
 	private final HashMap<String, ExplodingConf> otherWorldConfs;
 	
-	public ExplodingListener(final Configuration conf, final Class<? extends Entity> entityType) {
+	public ExplosionListener(final Configuration conf, final Logger log, final Class<? extends Entity> entityType) {
+		this.log = log;
+		
 		// Get the unqualified class name of the entity. This is used for looking it up in the configuration.
 		final String entityName = entityType.getName().substring(entityType.getName().lastIndexOf('.')+1);
 		
 		final String confEntityPath = HEMain.CONF_ENTITIES + "." + entityName;
 		
-		this.defWorldConf = new ExplodingConf(conf, confEntityPath);
-		if(HEMain.IS_DEBUG_CONF) {
-			System.out.println("Default config for " + entityName + " is " + this.defWorldConf);
+		final boolean isDebugConf = conf.getBoolean(HEMain.CONF_DEBUGCONFIG, false);
+		
+		this.defWorldConf = new ExplodingConf(conf, confEntityPath, this.log);
+		if(isDebugConf) {
+			if(defWorldConf.isEmptyConfig()) {
+				this.log.info("HigherExplosives: There is no default config for " + entityName + ". Those explosions will be left unaffected unless they have a world specific configuration.");				
+			} else {				
+				this.log.info("HigherExplosives: Default config for " + entityName + " is:\n" + this.defWorldConf);
+			}
 		}
 		
 		this.otherWorldConfs = new HashMap<String, ExplodingConf>();
@@ -57,11 +74,13 @@ public class ExplodingListener extends EntityListener {
 				final String worldEntityPath = HEMain.CONF_WORLDS + "." + worldName + "." + confEntityPath;
 			
 				if(null != conf.getProperty(worldEntityPath)) {
-					final ExplodingConf worldConf = new ExplodingConf(conf, worldEntityPath);
+					final ExplodingConf worldConf = new ExplodingConf(conf, worldEntityPath, this.log);
 					
 					this.otherWorldConfs.put(worldName, worldConf);
-					if(HEMain.IS_DEBUG_CONF) {
-						System.out.println(worldName + " config for " + entityName + " is " + worldConf);
+					if(isDebugConf) {
+						if(!worldConf.isEmptyConfig()) {
+							this.log.info("HigherExplosives: World \"" + worldName + "\" config for " + entityName + " is " + worldConf);
+						}
 					}
 				}
 			}
@@ -85,8 +104,13 @@ public class ExplodingListener extends EntityListener {
 			return;
 		}
 		
-		event.setRadius(worldConf.getNextRadiusMultiplier() * event.getRadius());
-		event.setFire(worldConf.getFire());
+		if(worldConf.hasRadiusConfig()) {
+			event.setRadius(worldConf.getNextRadiusMultiplier() * event.getRadius());
+		}
+		
+		if(worldConf.hasFireConfig()) {
+			event.setFire(worldConf.getFire());
+		}
 	}
 
 	@Override
@@ -117,14 +141,41 @@ public class ExplodingListener extends EntityListener {
 			return;
 		}
 		
-		final float damageMultiplier;
 		if(damagee instanceof CraftPlayer) {
-			damageMultiplier = worldConf.getNextPlayerDamageMultiplier();
+			if(worldConf.hasPlayerDamageConfig()) {
+				event.setDamage((int) (event.getDamage() * worldConf.getNextPlayerDamageMultiplier()));
+			}
 		} else {
-			damageMultiplier = worldConf.getNextCreatureDamageMultiplier();
+			if(worldConf.hasCreatureDamageConfig()) {
+				event.setDamage((int) (event.getDamage() * worldConf.getNextCreatureDamageMultiplier()));
+			}
+		}
+	}
+
+	@Override
+	public void onEntityExplode(final EntityExplodeEvent event) {
+		final Location epicentre = event.getLocation();
+		if(null == epicentre) {
+			return;
 		}
 		
-		event.setDamage((int) (event.getDamage() * damageMultiplier));
+		if(!isCorrectEntity(event.getEntity())) {
+			return;
+		}
+
+		final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
+		
+		if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
+			return;
+		}
+		
+		if(worldConf.hasYieldConfig()) {
+			event.setYield(worldConf.getYield());
+		}
+		
+		if(worldConf.hasPreventTerrainDamageConfig() && worldConf.getPreventTerrainDamage()) {			
+			event.setCancelled(true);
+		}
 	}
 	
 	private boolean isCorrectEntity(final Entity e) {
@@ -138,5 +189,31 @@ public class ExplodingListener extends EntityListener {
 		}
 		
 		return this.defWorldConf;
+	}
+
+	public void registerNeededEvents(final PluginManager pm, final Plugin heMain) {
+		final List<ExplodingConf> allConfs = new ArrayList<ExplodingConf>();
+		allConfs.addAll(this.otherWorldConfs.values());
+		allConfs.add(this.defWorldConf);
+		
+		final HashSet<Event.Type> neededEvents = new HashSet<Event.Type>();
+		
+		for(final ExplodingConf c : allConfs) {
+			if(c.hasFireConfig() || c.hasRadiusConfig()) {
+				neededEvents.add(Event.Type.EXPLOSION_PRIME);
+			}
+			
+			if(c.hasPreventTerrainDamageConfig() || c.hasYieldConfig()) {
+				neededEvents.add(Event.Type.ENTITY_EXPLODE);
+			}
+			
+			if(c.hasPlayerDamageConfig() || c.hasCreatureDamageConfig()) {
+				neededEvents.add(Event.Type.ENTITY_DAMAGE);
+			}
+		}
+		
+		for(final Event.Type evType : neededEvents) {
+			pm.registerEvent(evType, this, Event.Priority.Normal, heMain);
+		}
 	}
 }

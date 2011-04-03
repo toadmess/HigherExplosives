@@ -1,7 +1,6 @@
 package toadmess.explosives;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +29,7 @@ public class ExplodingConfTest {
 	}
 	
 	private void checkEmptyConfigDefaults(final Configuration conf, final String confPath) {
-		final ExplodingConf ec = new ExplodingConf(conf, confPath);
+		final ExplodingConf ec = new ExplodingConf(conf, confPath, new NullLogger());
 		
 		// Check some defualt bounds are created
 		checkBoundsAreDefault(ec);
@@ -49,6 +48,12 @@ public class ExplodingConfTest {
 		// Check the next creature damage multiplier defaults to 1.0 even though none was specified in the config
 		checkCreatureDmgMultiplier(ec, 1.0F, false);
 		checkCreatureDmgMultiplier(ec, 1.0F, false);
+		
+		checkPreventTerrainDamage(ec, false, false);
+		
+		checkYield(ec, 0.3F, false);
+		
+		assertTrue(ec.isEmptyConfig());
 	}
 	
 	@Test
@@ -59,16 +64,61 @@ public class ExplodingConfTest {
 	
 	private void testFire(final boolean confHasFireSetToTrue) {
 		conf.setProperty("someentity." + HEMain.CONF_ENTITY_FIRE, confHasFireSetToTrue);
-		checkFire(new ExplodingConf(conf, "someentity"), confHasFireSetToTrue, true);
+		checkFire(new ExplodingConf(conf, "someentity", new NullLogger()), confHasFireSetToTrue, true);
+	}
+	
+	@Test
+	public void testYield() {
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_YIELD, 0.42D);
+		checkYield(new ExplodingConf(conf, "someentity", new NullLogger()), 0.42F, true);
+	}
+	
+	@Test
+	public void testYield_Integer() {
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_YIELD, 1);
+		checkYield(new ExplodingConf(conf, "someentity", new NullLogger()), 1.0F, true);
+	}
+	
+	@Test
+	public void testYield_Float() {
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_YIELD, 0.42F);
+		checkYield(new ExplodingConf(conf, "someentity", new NullLogger()), 0.42F, true);
+	}
+	
+	@Test
+	public void testPreventTerrainDamage_False() { testPreventTerrainDamage(false); }
+	
+	@Test
+	public void testPreventTerrainDamage_True() { testPreventTerrainDamage(true); }
+	
+	private void testPreventTerrainDamage(final boolean confHasPreventTerrainDamageSetToTrue) {
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE, confHasPreventTerrainDamageSetToTrue);
+		checkPreventTerrainDamage(new ExplodingConf(conf, "someentity", new NullLogger()), confHasPreventTerrainDamageSetToTrue, true);
 	}
 	
 	@Test
 	public void testRadiusMultiplierSingle() {
 		conf.setProperty("someentity." + HEMain.CONF_ENTITY_RADIUSMULT, 0.23F);
-		final ExplodingConf ec = new ExplodingConf(conf, "someentity");
+		final ExplodingConf ec = new ExplodingConf(conf, "someentity", new NullLogger());
 		checkRadiusMultiplier(ec, 0.23F, true);
 		checkRadiusMultiplier(ec, 0.23F, true);
 		checkRadiusMultiplier(ec, 0.23F, true);
+	}
+	
+	@Test
+	public void testRadiusMultiplierSingle_Int() {
+		// Test int config
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_RADIUSMULT, 23);
+		final ExplodingConf ec = new ExplodingConf(conf, "someentity", new NullLogger());
+		checkRadiusMultiplier(ec, 23.0F, true);
+	}
+	
+	@Test
+	public void testRadiusMultiplierSingle_Double() {
+		// Test Double config
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_RADIUSMULT, 42D);
+		final ExplodingConf ec = new ExplodingConf(conf, "someentity", new NullLogger());
+		checkRadiusMultiplier(ec, 42.0F, true);
 	}
 	
 	@Test
@@ -116,9 +166,9 @@ public class ExplodingConfTest {
 		conf.setProperty(confPrefix + "." + multiplerType.getConfKey(), listOMultipliers);
 		
 		final PredicatableNumGen rng = new PredicatableNumGen(0.01D, 1.0D);
-		final ExplodingConf ec = new ExplodingConf(conf, confPrefix, rng);
+		final ExplodingConf ec = new ExplodingConf(conf, confPrefix, new NullLogger(), rng);
 		
-		for(int i = 0; i < 5; i++) { // Make our fake RNG Cycle round a few times
+		for(int i = 0; i < 500; i++) { // Make our fake RNG Cycle round a few times
 			final float expectedMultiplier;
 			if(rng.peekNextDouble() <= 0.7D) {
 				expectedMultiplier = 1.0F;
@@ -140,12 +190,14 @@ public class ExplodingConfTest {
 				break;
 			}
 		}
+		
+		assertToStringThrowsNothing(ec);
 	}
 	
 	@Test
 	public void testPlayerDmgMultiplierSingle() {
 		conf.setProperty("someentity." + HEMain.CONF_ENTITY_PLAYER_DAMAGEMULT, 0.23F);
-		final ExplodingConf ec = new ExplodingConf(conf, "someentity");
+		final ExplodingConf ec = new ExplodingConf(conf, "someentity", new NullLogger());
 		checkPlayerDmgMultiplier(ec, 0.23F, true);
 		checkPlayerDmgMultiplier(ec, 0.23F, true);
 		checkPlayerDmgMultiplier(ec, 0.23F, true);
@@ -159,7 +211,7 @@ public class ExplodingConfTest {
 	@Test
 	public void testCreatureDmgMultiplierSingle() {
 		conf.setProperty("someentity." + HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT, 0.23F);
-		final ExplodingConf ec = new ExplodingConf(conf, "someentity");
+		final ExplodingConf ec = new ExplodingConf(conf, "someentity", new NullLogger());
 		checkCreatureDmgMultiplier(ec, 0.23F, true);
 		checkCreatureDmgMultiplier(ec, 0.23F, true);
 		checkCreatureDmgMultiplier(ec, 0.23F, true);
@@ -173,21 +225,37 @@ public class ExplodingConfTest {
 	private void checkRadiusMultiplier(final ExplodingConf ec, final float expectMultiplier, final boolean expectRadiusConfig) {
 		assertEquals((Float) expectMultiplier, (Float) ec.getNextRadiusMultiplier());
 		assertEquals(expectRadiusConfig, ec.hasRadiusConfig());
+		if(expectRadiusConfig) assertFalse(ec.isEmptyConfig());
 	}
 	
 	private void checkPlayerDmgMultiplier(final ExplodingConf ec, final float expectMultiplier, final boolean expectPlayerDmgConfig) {
 		assertEquals((Float) expectMultiplier, (Float) ec.getNextPlayerDamageMultiplier());
 		assertEquals(expectPlayerDmgConfig, ec.hasPlayerDamageConfig());
+		if(expectPlayerDmgConfig) assertFalse(ec.isEmptyConfig());
 	}
 	
 	private void checkCreatureDmgMultiplier(final ExplodingConf ec, final float expectMultiplier, final boolean expectCreatureDmgConfig) {
 		assertEquals((Float) expectMultiplier, (Float) ec.getNextCreatureDamageMultiplier());
 		assertEquals(expectCreatureDmgConfig, ec.hasCreatureDamageConfig());
+		if(expectCreatureDmgConfig) assertFalse(ec.isEmptyConfig());
 	}
 
 	private void checkFire(final ExplodingConf ec, final boolean expectFire, final boolean expectFireConfig) {
 		assertEquals(expectFire, ec.getFire());
 		assertEquals(expectFireConfig, ec.hasFireConfig());
+		if(expectFireConfig) assertFalse(ec.isEmptyConfig());
+	}
+	
+	private void checkPreventTerrainDamage(final ExplodingConf ec, final boolean expectTerrainDamage, final boolean expectTerrainDamageConfig) {
+		assertEquals(expectTerrainDamage, ec.getPreventTerrainDamage());
+		assertEquals(expectTerrainDamageConfig, ec.hasPreventTerrainDamageConfig());
+		if(expectTerrainDamageConfig) assertFalse(ec.isEmptyConfig());
+	}
+	
+	private void checkYield(final ExplodingConf ec, final float expectYield, final boolean expectYieldConfig) {
+		assertEquals((Float) expectYield, (Float) ec.getYield());
+		assertEquals(expectYieldConfig, ec.hasYieldConfig());
+		if(expectYieldConfig) assertFalse(ec.isEmptyConfig());
 	}
 
 	private void checkBoundsAreDefault(final ExplodingConf ec) {
@@ -197,5 +265,36 @@ public class ExplodingConfTest {
 		assertNull(ec.getActiveBounds().getMaxX());
 		assertNull(ec.getActiveBounds().getMaxY());
 		assertNull(ec.getActiveBounds().getMaxZ());
+	}
+	
+	@Test
+	public void testToString() {
+		assertToStringThrowsNothing(new ExplodingConf(conf, "someentity", new NullLogger()));
+		
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_PLAYER_DAMAGEMULT, 0.23D);
+		assertToStringThrowsNothing(new ExplodingConf(conf, "someentity", new NullLogger()));
+		
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT, 0.23D);
+		assertToStringThrowsNothing(new ExplodingConf(conf, "someentity", new NullLogger()));
+		
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_RADIUSMULT, 0.23D);
+		assertToStringThrowsNothing(new ExplodingConf(conf, "someentity", new NullLogger()));
+		
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_FIRE, true);
+		assertToStringThrowsNothing(new ExplodingConf(conf, "someentity", new NullLogger()));
+		
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_YIELD, 0.23D);
+		assertToStringThrowsNothing(new ExplodingConf(conf, "someentity", new NullLogger()));
+		
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE, true);
+		assertToStringThrowsNothing(new ExplodingConf(conf, "someentity", new NullLogger()));
+	}
+	
+	private void assertToStringThrowsNothing(final ExplodingConf ec) {
+		try {
+			ec.toString();
+		} catch (final Throwable t) {
+			fail("toString() threw " + t);
+		}
 	}
 }

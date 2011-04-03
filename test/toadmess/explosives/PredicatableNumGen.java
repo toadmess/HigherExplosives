@@ -2,6 +2,7 @@ package toadmess.explosives;
 
 import java.util.Random;
 
+@SuppressWarnings("serial")
 public class PredicatableNumGen extends Random {
 	private double counter = 0.0D;
 	

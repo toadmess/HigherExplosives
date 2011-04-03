@@ -1,54 +1,114 @@
 HigherExplosives
 ================
 
-A very simple plugin to control the destructive potential of explosions in Minecraft, for use with the Craftbukkit and Bukkit modding system.
+A very simple plugin to control the destructive potential of explosions in Minecraft, for use with the Craftbukkit server and Bukkit modding system.
 In its default vanilla configuration it just doubles the size of TNT explosions.
 
-TNT, creepers, and fireballs can all have their size and yield (percentage of destoyed items dropped) tweaked. The size can optionally be chosen from a list of different sizes, according to specified probabilities.
-These tweaks can be selectively applied to several different worlds.
+TNT, creepers, and fireballs can all have their size, yield (percentage of destoyed items dropped) and damage (to players and/or creatures) tweaked. Terrain damage from explosions can be toggled on or off.
+
+The explosion size, player damage, and creature damage can all be configured to be chosen randomly from a list of different values according to specified probabilities.
+
+All tweaks can be selectively applied to several different worlds.
 
 Versions
 --------
 
-HigherExplosives v1.4 was tested with CraftBukkit server recommended versions 440 and 493 (http://ci.bukkit.org/job/dev-CraftBukkit/493/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar) and a Minecraft 1.3_01 client.
+HigherExplosives v1.5 was tested with recommended build 617 (http://ci.bukkit.org/job/dev-CraftBukkit/617/artifact/target/craftbukkit-0.0.1-SNAPSHOT.jar) and a Minecraft 1.4 client.
+
+HigherExplosives v1.5 will not work on CraftBukkit versions earlier than 602.
+
+HigherExplosives v1.4 was tested with CraftBukkit server recommended versions up to 556 and a Minecraft 1.3_01 client.
+
+Features
+--------
+
+- Control the size of explosions for TNT, creepers and ghast fireballs.
+- Control the percentage of dropped items (called yield) from the destroyed blocks, from no items dropped through to one item dropped per destroyed block.
+- Optional prevention of terrain damage
+- Multiple world configurations
+- Allows configuration of different blast radii, with different probabilities for each being chosen
+- Allows configuration of different player damage (optionally with different probabilities for each being chosen)
+- Allows configuration of different creature damage (optionally with different probabilities for each being chosen)
+- Some simple control over which areas the modified explosions will happen in
+
+Known Issues
+------------
+
+- If you set the yield too high, the server will lag a lot whilst trying to rotate all of the items left in the crater.
+- If the radiusMultiplier is much less than 1, I think the client is rendering the explosions as normal, but then corrects itself a moment afterwards when it hears about what really happened from the server. This has a kind of double-take effect.
+- If the radiusMultiplier is set too high, the shape of the terrain damage takes on a kind of streaking or criss-crossing effect. I think this is to do with the way minecraft creates the explosions ().
 
 Installation
 ------------
 
-Installation is a simple matter of placing the HigherExplosives.jar file into your CRAFTBUKKIT/plugins directory. No configuration is necessary to give it a test, but a default configuration will automatically be created as CRAFTBUKKIT/plugins/HigherExplosives/config.yml
-
-Configuration
--------------
+Installation is a simple matter of placing the HigherExplosives.jar file into your CRAFTBUKKIT/plugins directory. No configuration is necessary to give it a test, but a default configuration will automatically be created as CRAFTBUKKIT/plugins/HigherExplosives/config.yml.
 
 This default configuration is:
 
-everyExplosion:
-    yield: 0.3
 entities:
-    Creeper:
-        radiusMultiplier: 1.0
-        fire: false
     TNTPrimed:
         radiusMultiplier: 2.0
-        fire: false
-    Fireball:
-        radiusMultiplier: 1.0
-        fire: false
-version: '1.4'
+        yield: 0.15
+version: '1.5'
 
 
-- The everyExplosion.yield option dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value applies to explosions coming from any entity. The Minecraft default is 0.3 (30%).
+Example configuration
+---------------------
 
-- There are three different entities that create explosions (tell me if this is wrong): TNTPrimed, a Fireball (Ghasts), and a Creeper. Each of these are individually configured.
+An example configration might be:
 
-- In its simples form the radiusMultiplier is just a number that will be used to multiply the radius of the blast. 0.5 gives half size explosions, whilst 2.0 blasts will be twice as big as normal. After igniting TNT by hand, you can run away in time when it's set to a multiplier of 2, but with a multiplier of 3 there's not enough time to run away! The readiusMultiplier can also describe a number of different multipliers with different probabilities of being chosen. See the "Random blast radii" section of the README file for more details.
+entities:
+    TNTPrimed:
+        yield: 0.15
+        radiusMultiplier: 2.0
+    Creeper:
+        preventTerrainDamage: true
+        activeBounds:
+            max:
+                x: 500
+                z: 500
+            min:
+                x: -500
+                z: -500
+worlds:
+    nether:
+        entities:
+            TNTPrimed:
+                playerDamageMultiplier: 2.0
+            Fireball:
+                fire: false
+                creatureDamageMultiplier: 2.0
+version: '1.5'
+debugConfig: true
 
-- The fire property is included for completeness. I didn't see any difference when I tested it myself, but it probably flags whether the explosion causes fire or not.
+In this example config, the size of TNT explosions are doubled and the number of items they drop is set at 15%. This would by applied by default in all worlds except the world named "nether". In the world named "nether", TNT explosions will have a normal blast radius and yield, but they will be twice as damaging to players when exploding (creatures take damage as normal).
 
-- The version property is mandatory but it just lets the plugin show a warning if the configuration version is different to the plugin version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
+By default, creepers will not damage terrain in a 1000x1000 square area around 0,0. They will still damage creatures and players as normal. Outside of the safety area the terrain will be damaged as normal by Creepers. This applies to all worlds.
 
+Ghast fireballs in the "nether" world will not cause fire but will be twice as damaging to other creatures. They'll damage players as normal fireballs. Fireball explosions in any other world will be left unmodified.
 
-To help check and/or diagnose what the plugin thinks the configuration is, use the "debugConfig: true" property. It defaults to false if not specified.
+To check if the plugin is reading the configuration correctly, you can add a "debugConfig: true" property. It defaults to false if it's not in the config file.
+
+Main Configuration Properties
+-----------------------------
+
+- There are three different entities that create explosions: "TNTPrimed", a "Fireball" (Ghasts), and a "Creeper". Each of these can be individually configured.
+
+- "yield": dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value applies to explosions coming from any entity. The Minecraft default is 0.3 (30%).
+
+- "radiusMultiplier": in its simplest form it is just a number that will be used to multiply the radius of the blast. 0.5 gives half size explosions, whilst 2.0 blasts will be twice as big as normal. After igniting TNT by hand, you can run away in time when it's set to a multiplier of 2, but with a multiplier of 3 there's not enough time to run away! The radiusMultiplier can also describe a number of different multipliers with different probabilities of being chosen. See the "Randomly chosen values" section of the README file for more details.
+
+- "playerDamageMultiplier": like the "radiusMultiplier" property, the value of this is a multiplier applied to the damage dealt to players caught in the explosion radius. A value of 0.0 will nullify all damage to players, whilst a value of 2.0 will double the damage. The playerDamageMultiplier can also describe a number of different multipliers with different probabilities of being chosen. See the "Randomly chosen values" section of the README file for more details.
+
+- "creatureDamageMultiplier": like the "playerDamageMultiplier" property, the value of this is a multiplier applied to the damage dealt to creatures caught in the explosion radius. A value of 0.0 will nullify all damage to creatures, whilst a value of 2.0 will double the damage. The creatureDamageMultiplier can also describe a number of different multipliers with different probabilities of being chosen. See the "Randomly chosen values" section of the README file for more details.
+
+- "version": a mandatory property, but it just lets the plugin show a warning if the configuration's version is different to the plugin's version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
+
+- "fire": this property is included for completeness. I didn't see any difference when I tested it myself, but it probably flags whether the explosion causes fire or not.
+
+- "preventTerrainDamage": if true, the explosions cause no damage to terrain. Defaults to false if it's missing.
+
+- "debugConfig": helps check and/or diagnose what the plugin thinks the configuration is. Use "debugConfig: true" to turn it on. It defaults to false if not specified.
 
 
 Multi world configuration
@@ -58,17 +118,19 @@ The configuration above is the default for all worlds.
 
 It's possible to make specific worlds behave differently. e.g. a configuration like..
 
+entities:
+    TNTPrimed:
+        radiusMultiplier: 2.0
+        preventTerrainDamage: true
+    Creeper:
+        radiusMultiplier: 0.0
 worlds:
     netherworld:
-        everyExplosion:
-            yield: 0.0
         entities:
             TNTPrimed:
                 radiusMultiplier: 0.25
 
-..would render TNT fairly impotent in the world called "netherworld".
-If the other entities are not given a configuration for this world, then they will take on the default configuration for all worlds. Likewise for the activebounds property.
-The same is true for explosion yields (and yield bounds) if the "everyExplosion" property is not given for the specific world.
+..would render TNT fairly impotent in the world called "netherworld", but for all other worlds, TNT both explodes twice as big and doesn't damage terrain. If no other entities are given a configuration in the "netherworld", then they will take on the default configuration for all worlds (so in this example, a Creeper in the "netherworld" will not make any explosion). However, note that the TNTPrimed configration in the "netherworld" does not inherit any properties from the default TNTPrimed configuration, so in this example TNT explosions in the "netherworld" will not prevent terrain damage.
 
 Just to be sure, add the "debugConfig: true" property to see what the plugin will be using.
 
@@ -91,8 +153,8 @@ worlds:
 debugConfig: true
 
 
-Random blast radii
-------------------
+Randomly chosen values
+----------------------
 
 It's possible to make TNT, creepers or fireballs explode with a random blast radius. This is configured by the radiusMultipler in the following way:
 
@@ -108,6 +170,21 @@ entities:
 That would make creepers explode normally 80% of the time, explode a lot more fiercly 15% of the time, and fizzle out 5% of the time. There can be any number of these "chance"/"value" pairs in the list, but the chances should all add up to 1.0 (100%).
 
 This list form for the radiusMultiplier also works for entities in multi-world configurations.
+
+In much the same way, player damage and creature damage can be randomly selected from a predefined list of chances and values. e.g.:
+
+entities:
+    Creeper:
+        creatureDamageMultiplier:
+            - {chance: 0.15, value: 2.0}
+            - {chance: 0.80, value: 1.0}
+            - {chance: 0.05, value: 0.0}
+        playerDamageMultiplier:
+            - {chance: 0.15, value: 2.0}
+            - {chance: 0.80, value: 1.0}
+            - {chance: 0.05, value: 0.0}
+
+Note that the randomly chosen creature and player damages are independent of each other. i.e. they don't use the same random number. It's possible in the example above for an explosion to damage creatures with a 2.0 multiplier whilst the same explosion damages players with a 0.0 multipler.
 
 Optional bounds configuration
 -----------------------------
@@ -135,24 +212,20 @@ More restrictive bounding boxes can be specified. For example, the following wil
                 y: -10
                 z: -10
 
-Any of the bounds may be left off to relax the restrictions.
+Any part of the bounds may be left off to relax the restrictions.
 
 If an entity has no activeBounds property then the explosion modifications will always be applied no matter where it happens.
 
-
-Unfortunately in the current version, the yield modifications of explosions is applied to every single explosion regardless of whether it's within its activeBounds or not.
-Some coarse grained control can be had over this by applying some general bounds in which explosions (of any and all types) will have their yield modified.
-For example, the following configuration fragment will make all explosions below an altitude of 10 yield no objects (perhaps useful to avoid nuclear sized underground explosions from hurting the server with too many items?). Any explosion above this altitude will not have its yield modified:
-
-everyExplosion:
-    yield: 0.0
-    yieldChangeActiveBounds:
-        max:
-            y: 10
-
-
 Changelog:
----------
+----------
+
+Version 1.5
+- Support for completely preventing terrain damage via the "preventTerrainDamage" configuration key.
+- Support for player damage control via "playerDamageMultiplier" configuration (uses same configuration style as the radiusMultiplier).
+- Support for creature damage control via "creatureDamageMultiplier" configuration (uses same configuration style as the radiusMultiplier).
+- Made the output from debugConfig:true more readable.
+- Number of event listeners registered is now more efficient. They're only registered if something in the configuration requires them.
+- The "everyExplosion" and "yieldActiveBounds" properties are no longer used. Instead,  the "yield" property can now be set on the entities themselves.
 
 Version 1.4
 - Support for setting probabilities for different blast radii
