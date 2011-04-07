@@ -96,11 +96,15 @@ public class ExplosionListener extends EntityListener {
 		if(!isCorrectEntity(primed)) {
 			return;
 		}
-
+		
 		final Location epicentre = primed.getLocation();
 		final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
 		
 		if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
+			return;
+		}
+
+		if(event.isCancelled()) {
 			return;
 		}
 		
@@ -125,6 +129,7 @@ public class ExplosionListener extends EntityListener {
 			return;
 		}
 		
+		
 		if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
 			return;
 		}
@@ -138,6 +143,10 @@ public class ExplosionListener extends EntityListener {
 		final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
 		
 		if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
+			return;
+		}
+		
+		if(event.isCancelled()) {
 			return;
 		}
 		
@@ -162,10 +171,14 @@ public class ExplosionListener extends EntityListener {
 		if(!isCorrectEntity(event.getEntity())) {
 			return;
 		}
-
+		
 		final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
 		
 		if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
+			return;
+		}
+		
+		if(event.isCancelled()) {
 			return;
 		}
 		
