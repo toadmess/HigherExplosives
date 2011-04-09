@@ -30,41 +30,11 @@ public class MockEntity implements Entity {
 	public MockEntity(final net.minecraft.server.Entity minecraftEntity) {
 		this.minecraftEntity = minecraftEntity;
 	}
-	
-	@Override
-	public int getEntityId() { return 0; }
-
-	@Override
-	public int getFireTicks() { return 0; }
 
 	public void setLocation(final Location toThisLoc) { this.loc = toThisLoc; }
 	
-	@Override
-	public Location getLocation() { return this.loc; }
-
-	@Override
-	public int getMaxFireTicks() { return 0; }
-
-	@Override
-	public Server getServer() { return null; }
-
 	public void setWorld(final World toThisWorld) { this.world = toThisWorld; }
-	
-	@Override
-	public World getWorld() { return this.world; }
-
-	@Override
-	public void remove() {}
-
-	@Override
-	public void setFireTicks(int arg0) {}
-
-	@Override
-	public void teleportTo(Location arg0) {}
-
-	@Override
-	public void teleportTo(Entity arg0) {}
-	
+		
 	public static class MockCreeperEntity extends MockEntity implements Creeper {
 		public MockCreeperEntity(net.minecraft.server.Entity minecraftEntity) {
 			super(minecraftEntity);
@@ -312,4 +282,58 @@ public class MockEntity implements Entity {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	@Override
+	public float getFallDistance() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public List<Entity> getNearbyEntities(double arg0, double arg1, double arg2) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isDead() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setFallDistance(float arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public int getEntityId() { return 0; }
+
+	@Override
+	public int getFireTicks() { return 0; }
+	
+	@Override
+	public Location getLocation() { return this.loc; }
+
+	@Override
+	public int getMaxFireTicks() { return 0; }
+
+	@Override
+	public Server getServer() { return null; }
+	
+	@Override
+	public World getWorld() { return this.world; }
+
+	@Override
+	public void remove() {}
+
+	@Override
+	public void setFireTicks(int arg0) {}
+
+	@Override
+	public void teleportTo(Location arg0) {}
+
+	@Override
+	public void teleportTo(Entity arg0) {}
 }

@@ -16,6 +16,8 @@ public class ExplodingConfTest {
 	@Before
 	public void setup() {
 		conf = new Configuration(null);
+		
+		ExplodingConf.hasConflictWithMiningTNT = false;
 	}
 	
 	@Test
@@ -83,6 +85,17 @@ public class ExplodingConfTest {
 	public void testYield_Float() {
 		conf.setProperty("someentity." + HEMain.CONF_ENTITY_YIELD, 0.42F);
 		checkYield(new ExplodingConf(conf, "someentity", new NullLogger()), 0.42F, true);
+	}
+	
+	@Test
+	public void testYield_WithMiningTNTConflict() {
+		// Check that the default yield is 1.0 if the MiningTNT plugin was detected.
+		ExplodingConf.hasConflictWithMiningTNT = true;
+		checkYield(new ExplodingConf(conf, "someentity", new NullLogger()), 1.0F, true);
+		
+		// But check that the yield is as per the configuration if there is a configuration set. 
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_YIELD, 0.16F);
+		checkYield(new ExplodingConf(conf, "someentity", new NullLogger()), 0.16F, true);
 	}
 	
 	@Test

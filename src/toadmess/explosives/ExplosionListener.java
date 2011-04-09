@@ -48,6 +48,11 @@ public class ExplosionListener extends EntityListener {
 	
 	private final HashMap<String, ExplodingConf> otherWorldConfs;
 	
+	// Keep track of the listeners that we have registered so we know 
+	// what we have after the plugin has been enabled. 
+	// We may need to register more listeners later on (e.g. MiningTNT workaround or commands etc.).  
+	private final HashSet<Event.Type> registeredListeners = new HashSet<Event.Type>();
+	
 	public ExplosionListener(final Configuration conf, final Logger log, final Class<? extends Entity> entityType) {
 		this.log = log;
 		
@@ -204,6 +209,11 @@ public class ExplosionListener extends EntityListener {
 		return this.defWorldConf;
 	}
 
+	/**
+	 * Registers event listeners if they're needed by the config.
+	 * This is safely re-runnable without registering a listener more than once (in 
+	 * cases where the config somehow changes, e.g. commands).
+	 */
 	public void registerNeededEvents(final PluginManager pm, final Plugin heMain) {
 		final List<ExplodingConf> allConfs = new ArrayList<ExplodingConf>();
 		allConfs.addAll(this.otherWorldConfs.values());
@@ -226,7 +236,10 @@ public class ExplosionListener extends EntityListener {
 		}
 		
 		for(final Event.Type evType : neededEvents) {
-			pm.registerEvent(evType, this, Event.Priority.Normal, heMain);
+			if(!this.registeredListeners.contains(evType)) { // Only register if we haven't done so before				
+				pm.registerEvent(evType, this, Event.Priority.Normal, heMain);
+				this.registeredListeners.add(evType);
+			}
 		}
 	}
 }

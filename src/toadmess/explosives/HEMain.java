@@ -1,10 +1,13 @@
 package toadmess.explosives;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.TNTPrimed;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -37,23 +40,47 @@ public class HEMain extends JavaPlugin {
 	
 	protected Logger log;
 	
+	private final List<ExplosionListener> entityListeners = new ArrayList<ExplosionListener>();
+	
 	@Override
 	public void onEnable() {
 		this.log = getServer().getLogger();
 		
 		final PluginManager pm = getServer().getPluginManager();
+		
+		configureWorkarounds(pm);
+		
 		IS_DEBUG_CONF = this.getConfiguration().getBoolean(HEMain.CONF_DEBUGCONFIG, false);
 		
-		new ExplosionListener(this.getConfiguration(), this.log, TNTPrimed.class).registerNeededEvents(pm, this);
-		new ExplosionListener(this.getConfiguration(), this.log, Creeper.class).registerNeededEvents(pm, this);
-		new ExplosionListener(this.getConfiguration(), this.log, Fireball.class).registerNeededEvents(pm, this);
+		this.entityListeners.add(new ExplosionListener(this.getConfiguration(), this.log, TNTPrimed.class));
+		this.entityListeners.add(new ExplosionListener(this.getConfiguration(), this.log, Creeper.class));
+		this.entityListeners.add(new ExplosionListener(this.getConfiguration(), this.log, Fireball.class));
+		
+		registerNeededEvents(pm);
 		
 		this.log.info(pluginDescription() + " primed and ready");
 	}
 
+	private void registerNeededEvents(final PluginManager pm) {
+		for(final ExplosionListener listener : this.entityListeners) {
+			listener.registerNeededEvents(pm, this);
+		}
+	}
+
 	@Override
 	public void onDisable() {
+		this.entityListeners.clear();
+		
 		this.log.info(pluginDescription() + " defused and disabled");
+	}
+	
+	private void configureWorkarounds(final PluginManager pm) {
+		if(null != pm.getPlugin("Mining TNT") || null != pm.getPlugin("MiningTNT")) {
+			this.log.info(pluginDescription() + " detected MiningTNT. Default yield value will be 1.0 instead of 0.3 (unless a value is given in config.yml)");
+			ExplodingConf.hasConflictWithMiningTNT = true;
+		} else {
+			ExplodingConf.hasConflictWithMiningTNT = false;
+		}
 	}
 	
 	private String pluginDescription() {

@@ -44,6 +44,12 @@ public class ExplodingConf {
 
 	/** The percentage (from 0.0 to 1.0) of damaged blocks in the explosion that drop items */
 	private final Float yield;
+
+	/** 
+	 * True if the MiningTNT plugin was detected in the list of plugins. False otherwise. 
+	 * Set by the Plugin main class. 
+	 */
+	protected static boolean hasConflictWithMiningTNT = false;
 	
 	public ExplodingConf(final Configuration conf, final String confPathPrefix, final Logger log) {
 		this(conf, confPathPrefix, log, new Random());
@@ -223,7 +229,18 @@ public class ExplodingConf {
 	}
 	
 	public float getYield() {
-		return hasYieldConfig() ? this.yield.floatValue() : 0.3F ;
+		if(!hasYieldConfig()) {
+			return 0.3F; // Report the yield as the minecraft default.
+		}
+			
+		if(ExplodingConf.hasConflictWithMiningTNT && this.yield == null) {
+			// There's no yield specified in the config.yml, but because the 
+			// MiningTNT plugin is in use on this server, we set the yield to 1.0.
+			// This is MiningTNT's default.
+			return 1.0F;
+		}
+		
+		return this.yield.floatValue();
 	}
 	
 	public boolean getPreventTerrainDamage() {
@@ -259,7 +276,7 @@ public class ExplodingConf {
 	}
 	
 	public boolean hasYieldConfig() {
-		return this.yield != null;
+		return (this.yield != null) || ExplodingConf.hasConflictWithMiningTNT;
 	}
 	
 	public boolean hasPreventTerrainDamageConfig() {
