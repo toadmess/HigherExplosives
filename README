@@ -13,9 +13,9 @@ All tweaks can be selectively applied to several different worlds.
 Versions
 --------
 
-HigherExplosives v1.5.1 was tested with recommended build 670 and a Minecraft 1.4_01 client.
+HigherExplosives v1.5.2 was tested with recommended build 670 and a Minecraft 1.4_01 client.
 
-HigherExplosives v1.5 and 1.5.1 will not work on CraftBukkit versions earlier than 602.
+HigherExplosives v1.5.2 will not work on CraftBukkit versions earlier than 602.
 
 HigherExplosives v1.4 was tested with CraftBukkit server recommended versions up to 556 and a Minecraft 1.3_01 client.
 
@@ -219,6 +219,9 @@ If an entity has no activeBounds property then the explosion modifications will 
 
 Changelog:
 ----------
+
+Version 1.5.2
+- Fixed explosion sounds when preventTerrainDamage is true
 
 Version 1.5.1
 - Works with the MiningTNT plugin. If there is no yield configuration in HigherExplosives' config.yml, the explosion's yield will be set to 1.0 (MiningTNT's default yield).
