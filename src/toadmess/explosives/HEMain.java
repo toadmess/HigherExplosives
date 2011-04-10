@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.TNTPrimed;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,6 +24,7 @@ public class HEMain extends JavaPlugin {
 	protected static final String CONF_ENTITY_CREATURE_DAMAGEMULT = "creatureDamageMultiplier";
 	protected static final String CONF_ENTITY_YIELD = "yield";
 	protected static final String CONF_ENTITY_PREVENT_TERRAIN_DAMAGE = "preventTerrainDamage";
+	protected static final String CONF_ENTITY_FUSE_DURATION = "experimentalFuseDuration";
 	
 	protected static final String CONF_MULTIPLIER_CHANCE = "chance";
 	protected static final String CONF_MULTIPLIER_VALUE = "value";

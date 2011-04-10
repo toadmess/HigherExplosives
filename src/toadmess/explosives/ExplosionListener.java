@@ -6,12 +6,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
+import net.minecraft.server.WorldServer;
+
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -51,7 +55,7 @@ public class ExplosionListener extends EntityListener {
 	// Keep track of the listeners that we have registered so we know 
 	// what we have after the plugin has been enabled. 
 	// We may need to register more listeners later on (e.g. MiningTNT workaround or commands etc.).  
-	private final HashSet<Event.Type> registeredListeners = new HashSet<Event.Type>();
+	private final HashSet<Event.Type> registeredEvents = new HashSet<Event.Type>();
 	
 	public ExplosionListener(final Configuration conf, final Logger log, final Class<? extends Entity> entityType) {
 		this.log = log;
@@ -193,6 +197,8 @@ public class ExplosionListener extends EntityListener {
 		
 		if(worldConf.hasPreventTerrainDamageConfig() && worldConf.getPreventTerrainDamage()) {			
 			event.setCancelled(true);
+			
+			MCNative.playSoundExplosion(epicentre);
 		}
 	}
 	
@@ -233,12 +239,16 @@ public class ExplosionListener extends EntityListener {
 			if(c.hasPlayerDamageConfig() || c.hasCreatureDamageConfig()) {
 				neededEvents.add(Event.Type.ENTITY_DAMAGE);
 			}
+			
+			if(c.hasFuseDurationConfig()) {
+				neededEvents.add(Event.Type.CREATURE_SPAWN);
+			}
 		}
 		
 		for(final Event.Type evType : neededEvents) {
-			if(!this.registeredListeners.contains(evType)) { // Only register if we haven't done so before				
+			if(!this.registeredEvents.contains(evType)) { // Only register if we haven't done so before				
 				pm.registerEvent(evType, this, Event.Priority.Normal, heMain);
-				this.registeredListeners.add(evType);
+				this.registeredEvents.add(evType);
 			}
 		}
 	}

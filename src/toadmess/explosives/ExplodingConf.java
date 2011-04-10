@@ -44,6 +44,8 @@ public class ExplodingConf {
 
 	/** The percentage (from 0.0 to 1.0) of damaged blocks in the explosion that drop items */
 	private final Float yield;
+	
+	private final Integer fuseDuration;
 
 	/** 
 	 * True if the MiningTNT plugin was detected in the list of plugins. False otherwise. 
@@ -70,6 +72,8 @@ public class ExplodingConf {
 		this.yield = getOptionalFloat(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_YIELD);			
 		this.preventTerrainDamage = (Boolean) conf.getProperty(confPathPrefix + "." + HEMain.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE);
 		
+		this.fuseDuration = getOptionalInteger(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_FUSE_DURATION);
+		
 		if(null != conf.getProperty("everyExplosion") || 
 		   null != conf.getProperty(confPathPrefix + ".everyExplosion")) {
 			this.log.warning("HigherExplosives: The \"everyExplosion\" configuration is no longer used. Instead, specify the explosion \"yield\" on the individual entities.");
@@ -84,6 +88,16 @@ public class ExplodingConf {
 		}
 		
 		return Double.valueOf(conf.getDouble(path, 0.0D)).floatValue();
+	}
+	
+	private Integer getOptionalInteger(final Configuration conf, final String path) {
+		final Object o = conf.getProperty(path);
+		
+		if(o == null || !(o instanceof Number)) {
+			return null;
+		}
+		
+		return conf.getInt(path, 0) ;		
 	}
 	
 	/**
@@ -246,6 +260,10 @@ public class ExplodingConf {
 	public boolean getPreventTerrainDamage() {
 		return hasPreventTerrainDamageConfig() ? this.preventTerrainDamage : false ;
 	}
+	
+	public int getFuseDuration() {
+		return hasFuseDurationConfig() ? this.fuseDuration : 80;
+	}
 
 	public float getNextRadiusMultiplier() {
 		return getNextMultiplier(this.radiusMultipliers);
@@ -281,6 +299,10 @@ public class ExplodingConf {
 	
 	public boolean hasPreventTerrainDamageConfig() {
 		return this.preventTerrainDamage != null;
+	}
+	
+	public boolean hasFuseDurationConfig() {
+		return this.fuseDuration != null;
 	}
 	
 	public boolean isEmptyConfig() {
