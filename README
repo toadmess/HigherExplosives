@@ -13,9 +13,7 @@ All tweaks can be selectively applied to several different worlds.
 Versions
 --------
 
-HigherExplosives v1.5.2 was tested with recommended build 670 and a Minecraft 1.4_01 client.
-
-HigherExplosives v1.5.2 will not work on CraftBukkit versions earlier than 602.
+HigherExplosives v1.6 was tested with recommended build 670 and a Minecraft 1.4_01 client.
 
 HigherExplosives v1.4 was tested with CraftBukkit server recommended versions up to 556 and a Minecraft 1.3_01 client.
 
@@ -26,17 +24,18 @@ Features
 - Control the percentage of dropped items (called yield) from the destroyed blocks, from no items dropped through to one item dropped per destroyed block.
 - Optional prevention of terrain damage
 - Multiple world configurations
-- Allows configuration of different blast radii, with different probabilities for each being chosen
-- Allows configuration of different player damage (optionally with different probabilities for each being chosen)
-- Allows configuration of different creature damage (optionally with different probabilities for each being chosen)
+- Blast radii can be configured, with different probabilities for each being chosen
+- Player damage can be configured (optionally with different probabilities for each being chosen)
+- Creature damage can be configured (optionally with different probabilities for each being chosen)
+- Item damage can be configured (optionally with different probabilities for each being chosen)
 - Explosions can be nullified altogether (just set the blast radius to 0)
-- Some simple control over which areas the modified explosions will happen in
+- Restrict explosion modifications to certain area bounds
 
 Known Issues
 ------------
 
 - If you set the yield too high, the server will lag a lot whilst trying to rotate all of the items left in the crater.
-- If the radiusMultiplier is much less than 1, I think the client is rendering the explosions as normal, but then corrects itself a moment afterwards when it hears about what really happened from the server. This has a kind of double-take effect.
+- If the radiusMultiplier is much less than 1, I think the client is sometimes rendering the explosions as normal, but then corrects itself a moment afterwards when it hears about what really happened from the server. This has a kind of double-take effect.
 - If the radiusMultiplier is set too high, the shape of the terrain damage takes on a kind of streaking or criss-crossing effect. I think this is to do with the way minecraft creates the explosions (http://www.minecraftwiki.net/wiki/Explosion).
 
 Installation
@@ -79,14 +78,15 @@ worlds:
             Fireball:
                 fire: false
                 creatureDamageMultiplier: 2.0
+                itemDamageMultiplier: 0.0
 version: '1.5'
 debugConfig: true
 
-In this example config, the size of TNT explosions are doubled and the number of items they drop is set at 15%. This would by applied by default in all worlds except the world named "nether". In the world named "nether", TNT explosions will have a normal blast radius and yield, but they will be twice as damaging to players when exploding (creatures take damage as normal).
+In this example config, the size of TNT explosions are doubled and the number of items they drop is set at 15%. This would by applied by default in all worlds except the world named "nether". In the world named "nether", TNT explosions will have a normal blast radius and yield, but will not harm any items whilst also being twice as damaging to players when exploding (creatures take damage as normal).
 
 By default, creepers will not damage terrain in a 1000x1000 square area around 0,0. They will still damage creatures and players as normal. Outside of the safety area the terrain will be damaged as normal by Creepers. This applies to all worlds.
 
-Ghast fireballs in the "nether" world will not cause fire but will be twice as damaging to other creatures. They'll damage players as normal fireballs. Fireball explosions in any other world will be left unmodified.
+Ghast fireballs in the "nether" world will not cause fire but will be twice as damaging to other creatures. They'll damage players as normal fireballs do. Fireball explosions in any other world will be left unmodified.
 
 To check if the plugin is reading the configuration correctly, you can add a "debugConfig: true" property. It defaults to false if it's not in the config file.
 
@@ -102,6 +102,8 @@ Main Configuration Properties
 - "playerDamageMultiplier": like the "radiusMultiplier" property, the value of this is a multiplier applied to the damage dealt to players caught in the explosion radius. A value of 0.0 will nullify all damage to players, whilst a value of 2.0 will double the damage. The playerDamageMultiplier can also describe a number of different multipliers with different probabilities of being chosen. See the "Randomly chosen values" section of the README file for more details.
 
 - "creatureDamageMultiplier": like the "playerDamageMultiplier" property, the value of this is a multiplier applied to the damage dealt to creatures caught in the explosion radius. A value of 0.0 will nullify all damage to creatures, whilst a value of 2.0 will double the damage. The creatureDamageMultiplier can also describe a number of different multipliers with different probabilities of being chosen. See the "Randomly chosen values" section of the README file for more details.
+
+- "itemDamageMultiplier": takes the same form as the other multipliers above, but applies to any non-living entities caught in the blast (including items on the ground, paintings and other things like that). Set it to 0.0 to stop items from being detroyed in blasts.
 
 - "version": a mandatory property, but it just lets the plugin show a warning if the configuration's version is different to the plugin's version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
 

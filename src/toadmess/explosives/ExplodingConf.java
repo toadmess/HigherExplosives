@@ -30,7 +30,9 @@ public class ExplodingConf {
 	 * If null, the configuration provided no creature damage multipliers.
 	 */
 	private final List<List<Float>> creatureDamageMultipliers;
-
+	/** Same kind of list of multipliers, applies to non living item entities. */
+	private final List<List<Float>> itemDamageMultipliers;
+	
 	/** Used when conjuring up a new multiplier based on some random chance */
 	private final Random rng;
 
@@ -67,6 +69,7 @@ public class ExplodingConf {
 		this.radiusMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_RADIUSMULT);
 		this.playerDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_PLAYER_DAMAGEMULT);
 		this.creatureDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT);
+		this.itemDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_ITEM_DAMAGEMULT);
 
 		this.fire = (Boolean) conf.getProperty(confPathPrefix + "." + HEMain.CONF_ENTITY_FIRE);
 		this.yield = getOptionalFloat(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_YIELD);			
@@ -277,6 +280,10 @@ public class ExplodingConf {
 		return getNextMultiplier(this.creatureDamageMultipliers);
 	}
 	
+	public float getNextItemDamageMultiplier() {
+		return getNextMultiplier(this.itemDamageMultipliers);
+	}
+	
 	public boolean hasFireConfig() {
 		return this.fire != null;
 	}
@@ -293,6 +300,10 @@ public class ExplodingConf {
 		return this.playerDamageMultipliers != null;
 	}
 	
+	public boolean hasItemDamageConfig() {
+		return this.itemDamageMultipliers != null;
+	}
+	
 	public boolean hasYieldConfig() {
 		return (this.yield != null) || ExplodingConf.hasConflictWithMiningTNT;
 	}
@@ -307,6 +318,6 @@ public class ExplodingConf {
 	
 	public boolean isEmptyConfig() {
 		return !(hasFireConfig() || hasYieldConfig() || hasPreventTerrainDamageConfig() || 
-				 hasRadiusConfig() || hasCreatureDamageConfig() || hasPlayerDamageConfig());
+				 hasRadiusConfig() || hasCreatureDamageConfig() || hasPlayerDamageConfig() || hasItemDamageConfig());
 	}
 }

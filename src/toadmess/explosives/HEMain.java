@@ -22,6 +22,7 @@ public class HEMain extends JavaPlugin {
 	protected static final String CONF_ENTITY_RADIUSMULT = "radiusMultiplier";
 	protected static final String CONF_ENTITY_PLAYER_DAMAGEMULT = "playerDamageMultiplier";
 	protected static final String CONF_ENTITY_CREATURE_DAMAGEMULT = "creatureDamageMultiplier";
+	protected static final String CONF_ENTITY_ITEM_DAMAGEMULT = "itemDamageMultiplier";
 	protected static final String CONF_ENTITY_YIELD = "yield";
 	protected static final String CONF_ENTITY_PREVENT_TERRAIN_DAMAGE = "preventTerrainDamage";
 	protected static final String CONF_ENTITY_FUSE_DURATION = "experimentalFuseDuration";

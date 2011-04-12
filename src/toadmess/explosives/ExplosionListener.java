@@ -136,15 +136,11 @@ public class ExplosionListener extends EntityListener {
 			return;
 		}
 		
-		
 		if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
 			return;
 		}
 		
 		final Entity damagee = event.getEntity();
-		if(!(damagee instanceof LivingEntity)) {
-			return;
-		}
 
 		final Location epicentre = damager.getLocation();
 		final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
@@ -161,10 +157,15 @@ public class ExplosionListener extends EntityListener {
 			if(worldConf.hasPlayerDamageConfig()) {
 				event.setDamage((int) (event.getDamage() * worldConf.getNextPlayerDamageMultiplier()));
 			}
-		} else {
+		} else if(damagee instanceof LivingEntity){
 			if(worldConf.hasCreatureDamageConfig()) {
 				event.setDamage((int) (event.getDamage() * worldConf.getNextCreatureDamageMultiplier()));
 			}
+		} else {
+			if(worldConf.hasItemDamageConfig()) {
+				event.setDamage((int) (event.getDamage() * worldConf.getNextItemDamageMultiplier()));
+			}
+			return;
 		}
 	}
 
@@ -234,7 +235,7 @@ public class ExplosionListener extends EntityListener {
 				neededEvents.add(Event.Type.ENTITY_EXPLODE);
 			}
 			
-			if(c.hasPlayerDamageConfig() || c.hasCreatureDamageConfig()) {
+			if(c.hasPlayerDamageConfig() || c.hasCreatureDamageConfig() || c.hasItemDamageConfig()) {
 				neededEvents.add(Event.Type.ENTITY_DAMAGE);
 			}
 			

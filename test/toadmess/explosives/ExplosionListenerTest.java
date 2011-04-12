@@ -196,6 +196,11 @@ public class ExplosionListenerTest {
 	public void registerNeededEvents_CreatureDmgMultiplier() {
 		checkAllListenersRegisterEvent(HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT, 0.23F, Type.ENTITY_DAMAGE);
 	}
+
+	@Test
+	public void registerNeededEvents_ItemDmgMultiplier() {
+		checkAllListenersRegisterEvent(HEMain.CONF_ENTITY_ITEM_DAMAGEMULT, 0.23F, Type.ENTITY_DAMAGE);
+	}
 	
 	@Test
 	public void onEntityExplode_Yield() {
@@ -275,6 +280,11 @@ public class ExplosionListenerTest {
 	
 	@Test
 	public void onEntityDamage_CreatureDamageMultiplier() {
+		fail("TODO");
+	}
+	
+	@Test
+	public void onEntityDamage_ItemDamageMultiplier() {
 		fail("TODO");
 	}
 	

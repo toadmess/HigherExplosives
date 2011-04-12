@@ -53,6 +53,10 @@ public class ExplodingConfTest {
 		// Check the next creature damage multiplier defaults to 1.0 even though none was specified in the config
 		checkCreatureDmgMultiplier(ec, 1.0F, false);
 		checkCreatureDmgMultiplier(ec, 1.0F, false);
+
+		// Check the next item damage multiplier defaults to 1.0 even though none was specified in the config
+		checkItemDmgMultiplier(ec, 1.0F, false);
+		checkItemDmgMultiplier(ec, 1.0F, false);
 		
 		checkPreventTerrainDamage(ec, false, false);
 		
@@ -145,7 +149,8 @@ public class ExplodingConfTest {
 	private enum eMultiplierType { 
 		RADIUS(HEMain.CONF_ENTITY_RADIUSMULT), 
 		PLAYER_DMG(HEMain.CONF_ENTITY_PLAYER_DAMAGEMULT), 
-		CREATURE_DMG(HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT);
+		CREATURE_DMG(HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT),
+		ITEM_DMG(HEMain.CONF_ENTITY_ITEM_DAMAGEMULT);
 		private final String confKey;
 		private eMultiplierType(final String confKey) { this.confKey = confKey;}
 		protected String getConfKey() { return this.confKey; }
@@ -237,6 +242,20 @@ public class ExplodingConfTest {
 	public void testCreatureDmgMultiplierMulti() {
 		checkMultipliers(eMultiplierType.CREATURE_DMG);
 	}
+
+	@Test
+	public void testItemDmgMultiplierSingle() {
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_ITEM_DAMAGEMULT, 0.23F);
+		final ExplodingConf ec = new ExplodingConf(conf, "someentity", new NullLogger());
+		checkItemDmgMultiplier(ec, 0.23F, true);
+		checkItemDmgMultiplier(ec, 0.23F, true);
+		checkItemDmgMultiplier(ec, 0.23F, true);
+	}
+
+	@Test
+	public void testItemDmgMultiplierMulti() {
+		checkMultipliers(eMultiplierType.ITEM_DMG);
+	}
 	
 	private void checkRadiusMultiplier(final ExplodingConf ec, final float expectMultiplier, final boolean expectRadiusConfig) {
 		assertEquals((Float) expectMultiplier, (Float) ec.getNextRadiusMultiplier());
@@ -254,6 +273,12 @@ public class ExplodingConfTest {
 		assertEquals((Float) expectMultiplier, (Float) ec.getNextCreatureDamageMultiplier());
 		assertEquals(expectCreatureDmgConfig, ec.hasCreatureDamageConfig());
 		if(expectCreatureDmgConfig) assertFalse(ec.isEmptyConfig());
+	}
+	
+	private void checkItemDmgMultiplier(final ExplodingConf ec, final float expectMultiplier, final boolean expectItemDmgConfig) {
+		assertEquals((Float) expectMultiplier, (Float) ec.getNextItemDamageMultiplier());
+		assertEquals(expectItemDmgConfig, ec.hasItemDamageConfig());
+		if(expectItemDmgConfig) assertFalse(ec.isEmptyConfig());
 	}
 
 	private void checkFire(final ExplodingConf ec, final boolean expectFire, final boolean expectFireConfig) {
