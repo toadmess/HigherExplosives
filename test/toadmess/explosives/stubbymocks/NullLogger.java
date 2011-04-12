@@ -1,9 +1,9 @@
-package toadmess.explosives;
+package toadmess.explosives.stubbymocks;
 
 import java.util.logging.Logger;
 
 public class NullLogger extends Logger {
-	protected NullLogger() {
+	public NullLogger() {
 		super(null, null);
 	}
 

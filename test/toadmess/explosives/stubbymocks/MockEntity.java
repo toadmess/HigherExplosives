@@ -1,4 +1,4 @@
-package toadmess.explosives;
+package toadmess.explosives.stubbymocks;
 
 import java.util.HashSet;
 import java.util.List;
@@ -8,6 +8,7 @@ import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Egg;
 import org.bukkit.entity.Entity;
@@ -234,7 +235,181 @@ public class MockEntity implements Entity {
 			super(minecraftEntity);
 		}
 	}
+	
+	public static class MockChickenEntity extends MockEntity implements Chicken {
+		public MockChickenEntity(net.minecraft.server.Entity minecraftEntity) {
+			super(minecraftEntity);
+		}
 
+		@Override
+		public LivingEntity getTarget() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public void setTarget(LivingEntity arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void damage(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void damage(int arg0, Entity arg1) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public double getEyeHeight() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public double getEyeHeight(boolean arg0) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public Location getEyeLocation() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public int getHealth() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public int getLastDamage() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public List<Block> getLastTwoTargetBlocks(HashSet<Byte> arg0, int arg1) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<Block> getLineOfSight(HashSet<Byte> arg0, int arg1) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public int getMaximumAir() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public int getMaximumNoDamageTicks() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public int getNoDamageTicks() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public int getRemainingAir() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public Block getTargetBlock(HashSet<Byte> arg0, int arg1) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Vehicle getVehicle() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public boolean isInsideVehicle() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean leaveVehicle() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public void setHealth(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void setLastDamage(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void setMaximumAir(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void setMaximumNoDamageTicks(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void setNoDamageTicks(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void setRemainingAir(int arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public Arrow shootArrow() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Egg throwEgg() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Snowball throwSnowball() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	}
+	
 	@Override
 	public Vector getVelocity() {
 		// TODO Auto-generated method stub

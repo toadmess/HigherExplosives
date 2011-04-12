@@ -6,16 +6,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
-import net.minecraft.server.WorldServer;
-
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -144,7 +142,7 @@ public class ExplosionListener extends EntityListener {
 		}
 		
 		final Entity damagee = event.getEntity();
-		if(!(damagee instanceof CraftLivingEntity)) {
+		if(!(damagee instanceof LivingEntity)) {
 			return;
 		}
 
@@ -159,7 +157,7 @@ public class ExplosionListener extends EntityListener {
 			return;
 		}
 		
-		if(damagee instanceof CraftPlayer) {
+		if(damagee instanceof Player) {
 			if(worldConf.hasPlayerDamageConfig()) {
 				event.setDamage((int) (event.getDamage() * worldConf.getNextPlayerDamageMultiplier()));
 			}
