@@ -58,6 +58,9 @@ public class ExplodingConfTest {
 		checkItemDmgMultiplier(ec, 1.0F, false);
 		checkItemDmgMultiplier(ec, 1.0F, false);
 		
+		checkTNTFuseMultiplier(ec, 1.0F, false);
+		checkTNTFuseMultiplier(ec, 1.0F, false);
+		
 		checkPreventTerrainDamage(ec, false, false);
 		
 		checkYield(ec, 0.3F, false);
@@ -150,6 +153,7 @@ public class ExplodingConfTest {
 		RADIUS(HEMain.CONF_ENTITY_RADIUSMULT), 
 		PLAYER_DMG(HEMain.CONF_ENTITY_PLAYER_DAMAGEMULT), 
 		CREATURE_DMG(HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT),
+		FUSE(HEMain.CONF_ENTITY_TNT_FUSEMULT),
 		ITEM_DMG(HEMain.CONF_ENTITY_ITEM_DAMAGEMULT);
 		private final String confKey;
 		private eMultiplierType(final String confKey) { this.confKey = confKey;}
@@ -209,6 +213,9 @@ public class ExplodingConfTest {
 			case CREATURE_DMG:
 				checkCreatureDmgMultiplier(ec, expectedMultiplier, true);
 				break;
+			case FUSE:
+				checkTNTFuseMultiplier(ec, expectedMultiplier, true);
+				break;
 			}
 		}
 		
@@ -256,6 +263,20 @@ public class ExplodingConfTest {
 	public void testItemDmgMultiplierMulti() {
 		checkMultipliers(eMultiplierType.ITEM_DMG);
 	}
+
+	@Test
+	public void testFuseMultiplierSingle() {
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_TNT_FUSEMULT, 0.23F);
+		final ExplodingConf ec = new ExplodingConf(conf, "someentity", new NullLogger());
+		checkTNTFuseMultiplier(ec, 0.23F, true);
+		checkTNTFuseMultiplier(ec, 0.23F, true);
+		checkTNTFuseMultiplier(ec, 0.23F, true);
+	}
+
+	@Test
+	public void testFuseMultiplierMulti() {
+		checkMultipliers(eMultiplierType.FUSE);
+	}
 	
 	private void checkRadiusMultiplier(final ExplodingConf ec, final float expectMultiplier, final boolean expectRadiusConfig) {
 		assertEquals((Float) expectMultiplier, (Float) ec.getNextRadiusMultiplier());
@@ -279,6 +300,12 @@ public class ExplodingConfTest {
 		assertEquals((Float) expectMultiplier, (Float) ec.getNextItemDamageMultiplier());
 		assertEquals(expectItemDmgConfig, ec.hasItemDamageConfig());
 		if(expectItemDmgConfig) assertFalse(ec.isEmptyConfig());
+	}
+	
+	private void checkTNTFuseMultiplier(final ExplodingConf ec, final float expectMultiplier, final boolean expectFuseConfig) {
+		assertEquals((Float) expectMultiplier, (Float) ec.getNextTNTFuseMultiplier());
+		assertEquals(expectFuseConfig, ec.hasTNTFuseConfig());
+		if(expectFuseConfig) assertFalse(ec.isEmptyConfig());
 	}
 
 	private void checkFire(final ExplodingConf ec, final boolean expectFire, final boolean expectFireConfig) {
@@ -316,6 +343,12 @@ public class ExplodingConfTest {
 		assertToStringThrowsNothing(new ExplodingConf(conf, "someentity", new NullLogger()));
 		
 		conf.setProperty("someentity." + HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT, 0.23D);
+		assertToStringThrowsNothing(new ExplodingConf(conf, "someentity", new NullLogger()));
+		
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_ITEM_DAMAGEMULT, 0.23D);
+		assertToStringThrowsNothing(new ExplodingConf(conf, "someentity", new NullLogger()));
+		
+		conf.setProperty("someentity." + HEMain.CONF_ENTITY_TNT_FUSEMULT, 0.23D);
 		assertToStringThrowsNothing(new ExplodingConf(conf, "someentity", new NullLogger()));
 		
 		conf.setProperty("someentity." + HEMain.CONF_ENTITY_RADIUSMULT, 0.23D);

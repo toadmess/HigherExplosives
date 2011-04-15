@@ -25,7 +25,7 @@ public class HEMain extends JavaPlugin {
 	protected static final String CONF_ENTITY_ITEM_DAMAGEMULT = "itemDamageMultiplier";
 	protected static final String CONF_ENTITY_YIELD = "yield";
 	protected static final String CONF_ENTITY_PREVENT_TERRAIN_DAMAGE = "preventTerrainDamage";
-	protected static final String CONF_ENTITY_FUSE_DURATION = "experimentalFuseDuration";
+	protected static final String CONF_ENTITY_TNT_FUSEMULT = "trialTNTFuseMultiplier";
 	
 	protected static final String CONF_MULTIPLIER_CHANCE = "chance";
 	protected static final String CONF_MULTIPLIER_VALUE = "value";
@@ -53,9 +53,9 @@ public class HEMain extends JavaPlugin {
 		
 		IS_DEBUG_CONF = this.getConfiguration().getBoolean(HEMain.CONF_DEBUGCONFIG, false);
 		
-		this.entityListeners.add(new ExplosionListener(this.getConfiguration(), this.log, TNTPrimed.class));
-		this.entityListeners.add(new ExplosionListener(this.getConfiguration(), this.log, Creeper.class));
-		this.entityListeners.add(new ExplosionListener(this.getConfiguration(), this.log, Fireball.class));
+		this.entityListeners.add(new ExplosionListener(this, this.log, TNTPrimed.class));
+		this.entityListeners.add(new ExplosionListener(this, this.log, Creeper.class));
+		this.entityListeners.add(new ExplosionListener(this, this.log, Fireball.class));
 		
 		registerNeededEvents(pm);
 		

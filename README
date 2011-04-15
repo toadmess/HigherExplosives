@@ -4,18 +4,14 @@ HigherExplosives
 A very simple plugin to control the destructive potential of explosions in Minecraft, for use with the Craftbukkit server and Bukkit modding system.
 In its default vanilla configuration it just doubles the size of TNT explosions.
 
-TNT, creepers, and fireballs can all have their size, yield (percentage of destoyed items dropped) and damage (to players and/or creatures) tweaked. Terrain damage from explosions can be toggled on or off.
+TNT, creepers, and fireballs can all have their size, yield (percentage of destoyed items dropped) and damage (to items and/or players and/or creatures) tweaked. Terrain damage from explosions can be toggled on or off.
+The fuse length of TNT can be multiplied to be shorter or longer.
 
 The explosion size, player damage, and creature damage can all be configured to be chosen randomly from a list of different values according to specified probabilities.
 
 All tweaks can be selectively applied to several different worlds.
 
-Versions
---------
-
-HigherExplosives v1.6 was tested with recommended build 670 and a Minecraft 1.4_01 client.
-
-HigherExplosives v1.4 was tested with CraftBukkit server recommended versions up to 556 and a Minecraft 1.3_01 client.
+HigherExplosives v1.6 was tested with recommended build 677 and a Minecraft 1.4_01 client.
 
 Features
 --------
@@ -28,6 +24,7 @@ Features
 - Player damage can be configured (optionally with different probabilities for each being chosen)
 - Creature damage can be configured (optionally with different probabilities for each being chosen)
 - Item damage can be configured (optionally with different probabilities for each being chosen)
+- EXPERIMENTAL: Fuse length of TNT can be tweaked.
 - Explosions can be nullified altogether (just set the blast radius to 0)
 - Restrict explosion modifications to certain area bounds
 
@@ -51,11 +48,10 @@ entities:
         yield: 0.15
 version: '1.5'
 
-
 Example configuration
 ---------------------
 
-An example configration might be:
+Here's a sizeable example configration that covers most of the features, together with an explanation below it:
 
 entities:
     TNTPrimed:
@@ -75,18 +71,31 @@ worlds:
         entities:
             TNTPrimed:
                 playerDamageMultiplier: 2.0
+                itemDamageMultiplier: 0.0
             Fireball:
                 fire: false
                 creatureDamageMultiplier: 2.0
-                itemDamageMultiplier: 0.0
-version: '1.5'
+    wildwest:
+            TNTPrimed:
+                radiusMultiplier:
+                    - {chance: 0.25, value: 0.3}
+                    - {chance: 0.25, value: 1.5}
+                    - {chance: 0.5, value: 1.0}
+                trialTNTFuseMultiplier:
+                    - {chance: 0.5, value: 0.0}
+                    - {chance: 0.5, value: 1.0}
+version: '1.6'
 debugConfig: true
 
-In this example config, the size of TNT explosions are doubled and the number of items they drop is set at 15%. This would by applied by default in all worlds except the world named "nether". In the world named "nether", TNT explosions will have a normal blast radius and yield, but will not harm any items whilst also being twice as damaging to players when exploding (creatures take damage as normal).
+In this example config, the size of TNT explosions are doubled and the number of items they drop is set at 15%. This would by applied by default in all worlds except the world named "nether" and the world named "wildwest".
 
-By default, creepers will not damage terrain in a 1000x1000 square area around 0,0. They will still damage creatures and players as normal. Outside of the safety area the terrain will be damaged as normal by Creepers. This applies to all worlds.
+In the world named "nether", TNT explosions will have a normal blast radius and yield, but nearby items will be impervious to them. Whilst they don't damage items, TNT explosions in the nether will be twice as damaging to players when exploding, but creatures will take damage as normal.
+
+By default, creepers will not damage terrain in a 1000x1000 square area around 0,0. They will however still damage creatures and players as normal. Outside of the safety area, the terrain will be damaged as normal by Creepers. This applies to all worlds with this example configuration because no other world has a specific configuration for the Creeper entity.
 
 Ghast fireballs in the "nether" world will not cause fire but will be twice as damaging to other creatures. They'll damage players as normal fireballs do. Fireball explosions in any other world will be left unmodified.
+
+In the wildwest world, TNT is flakey and unreliable. 50% of the time TNT will explode immediately without any fuse. The sizes of the TNT explosions will also vary, with half of them being normal, a quarter being very small, and a quarter being fairly large.
 
 To check if the plugin is reading the configuration correctly, you can add a "debugConfig: true" property. It defaults to false if it's not in the config file.
 
@@ -103,7 +112,9 @@ Main Configuration Properties
 
 - "creatureDamageMultiplier": like the "playerDamageMultiplier" property, the value of this is a multiplier applied to the damage dealt to creatures caught in the explosion radius. A value of 0.0 will nullify all damage to creatures, whilst a value of 2.0 will double the damage. The creatureDamageMultiplier can also describe a number of different multipliers with different probabilities of being chosen. See the "Randomly chosen values" section of the README file for more details.
 
-- "itemDamageMultiplier": takes the same form as the other multipliers above, but applies to any non-living entities caught in the blast (including items on the ground, paintings and other things like that). Set it to 0.0 to stop items from being detroyed in blasts.
+- "itemDamageMultiplier": takes the same form as the other multipliers above, but applies to any non-living entities caught in the blast (including items on the ground, paintings and other things like that). Set it to 0.0 to stop items from being destroyed in blasts.
+
+- "trialTNTFuseMultiplier": This is EXPERIMENTAL, so please let me know if anything's awry with it. When it's shown to be stable, I'll rename the configuration name to just "tntFuseMultiplier". It takes the same muliplier form as the "radiusMultiplier" and will multiply the normal length of TNT's fuses. It will affect the fuse length of TNT primed by hand, by fire, by other explosions (including creepers and fireballs), and by redstone.
 
 - "version": a mandatory property, but it just lets the plugin show a warning if the configuration's version is different to the plugin's version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
 
@@ -174,7 +185,7 @@ That would make creepers explode normally 80% of the time, explode a lot more fi
 
 This list form for the radiusMultiplier also works for entities in multi-world configurations.
 
-In much the same way, player damage and creature damage can be randomly selected from a predefined list of chances and values. e.g.:
+In much the same way, player damage, creature damage, item damage, and fuse lengths can be randomly selected from a predefined list of chances and values. e.g.:
 
 entities:
     Creeper:
@@ -187,7 +198,7 @@ entities:
             - {chance: 0.80, value: 1.0}
             - {chance: 0.05, value: 0.0}
 
-Note that the randomly chosen creature and player damages are independent of each other. i.e. they don't use the same random number. It's possible in the example above for an explosion to damage creatures with a 2.0 multiplier whilst the same explosion damages players with a 0.0 multipler.
+Note that the randomly chosen multipliers are independent of each other. i.e. they don't use the same random number. It's possible in the example above for an explosion to damage creatures with a 2.0 multiplier whilst the same explosion damages players with a 0.0 multipler.
 
 Optional bounds configuration
 -----------------------------
@@ -221,6 +232,10 @@ If an entity has no activeBounds property then the explosion modifications will 
 
 Changelog:
 ----------
+
+Version 1.6
+- Experimental fuse length control with the "trialTNTFuseMultiplier" configuration property.
+- Added control over item's damage with the "itemDamageMultiplier" configuration property.
 
 Version 1.5.2
 - Fixed explosion sounds when preventTerrainDamage is true

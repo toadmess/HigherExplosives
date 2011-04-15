@@ -30,8 +30,10 @@ public class ExplodingConf {
 	 * If null, the configuration provided no creature damage multipliers.
 	 */
 	private final List<List<Float>> creatureDamageMultipliers;
-	/** Same kind of list of multipliers, applies to non living item entities. */
+	/** Same kind of list of multipliers as the radiusMultiplier, applies to non living item entities. */
 	private final List<List<Float>> itemDamageMultipliers;
+	/** Same kind of list of multipliers as the radiusMultiplier, applies to TNT fuse durations */
+	private final List<List<Float>> fuseMultipliers;
 	
 	/** Used when conjuring up a new multiplier based on some random chance */
 	private final Random rng;
@@ -46,8 +48,6 @@ public class ExplodingConf {
 
 	/** The percentage (from 0.0 to 1.0) of damaged blocks in the explosion that drop items */
 	private final Float yield;
-	
-	private final Integer fuseDuration;
 
 	/** 
 	 * True if the MiningTNT plugin was detected in the list of plugins. False otherwise. 
@@ -70,12 +70,12 @@ public class ExplodingConf {
 		this.playerDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_PLAYER_DAMAGEMULT);
 		this.creatureDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT);
 		this.itemDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_ITEM_DAMAGEMULT);
+		this.fuseMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_TNT_FUSEMULT);
 
 		this.fire = (Boolean) conf.getProperty(confPathPrefix + "." + HEMain.CONF_ENTITY_FIRE);
 		this.yield = getOptionalFloat(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_YIELD);			
 		this.preventTerrainDamage = (Boolean) conf.getProperty(confPathPrefix + "." + HEMain.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE);
 		
-		this.fuseDuration = getOptionalInteger(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_FUSE_DURATION);
 		
 		if(null != conf.getProperty("everyExplosion") || 
 		   null != conf.getProperty(confPathPrefix + ".everyExplosion")) {
@@ -215,6 +215,8 @@ public class ExplodingConf {
 		str = str + "\n  radiusMultiplier={\n" + multipliersToString(this.radiusMultipliers) + "  },";
 		str = str + "\n  playerDamageMultiplier={\n" + multipliersToString(this.playerDamageMultipliers) + "  },";
 		str = str + "\n  creatureDamageMultiplier={\n" + multipliersToString(this.creatureDamageMultipliers) + "  },";
+		str = str + "\n  itemDamageMultiplier={\n" + multipliersToString(this.itemDamageMultipliers) + "  },";
+		str = str + "\n  fuseMultiplier={\n" + multipliersToString(this.fuseMultipliers) + "  },";
 		str = str + "\n  fire=" + (hasFireConfig() ? getFire() : "no fire configured. will leave unaffected") + ",";
 		str = str + "\n  yield=" + (hasYieldConfig() ? getYield() : "no yield configured. will leave unaffected") + ",";
 		str = str + "\n  preventTerrainDamage=" + (hasPreventTerrainDamageConfig() ? getPreventTerrainDamage() : "not configured, terrain damage is as normal") + ",";
@@ -264,8 +266,8 @@ public class ExplodingConf {
 		return hasPreventTerrainDamageConfig() ? this.preventTerrainDamage : false ;
 	}
 	
-	public int getFuseDuration() {
-		return hasFuseDurationConfig() ? this.fuseDuration : 80;
+	public float getNextTNTFuseMultiplier() {
+		return getNextMultiplier(this.fuseMultipliers);
 	}
 
 	public float getNextRadiusMultiplier() {
@@ -312,12 +314,13 @@ public class ExplodingConf {
 		return this.preventTerrainDamage != null;
 	}
 	
-	public boolean hasFuseDurationConfig() {
-		return this.fuseDuration != null;
+	public boolean hasTNTFuseConfig() {
+		return this.fuseMultipliers != null;
 	}
 	
 	public boolean isEmptyConfig() {
 		return !(hasFireConfig() || hasYieldConfig() || hasPreventTerrainDamageConfig() || 
-				 hasRadiusConfig() || hasCreatureDamageConfig() || hasPlayerDamageConfig() || hasItemDamageConfig());
+				 hasRadiusConfig() || hasTNTFuseConfig() || 
+				 hasCreatureDamageConfig() || hasPlayerDamageConfig() || hasItemDamageConfig());
 	}
 }

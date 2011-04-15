@@ -2,7 +2,6 @@ package toadmess.explosives;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -38,6 +37,7 @@ import org.junit.Test;
 
 import toadmess.explosives.stubbymocks.MockBukkitWorld;
 import toadmess.explosives.stubbymocks.MockEntity;
+import toadmess.explosives.stubbymocks.MockPlugin;
 import toadmess.explosives.stubbymocks.NullLogger;
 import toadmess.explosives.stubbymocks.StubPluginManager;
 
@@ -58,7 +58,8 @@ public class ExplosionListenerTest {
 	private final EntityExplodeExpectations ENTITY_EXPLODE_DEFAULTS;
 	private final ExplosionPrimeExpectations EXPLOSION_PRIME_DEFAULTS;
 	private final EntityDamageExpectations ENTITY_DAMAGE_DEFAULTS;
-	
+
+	private MockPlugin plugin;
 	private Configuration conf;
 	
 	private MockEntity.MockCreeperEntity entityCreeperInDefWorld;
@@ -84,7 +85,6 @@ public class ExplosionListenerTest {
 	private ExplosionListener[] allListeners;
 	private ExplosionListener[] justDefaultListeners;
 	private ExplosionListener[] justNetherListeners;
-
 	
 	public ExplosionListenerTest() {
 		this.ENTITY_EXPLODE_DEFAULTS = new EntityExplodeExpectations(DEF_YIELD, DEF_PREVENT_TERRAIN_DAMAGE);
@@ -97,10 +97,14 @@ public class ExplosionListenerTest {
 		
 		// Just set the debug flag to true so we always exercise that code even though it's going to /dev/null.
 		conf.setProperty(HEMain.CONF_DEBUGCONFIG, true);
+		
+		plugin.setConfiguration(conf);
 	}
 	
 	@Before
-	public void setup() {		
+	public void setup() {
+		plugin = new MockPlugin();
+		
 		resetConfiguration();
 		
 		worldDefault = new MockBukkitWorld("world");
@@ -130,13 +134,13 @@ public class ExplosionListenerTest {
 	}
 
 	private void createListeners() {
-		creeperListener = new ExplosionListener(conf, new NullLogger(), Creeper.class);
-		tntListener = new ExplosionListener(conf, new NullLogger(), TNTPrimed.class);
-		fireballListener = new ExplosionListener(conf, new NullLogger(), Fireball.class);
+		creeperListener = new ExplosionListener(plugin, new NullLogger(), Creeper.class);
+		tntListener = new ExplosionListener(plugin, new NullLogger(), TNTPrimed.class);
+		fireballListener = new ExplosionListener(plugin, new NullLogger(), Fireball.class);
 		
-		netherCreeperListener = new ExplosionListener(conf, new NullLogger(), Creeper.class);
-		netherTntListener = new ExplosionListener(conf, new NullLogger(), TNTPrimed.class);
-		netherFireballListener = new ExplosionListener(conf, new NullLogger(), Fireball.class);
+		netherCreeperListener = new ExplosionListener(plugin, new NullLogger(), Creeper.class);
+		netherTntListener = new ExplosionListener(plugin, new NullLogger(), TNTPrimed.class);
+		netherFireballListener = new ExplosionListener(plugin, new NullLogger(), Fireball.class);
 		
 		justDefaultListeners = new ExplosionListener[] {
 			creeperListener, tntListener, fireballListener	
@@ -289,6 +293,26 @@ public class ExplosionListenerTest {
 	}
 	
 	@Test
+	public void onBlockPhysics_TNTFuseMultiplier() {
+		fail("TODO");
+	}
+	
+	@Test
+	public void onBlockDamage_TNTFuseMultiplier() {
+		fail("TODO");
+	}
+	
+	@Test
+	public void onBlockBurn_TNTFuseMultiplier() {
+		fail("TODO");
+	}
+	
+	@Test
+	public void onEntityExplode_TNTFuseMultiplier() {
+		fail("TODO");
+	}
+	
+	@Test
 	public void onEntityDamage_BoundsAreChecked_CreatureDamagee() {
 		final EntityDamageChecker ec = new EntityDamageChecker(ENTITY_DAMAGE_DEFAULTS, entityChickenInDefWorld);
 		
@@ -371,7 +395,6 @@ public class ExplosionListenerTest {
 			@Override
 			public void registerEvent(final Type type, final Listener listener, final Priority priority, final Plugin plugin) {
 				assertNotNull(listener);
-				assertTrue(listener instanceof ExplosionListener);
 				assertEquals(plugin, stubbedPlugin);
 				
 				listenerTypes.add(type);
@@ -416,7 +439,7 @@ public class ExplosionListenerTest {
 		
 		@Override		
 		protected void listenToEvent(final ExplosionListener listener, final EntityExplodeEvent ev) {
-			listener.onEntityExplode(ev);
+			listener.getEntityListener().onEntityExplode(ev);
 		}
 	}
 
@@ -443,7 +466,7 @@ public class ExplosionListenerTest {
 		
 		@Override		
 		protected void listenToEvent(final ExplosionListener listener, final ExplosionPrimeEvent ev) {
-			listener.onExplosionPrime(ev);
+			listener.getEntityListener().onExplosionPrime(ev);
 		}
 	}
 
@@ -472,7 +495,7 @@ public class ExplosionListenerTest {
 
 		@Override		
 		protected void listenToEvent(final ExplosionListener listener, final EntityDamageByEntityEvent ev) {
-			listener.onEntityDamage(ev);
+			listener.getEntityListener().onEntityDamage(ev);
 		}
 	}
 	
