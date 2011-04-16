@@ -76,6 +76,7 @@ worlds:
                 fire: false
                 creatureDamageMultiplier: 2.0
     wildwest:
+        entities:
             TNTPrimed:
                 radiusMultiplier:
                     - {chance: 0.25, value: 0.3}
