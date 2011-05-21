@@ -10,7 +10,12 @@ import java.util.logging.Logger;
 
 import org.bukkit.util.config.Configuration;
 
-public class ExplodingConf {
+/**
+ * Represents a single entity's configuration within a single world.
+ * 
+ * @author John Revill
+ */
+public class EntityConf {
 	private final Logger log; 
 	
 	/** 
@@ -55,11 +60,11 @@ public class ExplodingConf {
 	 */
 	protected static boolean hasConflictWithMiningTNT = false;
 	
-	public ExplodingConf(final Configuration conf, final String confPathPrefix, final Logger log) {
+	public EntityConf(final Configuration conf, final String confPathPrefix, final Logger log) {
 		this(conf, confPathPrefix, log, new Random());
 	}
 	
-	public ExplodingConf(final Configuration conf, final String confPathPrefix, final Logger log, final Random rng) {
+	public EntityConf(final Configuration conf, final String confPathPrefix, final Logger log, final Random rng) {
 		this.log = log;
 		
 		this.rng = rng;
@@ -252,7 +257,7 @@ public class ExplodingConf {
 			return 0.3F; // Report the yield as the minecraft default.
 		}
 			
-		if(ExplodingConf.hasConflictWithMiningTNT && this.yield == null) {
+		if(EntityConf.hasConflictWithMiningTNT && this.yield == null) {
 			// There's no yield specified in the config.yml, but because the 
 			// MiningTNT plugin is in use on this server, we set the yield to 1.0.
 			// This is MiningTNT's default.
@@ -307,7 +312,7 @@ public class ExplodingConf {
 	}
 	
 	public boolean hasYieldConfig() {
-		return (this.yield != null) || ExplodingConf.hasConflictWithMiningTNT;
+		return (this.yield != null) || EntityConf.hasConflictWithMiningTNT;
 	}
 	
 	public boolean hasPreventTerrainDamageConfig() {

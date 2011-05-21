@@ -35,6 +35,7 @@ import org.bukkit.util.config.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
+import toadmess.explosives.events.EventRouter;
 import toadmess.explosives.stubbymocks.MockBukkitWorld;
 import toadmess.explosives.stubbymocks.MockEntity;
 import toadmess.explosives.stubbymocks.MockPlugin;
@@ -134,13 +135,18 @@ public class ExplosionListenerTest {
 	}
 
 	private void createListeners() {
-		creeperListener = new ExplosionListener(plugin, new NullLogger(), Creeper.class);
-		tntListener = new ExplosionListener(plugin, new NullLogger(), TNTPrimed.class);
-		fireballListener = new ExplosionListener(plugin, new NullLogger(), Fireball.class);
+		final NullLogger devnull = new NullLogger();
+		final EventRouter eventsHandler = new EventRouter(devnull);
+		final MultiWorldConfStore confStore = new MultiWorldConfStore();
+		eventsHandler.setConfStore(confStore);
 		
-		netherCreeperListener = new ExplosionListener(plugin, new NullLogger(), Creeper.class);
-		netherTntListener = new ExplosionListener(plugin, new NullLogger(), TNTPrimed.class);
-		netherFireballListener = new ExplosionListener(plugin, new NullLogger(), Fireball.class);
+		creeperListener = new ExplosionListener(plugin, devnull, eventsHandler, confStore, Creeper.class);
+		tntListener = new ExplosionListener(plugin, devnull, eventsHandler, confStore, TNTPrimed.class);
+		fireballListener = new ExplosionListener(plugin, devnull, eventsHandler, confStore, Fireball.class);
+		
+		netherCreeperListener = new ExplosionListener(plugin, devnull, eventsHandler, confStore, Creeper.class);
+		netherTntListener = new ExplosionListener(plugin, devnull, eventsHandler, confStore, TNTPrimed.class);
+		netherFireballListener = new ExplosionListener(plugin, devnull, eventsHandler, confStore, Fireball.class);
 		
 		justDefaultListeners = new ExplosionListener[] {
 			creeperListener, tntListener, fireballListener	

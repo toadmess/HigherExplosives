@@ -12,6 +12,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
+import toadmess.explosives.events.EventRouter;
+
 public class HEMain extends JavaPlugin {	
 	protected static final String CONF_VERSION = "version";
 	protected static final String CONF_DEBUGCONFIG = "debugConfig";
@@ -53,9 +55,14 @@ public class HEMain extends JavaPlugin {
 		
 		IS_DEBUG_CONF = this.getConfiguration().getBoolean(HEMain.CONF_DEBUGCONFIG, false);
 		
-		this.entityListeners.add(new ExplosionListener(this, this.log, TNTPrimed.class));
-		this.entityListeners.add(new ExplosionListener(this, this.log, Creeper.class));
-		this.entityListeners.add(new ExplosionListener(this, this.log, Fireball.class));
+		final MultiWorldConfStore confStore = new MultiWorldConfStore();
+		
+		final EventRouter defHandler = new EventRouter(this.log);
+		defHandler.setConfStore(confStore);
+		
+		this.entityListeners.add(new ExplosionListener(this, this.log, defHandler, confStore, TNTPrimed.class));
+		this.entityListeners.add(new ExplosionListener(this, this.log, defHandler, confStore, Creeper.class));
+		this.entityListeners.add(new ExplosionListener(this, this.log, defHandler, confStore, Fireball.class));
 		
 		registerNeededEvents(pm);
 		
@@ -78,9 +85,9 @@ public class HEMain extends JavaPlugin {
 	private void configureWorkarounds(final PluginManager pm) {
 		if(null != pm.getPlugin("Mining TNT") || null != pm.getPlugin("MiningTNT")) {
 			this.log.info(pluginDescription() + " detected MiningTNT. Default yield value will be 1.0 instead of 0.3 (unless a value is given in config.yml)");
-			ExplodingConf.hasConflictWithMiningTNT = true;
+			EntityConf.hasConflictWithMiningTNT = true;
 		} else {
-			ExplodingConf.hasConflictWithMiningTNT = false;
+			EntityConf.hasConflictWithMiningTNT = false;
 		}
 	}
 	

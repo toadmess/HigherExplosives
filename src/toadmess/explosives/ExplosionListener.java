@@ -1,6 +1,5 @@
 package toadmess.explosives;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +9,6 @@ import java.util.logging.Logger;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -30,6 +28,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.config.Configuration;
+
+import toadmess.explosives.events.EventRouter;
 
 /**
  * <p>
@@ -52,16 +52,9 @@ import org.bukkit.util.config.Configuration;
 public class ExplosionListener {
 	private final Logger log;
 	
-	private final Class<?> entityType;
+	private final Class<? extends Entity> entityType;
 	
-	private final ExplodingConf defWorldConf;
-	
-	private final Map<String, ExplodingConf> otherWorldConfs;
-	
-	// Keep track of the listeners that we have registered so we know 
-	// what we have after the plugin has been enabled. 
-	// We may need to register more listeners later on (e.g. MiningTNT workaround or commands etc.).  
-	private final HashSet<Event.Type> registeredEvents = new HashSet<Event.Type>();
+	private final MultiWorldConfStore confStore;
 	
 	/** 
 	 * Contains IDs for TNTPrimed entities that have recently had their fuse lengths modified.
@@ -76,13 +69,22 @@ public class ExplosionListener {
 	
 	private final Plugin plugin;
 	
+	// Keep track of the listeners that we have registered so we know 
+	// what we have after the plugin has been enabled. 
+	// We may need to register more listeners later on (e.g. MiningTNT workaround or commands etc.).  
+	private final HashSet<Event.Type> registeredEvents = new HashSet<Event.Type>();
+	
 	private final EntityListener entityHandler;
 	private final BlockListener blockHandler;
 	
-	public ExplosionListener(final Plugin plugin, final Logger log, final Class<? extends Entity> entityType) {
+	private final EventRouter heEvents ;
+	
+	public ExplosionListener(final Plugin plugin, final Logger log, final EventRouter eventsDestination, final MultiWorldConfStore confStore, final Class<? extends Entity> entityType) {
 		this.log = log;
-		
 		this.plugin = plugin;
+		this.confStore = confStore;
+		this.heEvents = eventsDestination;
+		this.entityType = entityType;
 		
 		// Get the unqualified class name of the entity. This is used for looking it up in the configuration.
 		final String entityName = entityType.getName().substring(entityType.getName().lastIndexOf('.')+1);
@@ -91,26 +93,26 @@ public class ExplosionListener {
 		
 		final Configuration conf = plugin.getConfiguration();
 		final boolean isDebugConf = conf.getBoolean(HEMain.CONF_DEBUGCONFIG, false);
-		
-		this.defWorldConf = new ExplodingConf(conf, confEntityPath, this.log);
+
+		final EntityConf defWorldConfig = new EntityConf(conf, confEntityPath, this.log);
+		this.confStore.add(defWorldConfig, this.entityType, MultiWorldConfStore.DEF_WORLD_NAME);
 		if(isDebugConf) {
-			if(defWorldConf.isEmptyConfig()) {
+			if(defWorldConfig.isEmptyConfig()) {
 				this.log.info("HigherExplosives: There is no default config for " + entityName + ". Those explosions will be left unaffected unless they have a world specific configuration.");				
 			} else {				
-				this.log.info("HigherExplosives: Default config for " + entityName + " is:\n" + this.defWorldConf);
+				this.log.info("HigherExplosives: Default config for " + entityName + " is:\n" + defWorldConfig);
 			}
 		}
-		
-		this.otherWorldConfs = new HashMap<String, ExplodingConf>();
+
 		final List<String> worldNames = conf.getKeys(HEMain.CONF_WORLDS);
 		if(null != worldNames) {
 			for(final String worldName : worldNames) {
 				final String worldEntityPath = HEMain.CONF_WORLDS + "." + worldName + "." + confEntityPath;
 			
 				if(null != conf.getProperty(worldEntityPath)) {
-					final ExplodingConf worldConf = new ExplodingConf(conf, worldEntityPath, this.log);
+					final EntityConf worldConf = new EntityConf(conf, worldEntityPath, this.log);
 					
-					this.otherWorldConfs.put(worldName, worldConf);
+					this.confStore.add(worldConf, this.entityType, worldName);
 					if(isDebugConf) {
 						if(!worldConf.isEmptyConfig()) {
 							this.log.info("HigherExplosives: World \"" + worldName + "\" config for " + entityName + " is " + worldConf);
@@ -120,8 +122,6 @@ public class ExplosionListener {
 			}
 		}
 		
-		this.entityType = entityType;
-		
 		this.entityHandler = new EntityHandler();
 		this.blockHandler = new BlockHandler(this.plugin);
 	}
@@ -129,43 +129,16 @@ public class ExplosionListener {
 	private boolean isCorrectEntity(final Entity e) {
 		return (null != e && this.entityType.isInstance(e));
 	}
-	
-	private ExplodingConf findWorldConf(final World world) {
-		final String worldName = world.getName();
-		if(this.otherWorldConfs.containsKey(worldName)) {
-			return this.otherWorldConfs.get(worldName);
-		}
-		
-		return this.defWorldConf;
-	}
 
 	public class EntityHandler extends EntityListener {
 		@Override
 		public void onExplosionPrime(final ExplosionPrimeEvent event) {
-			final Entity primed = event.getEntity();
-
-			if(!isCorrectEntity(primed)) {
-				return;
-			}
-						
-			final Location epicentre = primed.getLocation();
-			final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
-			
-			if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
-				return;
-			}
-
-			if(event.isCancelled()) {
+			if(event.isCancelled() || !isCorrectEntity(event.getEntity())) {
 				return;
 			}
 			
-			if(worldConf.hasRadiusConfig()) {
-				event.setRadius(worldConf.getNextRadiusMultiplier() * event.getRadius());
-			}
-			
-			if(worldConf.hasFireConfig()) {
-				event.setFire(worldConf.getFire());
-			}
+			heEvents.canChangeExplosionRadius(event, entityType);
+			heEvents.canChangeExplosionFireFlag(event, entityType);
 		}
 
 		@Override
@@ -187,7 +160,7 @@ public class ExplosionListener {
 			final Entity damagee = event.getEntity();
 
 			final Location epicentre = damager.getLocation();
-			final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
+			final EntityConf worldConf = confStore.procure(entityType, epicentre);
 			
 			if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
 				return;
@@ -198,14 +171,20 @@ public class ExplosionListener {
 			}
 			
 			if(damagee instanceof Player) {
+				heEvents.canChangePlayerDamage(event);
+				
 				if(worldConf.hasPlayerDamageConfig()) {
 					event.setDamage((int) (event.getDamage() * worldConf.getNextPlayerDamageMultiplier()));
 				}
 			} else if(damagee instanceof LivingEntity){
+				heEvents.canChangeCreatureDamage(event);
+				
 				if(worldConf.hasCreatureDamageConfig()) {
 					event.setDamage((int) (event.getDamage() * worldConf.getNextCreatureDamageMultiplier()));
 				}
 			} else {
+				heEvents.canChangeItemDamage(event);
+				
 				if(worldConf.hasItemDamageConfig()) {
 					event.setDamage((int) (event.getDamage() * worldConf.getNextItemDamageMultiplier()));
 				}
@@ -222,7 +201,7 @@ public class ExplosionListener {
 			
 			final Entity smithereens = event.getEntity();
 			
-			final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
+			final EntityConf worldConf = confStore.procure(entityType, epicentre);
 			
 			// If we have a fuse config for the TNT listener, detect TNT priming 
 			// for all explosion types. 
@@ -248,6 +227,9 @@ public class ExplosionListener {
 			if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
 				return;
 			}
+			
+			heEvents.canChangeExplosionYield(event);
+			heEvents.canPreventTerrainDamage(event);
 			
 			if(worldConf.hasYieldConfig()) {
 				event.setYield(worldConf.getYield());
@@ -280,7 +262,7 @@ public class ExplosionListener {
 			}
 			
 			final Location epicentre = damaged.getLocation();
-			final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
+			final EntityConf worldConf = confStore.procure(entityType, epicentre);
 			
 			if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
 				return;
@@ -289,6 +271,8 @@ public class ExplosionListener {
 			if(event.isCancelled()) {
 				return;
 			}
+			
+			heEvents.primedByPlayer(event);
 			
 			if(worldConf.hasTNTFuseConfig()) {
 				dealWithTNTPrimedInBlast(damaged.getLocation(), worldConf);
@@ -311,11 +295,13 @@ public class ExplosionListener {
 			}
 			
 			final Location epicentre = charged.getLocation();
-			final ExplodingConf worldConf = findWorldConf(epicentre.getWorld());
+			final EntityConf worldConf = confStore.procure(entityType, epicentre);
 			
 			if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
 				return;
 			}
+			
+			heEvents.primedByRedstone(event);
 			
 			if(worldConf.hasTNTFuseConfig()) {
 				dealWithTNTPrimedInBlast(charged.getLocation(), worldConf);
@@ -340,14 +326,13 @@ public class ExplosionListener {
 			}
 			
 			final Location flamingHeart = burnt.getLocation();
-			final ExplodingConf worldConf = findWorldConf(flamingHeart.getWorld());
-			
+			final EntityConf worldConf = confStore.procure(TNTPrimed.class, flamingHeart);
 			if(!worldConf.getActiveBounds().isWithinBounds(flamingHeart)) {
 				return;
 			}
-			
+			heEvents.primedByFire(event, burnt);
 			if(worldConf.hasTNTFuseConfig()) {
-				dealWithTNTPrimedInBlast(burnt.getLocation(), worldConf);
+				dealWithTNTPrimedInBlast(flamingHeart, worldConf);
 			}
 		}
 	}
@@ -355,7 +340,7 @@ public class ExplosionListener {
 	// Called by the TNT listener when any explosion is detected.
 	// It will schedule a search, in the next few ticks, for any TNTPrimed entities in 
 	// that world which have not yet been re-fused. 
-	private void dealWithTNTPrimedInBlast(final Location epicentre, final ExplodingConf worldConf) {
+	private void dealWithTNTPrimedInBlast(final Location epicentre, final EntityConf worldConf) {
 		final String worldName = epicentre.getWorld().getName();
 		final BukkitScheduler bs = this.plugin.getServer().getScheduler();
 		final Integer lastTaskIDForSearchInThisWorld = ExplosionListener.lastTntPrimedSearchTaskIDs.get(worldName);
@@ -392,34 +377,7 @@ public class ExplosionListener {
 	 * cases where the config somehow changes, e.g. commands).
 	 */
 	public void registerNeededEvents(final PluginManager pm, final Plugin heMain) {
-		final List<ExplodingConf> allConfs = new ArrayList<ExplodingConf>();
-		allConfs.addAll(this.otherWorldConfs.values());
-		allConfs.add(this.defWorldConf);
-		
-		final HashSet<Event.Type> neededEvents = new HashSet<Event.Type>();
-		
-		for(final ExplodingConf c : allConfs) {
-			if(c.hasFireConfig() || c.hasRadiusConfig()) {
-				neededEvents.add(Event.Type.EXPLOSION_PRIME);
-			}
-			
-			if(c.hasPreventTerrainDamageConfig() || c.hasYieldConfig()) {
-				neededEvents.add(Event.Type.ENTITY_EXPLODE);
-			}
-			
-			if(c.hasPlayerDamageConfig() || c.hasCreatureDamageConfig() || c.hasItemDamageConfig()) {
-				neededEvents.add(Event.Type.ENTITY_DAMAGE);
-			}
-			
-			if(c.hasTNTFuseConfig() && this.entityType.isAssignableFrom(TNTPrimed.class)) {
-				neededEvents.add(Event.Type.BLOCK_DAMAGE);
-				neededEvents.add(Event.Type.BLOCK_BURN);
-				neededEvents.add(Event.Type.ENTITY_EXPLODE);
-				neededEvents.add(Event.Type.BLOCK_PHYSICS);
-			}
-		}
-		
-		for(final Event.Type evType : neededEvents) {
+		for(final Event.Type evType : this.confStore.getNeededEvents(pm, heMain, this.entityType)) {
 			if(!this.registeredEvents.contains(evType)) { // Only register if we haven't done so before				
 				switch(evType.getCategory()) {
 				case LIVING_ENTITY:

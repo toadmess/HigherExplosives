@@ -14,6 +14,7 @@ import org.bukkit.entity.Creature;
 import org.bukkit.entity.CreatureType;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
@@ -298,6 +299,84 @@ public class MockBukkitWorld implements World {
 	public boolean regenerateChunk(int arg0, int arg1) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public long getSeed() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getThunderDuration() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getWeatherDuration() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean hasStorm() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isThundering() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setStorm(boolean arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setThunderDuration(int arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setThundering(boolean arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setWeatherDuration(int arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public LightningStrike strikeLightning(Location arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean getPVP() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setPVP(boolean arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public LightningStrike strikeLightningEffect(Location arg0) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

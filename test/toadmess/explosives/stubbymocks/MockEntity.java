@@ -17,6 +17,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Snowball;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.Vehicle;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.util.Vector;
 
 /**
@@ -220,6 +221,18 @@ public class MockEntity implements Entity {
 		public boolean teleport(Entity arg0) {
 			// TODO Auto-generated method stub
 			return false;
+		}
+
+		@Override
+		public boolean isPowered() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public void setPowered(boolean arg0) {
+			// TODO Auto-generated method stub
+			
 		}
 		
 	}
@@ -511,4 +524,16 @@ public class MockEntity implements Entity {
 
 	@Override
 	public void teleportTo(Entity arg0) {}
+
+	@Override
+	public EntityDamageEvent getLastDamageCause() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setLastDamageCause(EntityDamageEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
 }
