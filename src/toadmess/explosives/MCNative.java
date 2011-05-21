@@ -13,7 +13,7 @@ import org.bukkit.entity.TNTPrimed;
  */
 public class MCNative {
 	private static boolean failedSoundExplosion = false;
-	protected static void playSoundExplosion(final Location epicentre) {
+	public static void playSoundExplosion(final Location epicentre) {
 		if(failedSoundExplosion) {
 			return;
 		}

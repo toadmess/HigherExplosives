@@ -156,39 +156,19 @@ public class ExplosionListener {
 			if(event.getCause() != EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) {
 				return;
 			}
-			
-			final Entity damagee = event.getEntity();
-
-			final Location epicentre = damager.getLocation();
-			final EntityConf worldConf = confStore.procure(entityType, epicentre);
-			
-			if(!worldConf.getActiveBounds().isWithinBounds(epicentre)) {
-				return;
-			}
-			
+						
 			if(event.isCancelled()) {
 				return;
 			}
 			
+			final Entity damagee = event.getEntity();
+			
 			if(damagee instanceof Player) {
-				heEvents.canChangePlayerDamage(event);
-				
-				if(worldConf.hasPlayerDamageConfig()) {
-					event.setDamage((int) (event.getDamage() * worldConf.getNextPlayerDamageMultiplier()));
-				}
+				heEvents.canChangePlayerDamage(event, damager, entityType);
 			} else if(damagee instanceof LivingEntity){
-				heEvents.canChangeCreatureDamage(event);
-				
-				if(worldConf.hasCreatureDamageConfig()) {
-					event.setDamage((int) (event.getDamage() * worldConf.getNextCreatureDamageMultiplier()));
-				}
+				heEvents.canChangeCreatureDamage(event, damager, entityType);
 			} else {
-				heEvents.canChangeItemDamage(event);
-				
-				if(worldConf.hasItemDamageConfig()) {
-					event.setDamage((int) (event.getDamage() * worldConf.getNextItemDamageMultiplier()));
-				}
-				return;
+				heEvents.canChangeItemDamage(event, damager, entityType);
 			}
 		}
 
@@ -228,18 +208,8 @@ public class ExplosionListener {
 				return;
 			}
 			
-			heEvents.canChangeExplosionYield(event);
-			heEvents.canPreventTerrainDamage(event);
-			
-			if(worldConf.hasYieldConfig()) {
-				event.setYield(worldConf.getYield());
-			}
-			
-			if(worldConf.hasPreventTerrainDamageConfig() && worldConf.getPreventTerrainDamage()) {			
-				event.setCancelled(true);
-				
-				MCNative.playSoundExplosion(epicentre);
-			}
+			heEvents.canChangeExplosionYield(event, entityType);
+			heEvents.canPreventTerrainDamage(event, entityType);
 		}		
 	}
 	

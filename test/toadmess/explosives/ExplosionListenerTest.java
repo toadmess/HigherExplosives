@@ -548,6 +548,7 @@ public class ExplosionListenerTest {
 				final World inThisWorld, final Entity entity, 
 				final EventExpectations<EventType> expectedValue) {
 			for (final ExplosionListener l : outOfTheseListeners) {
+				System.out.println("checkExplosionIsChangedByJustOneListener: " + entity + ", " + l + ", " + this.defaultValue);
 				if(l == justThisOneShouldAffectIt) {
 					// Check that just this one listener affecs the explosion
 					checkEventHandledAsExpected(entity, inThisWorld, justThisOneShouldAffectIt, expectedValue);				
