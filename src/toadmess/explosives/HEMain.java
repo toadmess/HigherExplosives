@@ -14,30 +14,7 @@ import org.bukkit.util.config.Configuration;
 
 import toadmess.explosives.events.EventRouter;
 
-public class HEMain extends JavaPlugin {	
-	protected static final String CONF_VERSION = "version";
-	protected static final String CONF_DEBUGCONFIG = "debugConfig";
-	
-	protected static final String CONF_ENTITIES = "entities";
-	
-	protected static final String CONF_ENTITY_FIRE = "fire";
-	protected static final String CONF_ENTITY_RADIUSMULT = "radiusMultiplier";
-	protected static final String CONF_ENTITY_PLAYER_DAMAGEMULT = "playerDamageMultiplier";
-	protected static final String CONF_ENTITY_CREATURE_DAMAGEMULT = "creatureDamageMultiplier";
-	protected static final String CONF_ENTITY_ITEM_DAMAGEMULT = "itemDamageMultiplier";
-	protected static final String CONF_ENTITY_YIELD = "yield";
-	protected static final String CONF_ENTITY_PREVENT_TERRAIN_DAMAGE = "preventTerrainDamage";
-	protected static final String CONF_ENTITY_TNT_FUSEMULT = "trialTNTFuseMultiplier";
-	
-	protected static final String CONF_MULTIPLIER_CHANCE = "chance";
-	protected static final String CONF_MULTIPLIER_VALUE = "value";
-	
-	protected static final String CONF_BOUNDS = "activeBounds";
-	protected static final String CONF_BOUNDS_MAX = "max";
-	protected static final String CONF_BOUNDS_MIN = "min";
-
-	protected static final String CONF_WORLDS = "worlds";
-	
+public class HEMain extends JavaPlugin implements ConfConstants {		
 	/** True if we should print out some debugging of the configuration */
 	public boolean IS_DEBUG_CONF;
 	
@@ -53,7 +30,7 @@ public class HEMain extends JavaPlugin {
 		
 		configureWorkarounds(pm);
 		
-		IS_DEBUG_CONF = this.getConfiguration().getBoolean(HEMain.CONF_DEBUGCONFIG, false);
+		IS_DEBUG_CONF = this.getConfiguration().getBoolean(CONF_DEBUGCONFIG, false);
 		
 		final MultiWorldConfStore confStore = new MultiWorldConfStore();
 		

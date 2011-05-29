@@ -15,7 +15,7 @@ import org.bukkit.util.config.Configuration;
  * 
  * @author John Revill
  */
-public class EntityConf {
+public class EntityConf implements ConfConstants {
 	private final Logger log; 
 	
 	/** 
@@ -71,15 +71,15 @@ public class EntityConf {
 		
 		this.allowedBounds = new Bounds(conf, confPathPrefix);
 
-		this.radiusMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_RADIUSMULT);
-		this.playerDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_PLAYER_DAMAGEMULT);
-		this.creatureDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_CREATURE_DAMAGEMULT);
-		this.itemDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_ITEM_DAMAGEMULT);
-		this.fuseMultipliers = getMultipliers(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_TNT_FUSEMULT);
+		this.radiusMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_RADIUSMULT);
+		this.playerDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_PLAYER_DAMAGEMULT);
+		this.creatureDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_CREATURE_DAMAGEMULT);
+		this.itemDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_ITEM_DAMAGEMULT);
+		this.fuseMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_TNT_FUSEMULT);
 
-		this.fire = (Boolean) conf.getProperty(confPathPrefix + "." + HEMain.CONF_ENTITY_FIRE);
-		this.yield = getOptionalFloat(conf, confPathPrefix + "." + HEMain.CONF_ENTITY_YIELD);			
-		this.preventTerrainDamage = (Boolean) conf.getProperty(confPathPrefix + "." + HEMain.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE);
+		this.fire = (Boolean) conf.getProperty(confPathPrefix + "." + CONF_ENTITY_FIRE);
+		this.yield = getOptionalFloat(conf, confPathPrefix + "." + CONF_ENTITY_YIELD);			
+		this.preventTerrainDamage = (Boolean) conf.getProperty(confPathPrefix + "." + CONF_ENTITY_PREVENT_TERRAIN_DAMAGE);
 		
 		
 		if(null != conf.getProperty("everyExplosion") || 
@@ -130,16 +130,16 @@ public class EntityConf {
 				if (multiplierListItemProp instanceof HashMap<?,?>) {
 					final HashMap<?,?> chanceAndValueProp = (HashMap<?,?>) multiplierListItemProp;
 
-					final Object chanceProp = chanceAndValueProp.get(HEMain.CONF_MULTIPLIER_CHANCE);
-					final Object valueProp = chanceAndValueProp.get(HEMain.CONF_MULTIPLIER_VALUE);
+					final Object chanceProp = chanceAndValueProp.get(CONF_MULTIPLIER_CHANCE);
+					final Object valueProp = chanceAndValueProp.get(CONF_MULTIPLIER_VALUE);
 
 					if ((chanceProp instanceof Double) && (valueProp instanceof Double)) {
 						addMultiplier(multipliers, (float)Math.min(1.0D, Math.max(0.0D, ((Double)chanceProp).doubleValue())), (float)Math.max(0.0D, ((Double)valueProp).doubleValue()));
 					} else {
-						this.log.warning("HigherExplosives: Config problem. Ignoring list item under " + pathToMultiplier + " as either the " + HEMain.CONF_MULTIPLIER_CHANCE + " of (" + chanceProp + ") or the " + HEMain.CONF_MULTIPLIER_VALUE + " of (" + valueProp + ") doesn't look like a number. Was expecting a double.");
+						this.log.warning("HigherExplosives: Config problem. Ignoring list item under " + pathToMultiplier + " as either the " + CONF_MULTIPLIER_CHANCE + " of (" + chanceProp + ") or the " + CONF_MULTIPLIER_VALUE + " of (" + valueProp + ") doesn't look like a number. Was expecting a double.");
 					}
 				} else {
-					this.log.warning("HigherExplosives: Config problem. Ignoring strange list item under " + pathToMultiplier + ". Was expecting " + HEMain.CONF_MULTIPLIER_CHANCE + " and " + HEMain.CONF_MULTIPLIER_VALUE + " keys");
+					this.log.warning("HigherExplosives: Config problem. Ignoring strange list item under " + pathToMultiplier + ". Was expecting " + CONF_MULTIPLIER_CHANCE + " and " + CONF_MULTIPLIER_VALUE + " keys");
 				}
 			}
 

@@ -9,13 +9,13 @@ import org.bukkit.util.config.Configuration;
  *
  * @author John Revill
  */
-public class Bounds {
+public class Bounds implements ConfConstants {
 	private final Vector minVector;
 	private final Vector maxVector;
 	
 	public Bounds(final Configuration conf, final String confPathPrefix) {
-		final String confPathMin = confPathPrefix + "." + HEMain.CONF_BOUNDS + "." + HEMain.CONF_BOUNDS_MIN;
-		final String confPathMax = confPathPrefix + "." + HEMain.CONF_BOUNDS + "." + HEMain.CONF_BOUNDS_MAX;
+		final String confPathMin = confPathPrefix + "." + CONF_BOUNDS + "." + CONF_BOUNDS_MIN;
+		final String confPathMax = confPathPrefix + "." + CONF_BOUNDS + "." + CONF_BOUNDS_MAX;
 
 		this.minVector = new Vector(conf.getDouble(confPathMin + ".x", Double.NEGATIVE_INFINITY), 
 									conf.getDouble(confPathMin + ".y", Double.NEGATIVE_INFINITY), 

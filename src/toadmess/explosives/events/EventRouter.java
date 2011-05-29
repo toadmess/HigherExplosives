@@ -80,10 +80,6 @@ public class EventRouter {
 		event.setFire(worldConf.getFire());
 	}
 	
-	public void canChangeExplosionDamage() {
-		this.log.fine("canChangeEexplosionDamage");
-	}
-	
 	public void canChangeExplosionYield(final EntityExplodeEvent event, final Class<? extends Entity> entityType) {
 		this.log.fine("canChangeExplosionYield");
 		

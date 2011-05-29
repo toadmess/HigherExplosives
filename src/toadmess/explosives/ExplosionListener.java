@@ -49,7 +49,7 @@ import toadmess.explosives.events.EventRouter;
  * 
  * @author John Revill
  */
-public class ExplosionListener {
+public class ExplosionListener implements ConfConstants {
 	private final Logger log;
 	
 	private final Class<? extends Entity> entityType;
@@ -89,10 +89,10 @@ public class ExplosionListener {
 		// Get the unqualified class name of the entity. This is used for looking it up in the configuration.
 		final String entityName = entityType.getName().substring(entityType.getName().lastIndexOf('.')+1);
 		
-		final String confEntityPath = HEMain.CONF_ENTITIES + "." + entityName;
+		final String confEntityPath = CONF_ENTITIES + "." + entityName;
 		
 		final Configuration conf = plugin.getConfiguration();
-		final boolean isDebugConf = conf.getBoolean(HEMain.CONF_DEBUGCONFIG, false);
+		final boolean isDebugConf = conf.getBoolean(CONF_DEBUGCONFIG, false);
 
 		final EntityConf defWorldConfig = new EntityConf(conf, confEntityPath, this.log);
 		this.confStore.add(defWorldConfig, this.entityType, MultiWorldConfStore.DEF_WORLD_NAME);
@@ -104,10 +104,10 @@ public class ExplosionListener {
 			}
 		}
 
-		final List<String> worldNames = conf.getKeys(HEMain.CONF_WORLDS);
+		final List<String> worldNames = conf.getKeys(CONF_WORLDS);
 		if(null != worldNames) {
 			for(final String worldName : worldNames) {
-				final String worldEntityPath = HEMain.CONF_WORLDS + "." + worldName + "." + confEntityPath;
+				final String worldEntityPath = CONF_WORLDS + "." + worldName + "." + confEntityPath;
 			
 				if(null != conf.getProperty(worldEntityPath)) {
 					final EntityConf worldConf = new EntityConf(conf, worldEntityPath, this.log);
@@ -143,13 +143,12 @@ public class ExplosionListener {
 
 		@Override
 		public void onEntityDamage(final EntityDamageEvent event) {
-			final Entity damager;
-			if(event instanceof EntityDamageByEntityEvent) {
-				damager = ((EntityDamageByEntityEvent) event).getDamager();
-				if(!isCorrectEntity(damager)) {
-					return;
-				}
-			} else {
+			if(!(event instanceof EntityDamageByEntityEvent)) {
+				return;
+			}
+			
+			final Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
+			if(!isCorrectEntity(damager)) {
 				return;
 			}
 			
