@@ -36,11 +36,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import toadmess.explosives.events.EventRouter;
-import toadmess.explosives.stubbymocks.MockBukkitWorld;
-import toadmess.explosives.stubbymocks.MockEntity;
-import toadmess.explosives.stubbymocks.MockPlugin;
-import toadmess.explosives.stubbymocks.NullLogger;
-import toadmess.explosives.stubbymocks.StubPluginManager;
+import toadmess.explosives.messymocks.MockBukkitWorld;
+import toadmess.explosives.messymocks.MockEntity;
+import toadmess.explosives.messymocks.MockPlugin;
+import toadmess.explosives.messymocks.NullLogger;
+import toadmess.explosives.messymocks.StubPluginManager;
 
 /**
  * Unmaintainable unit tests. Yuck.

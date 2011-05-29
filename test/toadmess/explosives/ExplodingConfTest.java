@@ -10,8 +10,8 @@ import org.bukkit.util.config.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
-import toadmess.explosives.stubbymocks.NullLogger;
-import toadmess.explosives.stubbymocks.PredicatableNumGen;
+import toadmess.explosives.messymocks.NullLogger;
+import toadmess.explosives.messymocks.PredicatableNumGen;
 
 public class ExplodingConfTest {
 	private Configuration conf;

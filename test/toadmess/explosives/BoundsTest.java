@@ -8,7 +8,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import toadmess.explosives.stubbymocks.MockBukkitWorld;
+import toadmess.explosives.messymocks.MockBukkitWorld;
 
 public class BoundsTest {
 	private final Location locAllZero = new Location(new MockBukkitWorld(""), 0D, 0D, 0D);

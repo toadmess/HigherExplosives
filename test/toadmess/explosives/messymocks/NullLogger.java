@@ -1,4 +1,4 @@
-package toadmess.explosives.stubbymocks;
+package toadmess.explosives.messymocks;
 
 import java.util.logging.Logger;
 
