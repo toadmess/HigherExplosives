@@ -42,8 +42,7 @@ public class TNTTracker implements Handler {
 			TippingPoint.TNT_PRIMED_BY_FIRE,
 			TippingPoint.TNT_PRIMED_BY_PLAYER,
 			TippingPoint.TNT_PRIMED_BY_REDSTONE,
-			TippingPoint.EXPLOSION_MAY_TRIGGER_TNT,
-			TippingPoint.TNT_FUSE_HAS_BURNT_OUT 
+			TippingPoint.AN_EXPLOSION,
 		};
 	}
 	
@@ -60,13 +59,19 @@ public class TNTTracker implements Handler {
 		case TNT_PRIMED_BY_FIRE:
 		case TNT_PRIMED_BY_PLAYER:
 		case TNT_PRIMED_BY_REDSTONE:
-		case EXPLOSION_MAY_TRIGGER_TNT:
 			dealWithAnyTNTJustPrimed(ev.getEventLocation(), worldConf);
 			break;
 			
-		case TNT_FUSE_HAS_BURNT_OUT:
-			// Clean up entity ID from our collection of tweaked TNTPrimed entity IDs.
-			handledTNTPrimedEntities.remove(((EntityExplodeEvent) ev.event).getEntity().getEntityId());
+		case AN_EXPLOSION:
+			final Entity e = ((EntityExplodeEvent) ev.event).getEntity();
+			if(e instanceof TNTPrimed) {
+				// This was a TNTPrimed entity that just exploded.
+				// Clean up its entity ID from our collection of tweaked TNTPrimed entity IDs.
+				handledTNTPrimedEntities.remove(e.getEntityId());				
+			}
+			
+			// Some other TNT block may have been caught in this blast, so search for new primed TNTs
+			dealWithAnyTNTJustPrimed(ev.getEventLocation(), worldConf);
 			break;
 		}
 	}

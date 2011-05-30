@@ -97,5 +97,5 @@ public class HEMain extends JavaPlugin implements ConfConstants {
 		}
 
 		return conf;
-	}
+	}	
 }

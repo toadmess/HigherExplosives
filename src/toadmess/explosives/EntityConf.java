@@ -70,7 +70,7 @@ public class EntityConf implements ConfConstants {
 		this.rng = rng;
 		
 		this.allowedBounds = new Bounds(conf, confPathPrefix);
-
+		
 		this.radiusMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_RADIUSMULT);
 		this.playerDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_PLAYER_DAMAGEMULT);
 		this.creatureDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_CREATURE_DAMAGEMULT);
@@ -81,6 +81,9 @@ public class EntityConf implements ConfConstants {
 		this.yield = getOptionalFloat(conf, confPathPrefix + "." + CONF_ENTITY_YIELD);			
 		this.preventTerrainDamage = (Boolean) conf.getProperty(confPathPrefix + "." + CONF_ENTITY_PREVENT_TERRAIN_DAMAGE);
 		
+		if(null != conf.getProperty(confPathPrefix + ".trialTNTFuseMultiplier")) {
+			this.log.warning("HigherExplosives: The \"trialTNTFuseMultiplier\" configuration is no longer used. Please rename it to \"" + CONF_ENTITY_TNT_FUSEMULT + "\"");
+		}
 		
 		if(null != conf.getProperty("everyExplosion") || 
 		   null != conf.getProperty(confPathPrefix + ".everyExplosion")) {

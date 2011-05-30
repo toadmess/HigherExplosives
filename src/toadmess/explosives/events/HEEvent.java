@@ -50,8 +50,7 @@ public class HEEvent {
 		case CAN_CHANGE_EXPLOSION_FIRE_FLAG:
 		case CAN_CHANGE_EXPLOSION_YIELD:
 		case CAN_PREVENT_TERRAIN_DAMAGE:
-		case EXPLOSION_MAY_TRIGGER_TNT:
-		case TNT_FUSE_HAS_BURNT_OUT:
+		case AN_EXPLOSION:
 			return ((EntityEvent)event).getEntity().getLocation();
 			
 		case CAN_CHANGE_PLAYER_DAMAGE:
@@ -96,8 +95,7 @@ public class HEEvent {
 		case TNT_PRIMED_BY_FIRE:
 		case TNT_PRIMED_BY_PLAYER:	
 		case TNT_PRIMED_BY_REDSTONE:
-		case TNT_FUSE_HAS_BURNT_OUT:
-		case EXPLOSION_MAY_TRIGGER_TNT:
+		case AN_EXPLOSION:
 			return TNTPrimed.class;
 		
 		default: 

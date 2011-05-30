@@ -95,16 +95,10 @@ public class BukkitListeners implements ConfConstants {
 				return;
 			}
 			
-			final Entity smithereens = event.getEntity();
-			
-			if(smithereens == null) {
+			if(event.getEntity() == null) {
 				// Can be null as a result of an explosion triggered without an entity (e.g. MCNative.playSoundExplosion())
 				// In such a case, it is not an interesting event to be passing on to any handlers.
 				return;
-			}
-			
-			if(smithereens instanceof TNTPrimed) {
-				handler.handle(new HEEvent(TippingPoint.TNT_FUSE_HAS_BURNT_OUT, event, confStore));
 			}
 				
 			if(event.isCancelled()) {
@@ -115,8 +109,7 @@ public class BukkitListeners implements ConfConstants {
 			handler.handle(new HEEvent(TippingPoint.CAN_PREVENT_TERRAIN_DAMAGE, event, confStore));
 
 			if(!event.isCancelled()) {
-				// Well the terrain could well have been damaged
-				handler.handle(new HEEvent(TippingPoint.EXPLOSION_MAY_TRIGGER_TNT, event, confStore));
+				handler.handle(new HEEvent(TippingPoint.AN_EXPLOSION, event, confStore));
 			}
 		}		
 	}

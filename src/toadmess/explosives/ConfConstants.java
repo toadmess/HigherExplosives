@@ -13,7 +13,7 @@ public interface ConfConstants {
 	final String CONF_ENTITY_ITEM_DAMAGEMULT = "itemDamageMultiplier";
 	final String CONF_ENTITY_YIELD = "yield";
 	final String CONF_ENTITY_PREVENT_TERRAIN_DAMAGE = "preventTerrainDamage";
-	final String CONF_ENTITY_TNT_FUSEMULT = "trialTNTFuseMultiplier";
+	final String CONF_ENTITY_TNT_FUSEMULT = "tntFuseMultiplier";
 	
 	final String CONF_MULTIPLIER_CHANCE = "chance";
 	final String CONF_MULTIPLIER_VALUE = "value";
