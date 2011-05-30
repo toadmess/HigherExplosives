@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.bukkit.entity.Creeper;
-import org.bukkit.entity.Fireball;
-import org.bukkit.entity.TNTPrimed;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
-import toadmess.explosives.events.EventRouter;
+import toadmess.explosives.events.TippingPoint;
+import toadmess.explosives.events.handlers.EventRouter;
+import toadmess.explosives.events.handlers.HandleDamageCreature;
+import toadmess.explosives.events.handlers.HandleDamageItem;
 
 public class HEMain extends JavaPlugin implements ConfConstants {		
 	/** True if we should print out some debugging of the configuration */
@@ -32,24 +32,16 @@ public class HEMain extends JavaPlugin implements ConfConstants {
 		
 		IS_DEBUG_CONF = this.getConfiguration().getBoolean(CONF_DEBUGCONFIG, false);
 		
-		final MultiWorldConfStore confStore = new MultiWorldConfStore();
+		final MultiWorldConfStore confStore = new MultiWorldConfStore(this.log);
 		
-		final EventRouter defHandler = new EventRouter(this.log);
-		defHandler.setConfStore(confStore);
+		final EventRouter router = new EventRouter(this.log);
+		router.addHandler(new HandleDamageCreature());
+		router.addHandler(new HandleDamageItem());
 		
-		this.entityListeners.add(new ExplosionListener(this, this.log, defHandler, confStore, TNTPrimed.class));
-		this.entityListeners.add(new ExplosionListener(this, this.log, defHandler, confStore, Creeper.class));
-		this.entityListeners.add(new ExplosionListener(this, this.log, defHandler, confStore, Fireball.class));
-		
-		registerNeededEvents(pm);
+		final ExplosionListener el = new ExplosionListener(this, router, confStore);
+		el.registerNeededEvents(pm, this);
 		
 		this.log.info(pluginDescription() + " primed and ready");
-	}
-
-	private void registerNeededEvents(final PluginManager pm) {
-		for(final ExplosionListener listener : this.entityListeners) {
-			listener.registerNeededEvents(pm, this);
-		}
 	}
 
 	@Override

@@ -35,7 +35,7 @@ import org.bukkit.util.config.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
-import toadmess.explosives.events.EventRouter;
+import toadmess.explosives.events.handlers.EventRouter;
 import toadmess.explosives.messymocks.MockBukkitWorld;
 import toadmess.explosives.messymocks.MockEntity;
 import toadmess.explosives.messymocks.MockPlugin;

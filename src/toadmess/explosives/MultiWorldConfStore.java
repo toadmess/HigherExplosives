@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -13,6 +14,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.util.config.Configuration;
 
 /**
  * Contains all of the different EntityConf instances for all worlds and all entities.
@@ -20,7 +22,7 @@ import org.bukkit.plugin.PluginManager;
  * 
  * @author John Revill
  */
-public class MultiWorldConfStore {
+public class MultiWorldConfStore implements ConfConstants {
 	/**
 	 * Maps the entity type to a map. The returned map maps the world name to the config to use. 
 	 */
@@ -31,8 +33,51 @@ public class MultiWorldConfStore {
 	 * Used to key into the map of ExplodingConf to get the default world config
 	 */
 	public static final String DEF_WORLD_NAME = "";
+	
+	public final Logger log;
+	
+	public MultiWorldConfStore(final Logger log) {
+		this.log = log;
+	}
+	
+	public void readConfsForEntity(final Class<? extends Entity> entityType, final Configuration conf) {
+		// Get the unqualified class name of the entity. This is used for looking it up in the configuration.
+		final String entityName = entityType.getName().substring(entityType.getName().lastIndexOf('.')+1);
 		
-	public void add(final EntityConf conf, final Class<? extends Entity> entityClass, final String worldName) {
+		final String confEntityPath = CONF_ENTITIES + "." + entityName;
+		
+		final boolean isDebugConf = conf.getBoolean(CONF_DEBUGCONFIG, false);
+
+		final EntityConf defWorldConfig = new EntityConf(conf, confEntityPath, log);
+		this.add(defWorldConfig, entityType, MultiWorldConfStore.DEF_WORLD_NAME);
+		if(isDebugConf) {
+			if(defWorldConfig.isEmptyConfig()) {
+				log.info("HigherExplosives: There is no default config for " + entityName + ". Those explosions will be left unaffected unless they have a world specific configuration.");				
+			} else {				
+				log.info("HigherExplosives: Default config for " + entityName + " is:\n" + defWorldConfig);
+			}
+		}
+
+		final List<String> worldNames = conf.getKeys(CONF_WORLDS);
+		if(null != worldNames) {
+			for(final String worldName : worldNames) {
+				final String worldEntityPath = CONF_WORLDS + "." + worldName + "." + confEntityPath;
+			
+				if(null != conf.getProperty(worldEntityPath)) {
+					final EntityConf worldConf = new EntityConf(conf, worldEntityPath, this.log);
+					
+					this.add(worldConf, entityType, worldName);
+					if(isDebugConf) {
+						if(!worldConf.isEmptyConfig()) {
+							this.log.info("HigherExplosives: World \"" + worldName + "\" config for " + entityName + " is " + worldConf);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	private void add(final EntityConf conf, final Class<? extends Entity> entityClass, final String worldName) {
 		final Map<String, EntityConf> worldConfMap;
 		
 		if(this.worldConfs.containsKey(entityClass)) {
@@ -85,36 +130,36 @@ public class MultiWorldConfStore {
 	 * Finds all the event types required by any and all configs in all worlds.
 	 * @return A collection of the event types that we should register and listen to
 	 */
-	public Set<Type> getNeededEvents(final PluginManager pm, final Plugin heMain, final Class<? extends Entity> entityClass) {
-		final Map<String, EntityConf> worldConfMap = this.worldConfs.get(entityClass);
-		
-		final List<EntityConf> allConfs = new ArrayList<EntityConf>();
-		allConfs.addAll(worldConfMap.values());
-		allConfs.add(worldConfMap.get(DEF_WORLD_NAME));
-		
+	public Set<Type> getNeededBukkitEvents(final PluginManager pm, final Plugin heMain) {
 		final HashSet<Event.Type> neededEvents = new HashSet<Event.Type>();
 		
-		for(final EntityConf c : allConfs) {
-			if(c.hasFireConfig() || c.hasRadiusConfig()) {
-				neededEvents.add(Event.Type.EXPLOSION_PRIME);
+		for(final Map<String, EntityConf> worldConfMap : this.worldConfs.values()) {
+			final List<EntityConf> allConfs = new ArrayList<EntityConf>();
+			allConfs.addAll(worldConfMap.values());
+			allConfs.add(worldConfMap.get(DEF_WORLD_NAME));
+			
+			for(final EntityConf c : allConfs) {
+				if(c.hasFireConfig() || c.hasRadiusConfig()) {
+					neededEvents.add(Event.Type.EXPLOSION_PRIME);
+				}
+				
+				if(c.hasPreventTerrainDamageConfig() || c.hasYieldConfig()) {
+					neededEvents.add(Event.Type.ENTITY_EXPLODE);
+				}
+				
+				if(c.hasPlayerDamageConfig() || c.hasCreatureDamageConfig() || c.hasItemDamageConfig()) {
+					neededEvents.add(Event.Type.ENTITY_DAMAGE);
+				}
+				
+				if(c.hasTNTFuseConfig()) {
+					neededEvents.add(Event.Type.BLOCK_DAMAGE);
+					neededEvents.add(Event.Type.BLOCK_BURN);
+					neededEvents.add(Event.Type.ENTITY_EXPLODE);
+					neededEvents.add(Event.Type.BLOCK_PHYSICS);
+				}
 			}
 			
-			if(c.hasPreventTerrainDamageConfig() || c.hasYieldConfig()) {
-				neededEvents.add(Event.Type.ENTITY_EXPLODE);
-			}
-			
-			if(c.hasPlayerDamageConfig() || c.hasCreatureDamageConfig() || c.hasItemDamageConfig()) {
-				neededEvents.add(Event.Type.ENTITY_DAMAGE);
-			}
-			
-			if(c.hasTNTFuseConfig()) {
-				neededEvents.add(Event.Type.BLOCK_DAMAGE);
-				neededEvents.add(Event.Type.BLOCK_BURN);
-				neededEvents.add(Event.Type.ENTITY_EXPLODE);
-				neededEvents.add(Event.Type.BLOCK_PHYSICS);
-			}
 		}
-		
 		return neededEvents;
 	}
 }
