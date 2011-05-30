@@ -28,7 +28,7 @@ import toadmess.explosives.events.HEEvent;
 import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.TippingPoint;
 
-public class ExplosionListener implements ConfConstants {
+public class BukkitListeners implements ConfConstants {
 	private final MultiWorldConfStore confStore;
 	
 	private final Plugin plugin;
@@ -43,7 +43,7 @@ public class ExplosionListener implements ConfConstants {
 	
 	private final Handler handler ;
 	
-	public ExplosionListener(final Plugin plugin, final Handler defaultHandler, final MultiWorldConfStore confStore) {
+	public BukkitListeners(final Plugin plugin, final Handler defaultHandler, final MultiWorldConfStore confStore) {
 		this.plugin = plugin;
 		this.confStore = confStore;
 		this.handler = defaultHandler;
@@ -97,20 +97,27 @@ public class ExplosionListener implements ConfConstants {
 			
 			final Entity smithereens = event.getEntity();
 			
+			if(smithereens == null) {
+				// Can be null as a result of an explosion triggered without an entity (e.g. MCNative.playSoundExplosion())
+				// In such a case, it is not an interesting event to be passing on to any handlers.
+				return;
+			}
+			
 			if(smithereens instanceof TNTPrimed) {
-				handler.handle(new HEEvent(TippingPoint.TNT_FUSE_HAS_RAN_OUT, event, confStore));
+				handler.handle(new HEEvent(TippingPoint.TNT_FUSE_HAS_BURNT_OUT, event, confStore));
 			}
 				
 			if(event.isCancelled()) {
 				return;
 			}
 			
-			// For every explosion type, we always want to make sure that if any TNT that 
-			// gets caught in the blast, it will have it's fuse tweaked.
-			handler.handle(new HEEvent(TippingPoint.ENTITY_EXPLODING, event, confStore));
-			
 			handler.handle(new HEEvent(TippingPoint.CAN_CHANGE_EXPLOSION_YIELD, event, confStore));
 			handler.handle(new HEEvent(TippingPoint.CAN_PREVENT_TERRAIN_DAMAGE, event, confStore));
+
+			if(!event.isCancelled()) {
+				// Well the terrain could well have been damaged
+				handler.handle(new HEEvent(TippingPoint.EXPLOSION_MAY_TRIGGER_TNT, event, confStore));
+			}
 		}		
 	}
 	
@@ -126,7 +133,8 @@ public class ExplosionListener implements ConfConstants {
 				return false;
 			}
 			
-			if(((Cancellable) event).isCancelled()) {
+			if(event instanceof Cancellable && 
+			   ((Cancellable) event).isCancelled()) {
 				return false;
 			}
 			
@@ -175,7 +183,7 @@ public class ExplosionListener implements ConfConstants {
 	 * cases where the config somehow changes, e.g. commands).
 	 */
 	public void registerNeededEvents(final PluginManager pm, final Plugin heMain) {
-		for(final Event.Type evType : this.confStore.getNeededBukkitEvents(pm, heMain)) {
+		for(final Event.Type evType : this.confStore.getNeededBukkitEvents()) {
 			if(!this.registeredEvents.contains(evType)) { // Only register if we haven't done so before				
 				switch(evType.getCategory()) {
 				case LIVING_ENTITY:

@@ -1,8 +1,5 @@
 package toadmess.explosives.events.handlers;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import toadmess.explosives.EntityConf;
 import toadmess.explosives.events.TippingPoint;
 

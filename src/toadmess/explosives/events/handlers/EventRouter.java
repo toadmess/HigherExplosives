@@ -1,13 +1,8 @@
 package toadmess.explosives.events.handlers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.logging.Logger;
 
-import toadmess.explosives.EntityConf;
-import toadmess.explosives.MultiWorldConfStore;
 import toadmess.explosives.events.HEEvent;
 import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.TippingPoint;
@@ -16,7 +11,7 @@ import toadmess.explosives.events.TippingPoint;
  * Intended to take some events of interest from the different bukkit listeners 
  * and match them up with the relevant configuration. 
  * 
- * If all is good then forward them on to all the Handlers that are registered with that type of TippingPoint.
+ * If all is good then delegate the event on to all the Handlers that are registered with that type of TippingPoint.
  */
 public class EventRouter implements Handler {
 	private final Logger log;
@@ -44,8 +39,6 @@ public class EventRouter implements Handler {
 	
 	@Override
 	public void handle(final HEEvent event) {
-		this.log.fine("EventRouter.handle("+event+")");
-		
 		if(!event.hasApplicableConfig()) {
 			return;
 		}

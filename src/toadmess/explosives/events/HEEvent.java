@@ -50,6 +50,8 @@ public class HEEvent {
 		case CAN_CHANGE_EXPLOSION_FIRE_FLAG:
 		case CAN_CHANGE_EXPLOSION_YIELD:
 		case CAN_PREVENT_TERRAIN_DAMAGE:
+		case EXPLOSION_MAY_TRIGGER_TNT:
+		case TNT_FUSE_HAS_BURNT_OUT:
 			return ((EntityEvent)event).getEntity().getLocation();
 			
 		case CAN_CHANGE_PLAYER_DAMAGE:
@@ -64,7 +66,7 @@ public class HEEvent {
 			return ((BlockEvent) event).getBlock().getLocation();
 			
 		default: 
-			System.err.println("HEEvent.getEventLocation(): Not sure what the location is of unknown event type " + type);
+			System.err.println("HEEvent.getEventLocation(): Not sure what the location is of unknown event type " + this.type);
 			return null;
 		}
 	}
@@ -94,10 +96,12 @@ public class HEEvent {
 		case TNT_PRIMED_BY_FIRE:
 		case TNT_PRIMED_BY_PLAYER:	
 		case TNT_PRIMED_BY_REDSTONE:
+		case TNT_FUSE_HAS_BURNT_OUT:
+		case EXPLOSION_MAY_TRIGGER_TNT:
 			return TNTPrimed.class;
-			
+		
 		default: 
-			System.err.println("HEEvent.getApplicableConfig(): not sure how to get the config for event type " + type);
+			System.err.println("HEEvent.getApplicableConfig(): not sure how to get the config for event type " + type + ". this="+this);
 			return Chicken.class;
 		}
 		

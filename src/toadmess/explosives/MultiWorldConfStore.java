@@ -3,6 +3,7 @@ package toadmess.explosives;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,16 @@ import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.util.config.Configuration;
+
+import toadmess.explosives.events.Handler;
+import toadmess.explosives.events.handlers.HandleDamageCreature;
+import toadmess.explosives.events.handlers.HandleDamageItem;
+import toadmess.explosives.events.handlers.HandleDamagePlayer;
+import toadmess.explosives.events.handlers.HandleFire;
+import toadmess.explosives.events.handlers.HandlePreventTerrainDamage;
+import toadmess.explosives.events.handlers.HandleRadius;
+import toadmess.explosives.events.handlers.HandleYield;
+import toadmess.explosives.events.handlers.TNTTracker;
 
 /**
  * Contains all of the different EntityConf instances for all worlds and all entities.
@@ -117,7 +128,6 @@ public class MultiWorldConfStore implements ConfConstants {
 	
 	public EntityConf procure(final Class<? extends Entity> entityClass, final String worldName) {
 		final Map<String, EntityConf> worldConfMap = this.worldConfs.get(entityClass);
-		System.out.println("MultiWorldConfStore.procure("+entityClass+","+worldName+")");
 		
 		if(worldConfMap.containsKey(worldName)) {
 			return worldConfMap.get(worldName);
@@ -130,7 +140,7 @@ public class MultiWorldConfStore implements ConfConstants {
 	 * Finds all the event types required by any and all configs in all worlds.
 	 * @return A collection of the event types that we should register and listen to
 	 */
-	public Set<Type> getNeededBukkitEvents(final PluginManager pm, final Plugin heMain) {
+	public Set<Type> getNeededBukkitEvents() {
 		final HashSet<Event.Type> neededEvents = new HashSet<Event.Type>();
 		
 		for(final Map<String, EntityConf> worldConfMap : this.worldConfs.values()) {
@@ -161,5 +171,41 @@ public class MultiWorldConfStore implements ConfConstants {
 			
 		}
 		return neededEvents;
+	}
+	
+	public Set<Handler> getNeededHandlers(final Plugin heMain) {
+		final LinkedHashSet<Handler> neededHandlers = new LinkedHashSet<Handler>();
+		
+		// Have just single instances of these. We don't want duplicate handlers in the returned Set
+		final HandleFire handleFire = new HandleFire();
+		final HandleRadius handleRadius = new HandleRadius();
+		final HandlePreventTerrainDamage handlePreventTerrainDamage = new HandlePreventTerrainDamage();
+		final HandleYield handleYield = new HandleYield();
+		final HandleDamagePlayer handleDamagePlayer = new HandleDamagePlayer();
+		final HandleDamageCreature handleDamageCreature = new HandleDamageCreature();
+		final HandleDamageItem handleDamageItem = new HandleDamageItem();
+		final TNTTracker tntTracker = new TNTTracker(heMain);
+		
+		for(final Map<String, EntityConf> worldConfMap : this.worldConfs.values()) {
+			final List<EntityConf> allConfs = new ArrayList<EntityConf>();
+			allConfs.addAll(worldConfMap.values());
+			allConfs.add(worldConfMap.get(DEF_WORLD_NAME));
+			
+			for(final EntityConf c : allConfs) {
+				if(c.hasFireConfig()) neededHandlers.add(handleFire);
+				if(c.hasRadiusConfig()) neededHandlers.add(handleRadius);
+				
+				if(c.hasPreventTerrainDamageConfig()) neededHandlers.add(handlePreventTerrainDamage);
+				if(c.hasYieldConfig()) neededHandlers.add(handleYield);
+					
+				if(c.hasPlayerDamageConfig()) neededHandlers.add(handleDamagePlayer);
+				if(c.hasCreatureDamageConfig()) neededHandlers.add(handleDamageCreature);
+				if(c.hasItemDamageConfig()) neededHandlers.add(handleDamageItem);
+				
+				if(c.hasTNTFuseConfig()) neededHandlers.add(tntTracker);
+			}
+			
+		}
+		return neededHandlers;
 	}
 }
