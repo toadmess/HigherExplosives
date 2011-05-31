@@ -1,5 +1,7 @@
 package toadmess.explosives;
 
+import java.util.Random;
+
 import net.minecraft.server.EntityTNTPrimed;
 import net.minecraft.server.WorldServer;
 
@@ -12,6 +14,8 @@ import org.bukkit.entity.TNTPrimed;
  * Contains all kinds of unsafe pokings of the minecraft server's internals. Here be dragons.
  */
 public class MCNative {
+	private static final Random rng = new Random(); 
+	
 	private static boolean failedSoundExplosion = false;
 	public static void playSoundExplosion(final Location epicentre) {
 		if(failedSoundExplosion) {
@@ -41,6 +45,39 @@ public class MCNative {
 		} catch(final Throwable t) {
 			System.err.println("HigherExplosives: Failed to set TNT fuse duration (minecraft been updated?). Disabling any further attempts.");
 			failedTNTFuseDuration = true;
+		}
+	}
+
+	private static boolean failedHighestBlockId = false;
+	public static int getHighestBlockId() {
+		if(!failedHighestBlockId) {
+			try {
+				return net.minecraft.server.Block.byId.length - 1;
+			} catch(final Throwable t) {
+				System.err.println("HigherExplosives: Failed to get the highest block type ID from the minecraft code base (minecraft been updated?). Disabling any further attempts and will assume there are up to 255 different block types.");
+				failedHighestBlockId = true;
+			}
+		}
+		return 255;
+	}
+	
+	private static boolean failedBlockDrop = false;
+	public static void dropBlockItem(final org.bukkit.block.Block bukkitBlock, final float yield) {
+		if(failedBlockDrop) {
+			return;
+		}
+		
+		try {
+			final net.minecraft.server.Block mcBlock = net.minecraft.server.Block.byId[bukkitBlock.getTypeId()];
+			final net.minecraft.server.World world = ((CraftWorld) bukkitBlock.getWorld()).getHandle();
+			
+			mcBlock.dropNaturally(world, bukkitBlock.getX(), bukkitBlock.getY(), bukkitBlock.getZ(), bukkitBlock.getData(), yield);
+			
+			return;
+		} catch(final Throwable t) {
+			System.err.println("HigherExplosives: Failed to drop a block's item (minecraft been updated?). Disabling any further attempts.");
+			failedBlockDrop = true;
+			return;
 		}
 	}
 }
