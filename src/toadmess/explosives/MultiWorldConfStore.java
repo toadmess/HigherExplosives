@@ -153,7 +153,7 @@ public class MultiWorldConfStore implements ConfConstants {
 					neededEvents.add(Event.Type.EXPLOSION_PRIME);
 				}
 				
-				if(c.hasPreventTerrainDamageConfig() || c.hasYieldConfig()) {
+				if(c.hasPreventTerrainDamageConfig() || c.hasYieldConfig() || c.hasSpecificYieldConfig()) {
 					neededEvents.add(Event.Type.ENTITY_EXPLODE);
 				}
 				
@@ -197,6 +197,7 @@ public class MultiWorldConfStore implements ConfConstants {
 				
 				if(c.hasPreventTerrainDamageConfig()) neededHandlers.add(handlePreventTerrainDamage);
 				if(c.hasYieldConfig()) neededHandlers.add(handleYield);
+				if(c.hasSpecificYieldConfig()) neededHandlers.add(handleYield);
 					
 				if(c.hasPlayerDamageConfig()) neededHandlers.add(handleDamagePlayer);
 				if(c.hasCreatureDamageConfig()) neededHandlers.add(handleDamageCreature);

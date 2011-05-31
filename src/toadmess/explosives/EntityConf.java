@@ -118,7 +118,6 @@ public class EntityConf implements ConfConstants {
 			final Float[] yieldsSparseArr = new Float[MCNative.getHighestBlockId()+1];
 			
 			for(final Object blockID : specYields.keySet()) {
-				System.out.println("Foo: " + blockID + " -> " + specYields.get(blockID));
 				yieldsSparseArr[(Integer) blockID] = ((Number) specYields.get(blockID)).floatValue();
 			}
 			
@@ -308,7 +307,7 @@ public class EntityConf implements ConfConstants {
 	
 	// Breaks encapsulation, but why would any caller modify this array's contents? 
 	public Float[] getSpecificYieldConfig() {
-		return this.specificYields;
+		return hasSpecificYieldConfig() ? this.specificYields : new Float[]{};
 	}
 	
 	public boolean getPreventTerrainDamage() {
