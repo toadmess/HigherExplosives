@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import org.bukkit.block.Block;
 import org.bukkit.util.config.Configuration;
 
 /**
@@ -55,6 +56,12 @@ public class EntityConf implements ConfConstants {
 	private final Float yield;
 
 	/** 
+	 * A sparse array whose index is a specific block type ID and whose value is the yield 
+	 * percentage (from 0.0 to 1.0) to use for that block type. 
+	 */
+	private final Float[] specificYields;
+	
+	/** 
 	 * True if the MiningTNT plugin was detected in the list of plugins. False otherwise. 
 	 * Set by the Plugin main class. 
 	 */
@@ -71,15 +78,17 @@ public class EntityConf implements ConfConstants {
 		
 		this.allowedBounds = new Bounds(conf, confPathPrefix);
 		
-		this.radiusMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_RADIUSMULT);
-		this.playerDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_PLAYER_DAMAGEMULT);
-		this.creatureDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_CREATURE_DAMAGEMULT);
-		this.itemDamageMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_ITEM_DAMAGEMULT);
-		this.fuseMultipliers = getMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_TNT_FUSEMULT);
+		this.radiusMultipliers = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_RADIUSMULT);
+		this.playerDamageMultipliers = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_PLAYER_DAMAGEMULT);
+		this.creatureDamageMultipliers = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_CREATURE_DAMAGEMULT);
+		this.itemDamageMultipliers = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_ITEM_DAMAGEMULT);
+		this.fuseMultipliers = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_TNT_FUSEMULT);
 
 		this.fire = (Boolean) conf.getProperty(confPathPrefix + "." + CONF_ENTITY_FIRE);
-		this.yield = getOptionalFloat(conf, confPathPrefix + "." + CONF_ENTITY_YIELD);			
 		this.preventTerrainDamage = (Boolean) conf.getProperty(confPathPrefix + "." + CONF_ENTITY_PREVENT_TERRAIN_DAMAGE);
+		
+		this.yield = readOptionalFloat(conf, confPathPrefix + "." + CONF_ENTITY_YIELD);
+		this.specificYields = readSpecificYields(conf, confPathPrefix + "." + CONF_ENTITY_YIELD_SPECIFIC);
 		
 		if(null != conf.getProperty(confPathPrefix + ".trialTNTFuseMultiplier")) {
 			this.log.warning("HigherExplosives: The \"trialTNTFuseMultiplier\" configuration is no longer used. Please rename it to \"" + CONF_ENTITY_TNT_FUSEMULT + "\"");
@@ -91,7 +100,7 @@ public class EntityConf implements ConfConstants {
 		}
 	}
 
-	private Float getOptionalFloat(final Configuration conf, final String path) {
+	private Float readOptionalFloat(final Configuration conf, final String path) {
 		final Object o = conf.getProperty(path);
 		
 		if(o == null || !(o instanceof Number)) {
@@ -100,15 +109,23 @@ public class EntityConf implements ConfConstants {
 		
 		return Double.valueOf(conf.getDouble(path, 0.0D)).floatValue();
 	}
-	
-	private Integer getOptionalInteger(final Configuration conf, final String path) {
-		final Object o = conf.getProperty(path);
 		
-		if(o == null || !(o instanceof Number)) {
-			return null;
+	private Float[] readSpecificYields(final Configuration conf, final String pathToYieldSpecific) {
+		final Object specYieldsProp = conf.getProperty(pathToYieldSpecific);
+		if (specYieldsProp instanceof HashMap<?,?>) {
+			final HashMap<?,?> specYields = (HashMap<?,?>) specYieldsProp;
+			
+			final Float[] yieldsSparseArr = new Float[MCNative.getHighestBlockId()+1];
+			
+			for(final Object blockID : specYields.keySet()) {
+				System.out.println("Foo: " + blockID + " -> " + specYields.get(blockID));
+				yieldsSparseArr[(Integer) blockID] = ((Number) specYields.get(blockID)).floatValue();
+			}
+			
+			return yieldsSparseArr;
 		}
 		
-		return conf.getInt(path, 0) ;		
+		return null;
 	}
 	
 	/**
@@ -121,7 +138,7 @@ public class EntityConf implements ConfConstants {
 	 * @return null if no multiplier configuration was found at the given path. 
 	 * OTherwise, a list of pairs of floats. Each pair is a chance (head) and multiplier (tail). 
 	 */
-	private List<List<Float>> getMultipliers(final Configuration conf, final String pathToMultiplier) {
+	private List<List<Float>> readMultipliers(final Configuration conf, final String pathToMultiplier) {
 		final List<List<Float>> multipliers = new ArrayList<List<Float>>(); // A list of pairs of floats. Each pair is a chance (head) and multiplier (tail).
 
 		// First extract the multiplier chance/value pairs from the configuration and add them all to the multipliers list. 
@@ -227,6 +244,7 @@ public class EntityConf implements ConfConstants {
 		str = str + "\n  fuseMultiplier={\n" + multipliersToString(this.fuseMultipliers) + "  },";
 		str = str + "\n  fire=" + (hasFireConfig() ? getFire() : "no fire configured. will leave unaffected") + ",";
 		str = str + "\n  yield=" + (hasYieldConfig() ? getYield() : "no yield configured. will leave unaffected") + ",";
+		str = str + "\n  yieldSpecific=" + specificYieldsToString(this.specificYields) + ",";
 		str = str + "\n  preventTerrainDamage=" + (hasPreventTerrainDamageConfig() ? getPreventTerrainDamage() : "not configured, terrain damage is as normal") + ",";
 		str = str + "\n  activeBounds=" + this.allowedBounds;
 		str = str + "\n)";
@@ -247,6 +265,24 @@ public class EntityConf implements ConfConstants {
 		return str;
 	}
 
+	private String specificYieldsToString(final Float[] specificYields) {
+		if(specificYields == null) {
+			return "no specific block yields configured";
+		}
+
+		String str = "{\n";
+		
+		for (int i = 0; i < specificYields.length; i++) {
+			if(specificYields[i] != null) {
+				str += "    (Block ID " + i + " has yield " + specificYields[i] + ")\n";
+			}
+		}
+		
+		str += "  }";
+		
+		return str;
+	}
+	
 	public Bounds getActiveBounds() {
 		return this.allowedBounds;
 	}
@@ -268,6 +304,11 @@ public class EntityConf implements ConfConstants {
 		}
 		
 		return this.yield.floatValue();
+	}
+	
+	// Breaks encapsulation, but why would any caller modify this array's contents? 
+	public Float[] getSpecificYieldConfig() {
+		return this.specificYields;
 	}
 	
 	public boolean getPreventTerrainDamage() {
@@ -318,6 +359,10 @@ public class EntityConf implements ConfConstants {
 		return (this.yield != null) || EntityConf.hasConflictWithMiningTNT;
 	}
 	
+	public boolean hasSpecificYieldConfig() {
+		return this.specificYields != null;
+	}
+	
 	public boolean hasPreventTerrainDamageConfig() {
 		return this.preventTerrainDamage != null;
 	}
@@ -327,8 +372,8 @@ public class EntityConf implements ConfConstants {
 	}
 	
 	public boolean isEmptyConfig() {
-		return !(hasFireConfig() || hasYieldConfig() || hasPreventTerrainDamageConfig() || 
-				 hasRadiusConfig() || hasTNTFuseConfig() || 
+		return !(hasFireConfig() || hasYieldConfig() || hasSpecificYieldConfig() ||
+				 hasPreventTerrainDamageConfig() || hasRadiusConfig() || hasTNTFuseConfig() || 
 				 hasCreatureDamageConfig() || hasPlayerDamageConfig() || hasItemDamageConfig());
 	}
 }
