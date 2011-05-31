@@ -18,13 +18,14 @@ Features
 
 - Control the size of explosions for TNT, creepers and ghast fireballs.
 - Control the percentage of dropped items (called yield) from the destroyed blocks, from no items dropped through to one item dropped per destroyed block.
+- The yield of different block types can be individually configured.
 - Optional prevention of terrain damage
 - Multiple world configurations
 - Blast radii can be configured, with different probabilities for each being chosen
 - Player damage can be configured (optionally with different probabilities for each being chosen)
 - Creature damage can be configured (optionally with different probabilities for each being chosen)
 - Item damage can be configured (optionally with different probabilities for each being chosen)
-- EXPERIMENTAL: Fuse length of TNT can be tweaked.
+- Fuse length of TNT can be tweaked.
 - Explosions can be nullified altogether (just set the blast radius to 0)
 - Restrict explosion modifications to certain area bounds
 
@@ -46,7 +47,7 @@ entities:
     TNTPrimed:
         radiusMultiplier: 2.0
         yield: 0.15
-version: '1.5'
+version: '1.7'
 
 Example configuration
 ---------------------
@@ -82,10 +83,10 @@ worlds:
                     - {chance: 0.25, value: 0.3}
                     - {chance: 0.25, value: 1.5}
                     - {chance: 0.5, value: 1.0}
-                trialTNTFuseMultiplier:
+                tntFuseMultiplier:
                     - {chance: 0.5, value: 0.0}
                     - {chance: 0.5, value: 1.0}
-version: '1.6'
+version: '1.7'
 debugConfig: true
 
 In this example config, the size of TNT explosions are doubled and the number of items they drop is set at 15%. This would by applied by default in all worlds except the world named "nether" and the world named "wildwest".
@@ -105,7 +106,9 @@ Main Configuration Properties
 
 - There are three different entities that create explosions: "TNTPrimed", a "Fireball" (Ghasts), and a "Creeper". Each of these can be individually configured.
 
-- "yield": dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value applies to explosions coming from any entity. The Minecraft default is 0.3 (30%).
+- "yield": dictates what percentage of blocks destroyed in an explosion will drop an item. It is a value between 0.0 (no blocks) and 1.0 (every single block). This value can apply to explosions coming from any entity. The Minecraft default is 0.3 (30%).
+
+- "yieldSpecific": more specific than the "yield" property, this allows each block type to have a different yield value. Any block destroyed in an explosion that does not have a value here will fall back to using the "yield" property, or if that is missing, will be left unaffected (i.e. probably will use the minecraft default of 0.3). See the "Specific yields" section of the README file for more details.
 
 - "radiusMultiplier": in its simplest form it is just a number that will be used to multiply the radius of the blast. 0.5 gives half size explosions, whilst 2.0 blasts will be twice as big as normal. After igniting TNT by hand, you can run away in time when it's set to a multiplier of 2, but with a multiplier of 3 there's not enough time to run away! The radiusMultiplier can also describe a number of different multipliers with different probabilities of being chosen. See the "Randomly chosen values" section of the README file for more details.
 
@@ -115,7 +118,7 @@ Main Configuration Properties
 
 - "itemDamageMultiplier": takes the same form as the other multipliers above, but applies to any non-living entities caught in the blast (including items on the ground, paintings and other things like that). Set it to 0.0 to stop items from being destroyed in blasts.
 
-- "trialTNTFuseMultiplier": This is EXPERIMENTAL, so please let me know if anything's awry with it. When it's shown to be stable, I'll rename the configuration name to just "tntFuseMultiplier". It takes the same muliplier form as the "radiusMultiplier" and will multiply the normal length of TNT's fuses. It will affect the fuse length of TNT primed by hand, by fire, by other explosions (including creepers and fireballs), and by redstone.
+- "tntFuseMultiplier": It takes the same muliplier form as the "radiusMultiplier" and will multiply the normal length of TNT's fuses. It will affect the fuse length of TNT primed by hand, by fire, by other explosions (including creepers and fireballs), and by redstone.
 
 - "version": a mandatory property, but it just lets the plugin show a warning if the configuration's version is different to the plugin's version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
 
@@ -231,8 +234,42 @@ Any part of the bounds may be left off to relax the restrictions.
 
 If an entity has no activeBounds property then the explosion modifications will always be applied no matter where it happens.
 
+Specific yields
+---------------
+
+The optional configuration property "activeBounds" can set a yield (percentage chance between 0 and 1 for a destroyed block to drop an item) for many different block types. Formally, it is a map of block ID's (integer) to yields (float).
+The block IDs for different blocks can be found at http://www.minecraftwiki.net/wiki/Data_Values#Block_IDs_.28Minecraft_Beta.29  
+
+As an example, this configuration (which was complete as of Minecraft 1.6) will always drop items for every single ore block caught in a TNT explosion, but any other block is left with the standard Minecraft drop chance of 30%:
+
+    TNTPrimed:
+        yieldSpecific:
+            14: 1.0   # Gold ore
+            15: 1.0   # Iron ore
+            16: 1.0   # Coal ore
+            21: 1.0   # Lapis lazuli ore
+            56: 1.0   # Diamond ore
+            73: 1.0   # Redstone ore
+            74: 1.0   # Glowing redstone ore (hmm)
+            89: 1.0   # Glowstone
+
+The "yield" property provides a default yield for blocks that aren't in the "yieldSpecific" map. So the following example will always drop items 100% of the time for all blocks except dirt, grass and sand when caught in creeper explosions:
+
+    Creeper:
+        yield: 1.0
+        yieldSpecific:
+            2: 0.0   # Grass blocks   
+            3: 0.0   # Dirt blocks            
+            12: 0.0  # Sand blocks
+
+
 Changelog:
 ----------
+
+Version 1.7
+- The yield of specific block types can now be individually configured via the "yieldSpecific" property.
+- Renamed the "trialTNTFuseMultiplier" config property to "tntFuseMultiplier"
+- Massive internal restructuring of the code. Should be more lean and mean. 
 
 Version 1.6
 - Experimental fuse length control with the "trialTNTFuseMultiplier" configuration property.
