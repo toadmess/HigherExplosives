@@ -11,7 +11,7 @@ The explosion size, player damage, and creature damage can all be configured to 
 
 All tweaks can be selectively applied to several different worlds.
 
-HigherExplosives v1.6 was tested with recommended build 677 and a Minecraft 1.4_01 client.
+HigherExplosives v1.7 was tested with recommended build 818 and a Minecraft 1.6.6 client.
 
 Features
 --------
@@ -277,7 +277,7 @@ Changelog:
 Version 1.7
 - The yield of specific block types can now be individually configured via the "yieldSpecific" property.
 - Renamed the "trialTNTFuseMultiplier" config property to "tntFuseMultiplier"
-- Massive internal restructuring of the code. Should be more lean and mean. 
+- Massive internal restructuring of the code. Should be more lean and mean.
 
 Version 1.6
 - Experimental fuse length control with the "trialTNTFuseMultiplier" configuration property.
