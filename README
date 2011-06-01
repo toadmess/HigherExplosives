@@ -18,7 +18,7 @@ Features
 
 - Control the size of explosions for TNT, creepers and ghast fireballs.
 - Control the percentage of dropped items (called yield) from the destroyed blocks, from no items dropped through to one item dropped per destroyed block.
-- The yield of different block types can be individually configured.
+- The yield of every different block type can be individually configured if so desired.
 - Optional prevention of terrain damage
 - Multiple world configurations
 - Blast radii can be configured, with different probabilities for each being chosen
@@ -68,7 +68,7 @@ entities:
                 x: -500
                 z: -500
 worlds:
-    nether:
+    world_nether:
         entities:
             TNTPrimed:
                 playerDamageMultiplier: 2.0
@@ -86,18 +86,26 @@ worlds:
                 tntFuseMultiplier:
                     - {chance: 0.5, value: 0.0}
                     - {chance: 0.5, value: 1.0}
+            Creeper:
+                yield: 0.0
+                yieldSpecific:
+                    2: 0.8  # Grass
+                    3: 0.8  # Dirt
+                    12: 0.8 # Sand
 version: '1.7'
 debugConfig: true
 
-In this example config, the size of TNT explosions are doubled and the number of items they drop is set at 15%. This would by applied by default in all worlds except the world named "nether" and the world named "wildwest".
+In this example config, the size of TNT explosions are doubled and the number of items they drop is set at 15%. This would by applied by default in all worlds except the world named "world_nether" and the world named "wildwest".
 
-In the world named "nether", TNT explosions will have a normal blast radius and yield, but nearby items will be impervious to them. Whilst they don't damage items, TNT explosions in the nether will be twice as damaging to players when exploding, but creatures will take damage as normal.
+In the world named "world_nether", TNT explosions will have a normal blast radius and yield, but nearby items will be impervious to them. Whilst they don't damage items, TNT explosions in the nether will be twice as damaging to players when exploding, but creatures will take damage as normal.
 
 By default, creepers will not damage terrain in a 1000x1000 square area around 0,0. They will however still damage creatures and players as normal. Outside of the safety area, the terrain will be damaged as normal by Creepers. This applies to all worlds with this example configuration because no other world has a specific configuration for the Creeper entity.
 
-Ghast fireballs in the "nether" world will not cause fire but will be twice as damaging to other creatures. They'll damage players as normal fireballs do. Fireball explosions in any other world will be left unmodified.
+Ghast fireballs in the "world_nether" world will not cause fire but will be twice as damaging to other creatures. They'll damage players as normal fireballs do. Fireball explosions in any other world will be left unmodified.
 
 In the wildwest world, TNT is flakey and unreliable. 50% of the time TNT will explode immediately without any fuse. The sizes of the TNT explosions will also vary, with half of them being normal, a quarter being very small, and a quarter being fairly large.
+
+Creeper explosions in the wildwest will cause destroyed grass, dirt and sand blocks to drop items 80% of the time. All other destroyed blocks will drop nothing.
 
 To check if the plugin is reading the configuration correctly, you can add a "debugConfig: true" property. It defaults to false if it's not in the config file.
 
@@ -237,8 +245,8 @@ If an entity has no activeBounds property then the explosion modifications will 
 Specific yields
 ---------------
 
-The optional configuration property "activeBounds" can set a yield (percentage chance between 0 and 1 for a destroyed block to drop an item) for many different block types. Formally, it is a map of block ID's (integer) to yields (float).
-The block IDs for different blocks can be found at http://www.minecraftwiki.net/wiki/Data_Values#Block_IDs_.28Minecraft_Beta.29  
+The optional configuration property "yieldSpecific" can set a yield (percentage chance between 0 and 1 for a destroyed block to drop an item) for many different block types. Formally, it is a map of block ID's (integer) to yields (float).
+The block IDs for different blocks can be found at http://www.minecraftwiki.net/wiki/Data_Values#Block_IDs_.28Minecraft_Beta.29
 
 As an example, this configuration (which was complete as of Minecraft 1.6) will always drop items for every single ore block caught in a TNT explosion, but any other block is left with the standard Minecraft drop chance of 30%:
 
@@ -258,8 +266,8 @@ The "yield" property provides a default yield for blocks that aren't in the "yie
     Creeper:
         yield: 1.0
         yieldSpecific:
-            2: 0.0   # Grass blocks   
-            3: 0.0   # Dirt blocks            
+            2: 0.0   # Grass blocks
+            3: 0.0   # Dirt blocks
             12: 0.0  # Sand blocks
 
 
