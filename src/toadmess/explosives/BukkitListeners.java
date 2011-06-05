@@ -100,16 +100,19 @@ public class BukkitListeners implements ConfConstants {
 				// In such a case, it is not an interesting event to be passing on to any handlers.
 				return;
 			}
-				
-			if(event.isCancelled()) {
-				return;
+			
+			if(!event.isCancelled()) {
+				handler.handle(new HEEvent(TippingPoint.CAN_PREVENT_TERRAIN_DAMAGE, event, confStore));
 			}
 			
-			handler.handle(new HEEvent(TippingPoint.CAN_CHANGE_EXPLOSION_YIELD, event, confStore));
-			handler.handle(new HEEvent(TippingPoint.CAN_PREVENT_TERRAIN_DAMAGE, event, confStore));
+			if(!event.isCancelled()) {
+				handler.handle(new HEEvent(TippingPoint.CAN_CHANGE_EXPLOSION_YIELD, event, confStore));
+			}
 
 			if(!event.isCancelled()) {
-				handler.handle(new HEEvent(TippingPoint.AN_EXPLOSION, event, confStore));
+				handler.handle(new HEEvent(TippingPoint.AN_EXPLOSION, event, confStore));				
+			} else {
+				handler.handle(new HEEvent(TippingPoint.AN_EXPLOSION_CANCELLED, event, confStore));
 			}
 		}		
 	}

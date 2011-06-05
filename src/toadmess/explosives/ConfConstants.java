@@ -16,6 +16,13 @@ public interface ConfConstants {
 	final String CONF_ENTITY_PREVENT_TERRAIN_DAMAGE = "preventTerrainDamage";
 	final String CONF_ENTITY_TNT_FUSEMULT = "tntFuseMultiplier";
 	
+	final String CONF_ENTITY_TNT_TRIGGER_REDSTONE = "tntPrimeByRedstone";
+	final String CONF_ENTITY_TNT_TRIGGER_FIRE = "tntPrimeByFire";
+	final String CONF_ENTITY_TNT_TRIGGER_HAND = "tntPrimeByHand";
+	final String CONF_ENTITY_TNT_TRIGGER_EXPLOSION = "tntPrimeByExplosion";
+	
+	final String CONF_ENTITY_TNT_TRIGGER_PREVENTED = "tntPrimePrevented";
+	
 	final String CONF_MULTIPLIER_CHANCE = "chance";
 	final String CONF_MULTIPLIER_VALUE = "value";
 	

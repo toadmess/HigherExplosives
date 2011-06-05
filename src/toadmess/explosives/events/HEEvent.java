@@ -20,6 +20,7 @@ public class HEEvent {
 	public final MultiWorldConfStore confStore;
 	
 	private EntityConf applicableConfig = null;
+	private Location eventLocation = null;
 	
 	public HEEvent(final TippingPoint interestingEvent, final Event bukkitEvent, final MultiWorldConfStore confStore) {
 		this.type = interestingEvent;
@@ -45,29 +46,39 @@ public class HEEvent {
 	}
 	
 	public Location getEventLocation() {
-		switch(this.type) {
-		case CAN_CHANGE_EXPLOSION_RADIUS:
-		case CAN_CHANGE_EXPLOSION_FIRE_FLAG:
-		case CAN_CHANGE_EXPLOSION_YIELD:
-		case CAN_PREVENT_TERRAIN_DAMAGE:
-		case AN_EXPLOSION:
-			return ((EntityEvent)event).getEntity().getLocation();
+		if(this.eventLocation == null) {		
+			switch(this.type) {
+			case CAN_CHANGE_EXPLOSION_RADIUS:
+			case CAN_CHANGE_EXPLOSION_FIRE_FLAG:
+			case CAN_CHANGE_EXPLOSION_YIELD:
+			case CAN_PREVENT_TERRAIN_DAMAGE:
+			case AN_EXPLOSION:
+				this.eventLocation = ((EntityEvent)event).getEntity().getLocation();
+				break;
+				
+			case CAN_CHANGE_PLAYER_DAMAGE:
+			case CAN_CHANGE_CREATURE_DAMAGE:
+			case CAN_CHANGE_ITEM_DAMAGE:
+				this.eventLocation = ((EntityDamageByEntityEvent) event).getDamager().getLocation();
+				break;
+				
+			case TNT_PRIMED_BY_FIRE:
+			case TNT_PRIMED_BY_PLAYER:	
+			case TNT_PRIMED_BY_REDSTONE:
+				this.eventLocation = ((BlockEvent) event).getBlock().getLocation();
+				break;
+				
+			default: 
+				System.err.println("HEEvent.getEventLocation(): Not sure what the location is of unknown event type " + this.type);
+			}
 			
-		case CAN_CHANGE_PLAYER_DAMAGE:
-		case CAN_CHANGE_CREATURE_DAMAGE:
-		case CAN_CHANGE_ITEM_DAMAGE:
-			return ((EntityDamageByEntityEvent) event).getDamager().getLocation();
-			
-		case TNT_PRIMED_BY_EXPLOSION:
-		case TNT_PRIMED_BY_FIRE:
-		case TNT_PRIMED_BY_PLAYER:	
-		case TNT_PRIMED_BY_REDSTONE:
-			return ((BlockEvent) event).getBlock().getLocation();
-			
-		default: 
-			System.err.println("HEEvent.getEventLocation(): Not sure what the location is of unknown event type " + this.type);
-			return null;
+			if(this.eventLocation != null) {
+				// Clone the event just in case Location instances are reused and this HEEvent is held onto for a long time. 
+				this.eventLocation = this.eventLocation.clone();
+			}
 		}
+		
+		return this.eventLocation;
 	}
 	
 	/**
@@ -91,7 +102,6 @@ public class HEEvent {
 			relevantEntity = ((EntityDamageByEntityEvent) event).getDamager();
 			break;
 			
-		case TNT_PRIMED_BY_EXPLOSION:
 		case TNT_PRIMED_BY_FIRE:
 		case TNT_PRIMED_BY_PLAYER:	
 		case TNT_PRIMED_BY_REDSTONE:

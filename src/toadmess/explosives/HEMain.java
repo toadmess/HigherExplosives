@@ -87,13 +87,6 @@ public class HEMain extends JavaPlugin implements ConfConstants {
 			conf.save();
 		} else if(!configVersion.equalsIgnoreCase(pluginVersion)) {
 			this.log.warning(pluginDescription() + ": Found a configuration file for a different version ("+configVersion+"). Going to try using it anyway.");
-
-			// Put any automatic configuration upgrades, such as renames, in here..
-			
-			this.log.warning(pluginDescription() + ": Updating configuration version to "+getDescription().getVersion());
-			conf.setProperty(CONF_VERSION, getDescription().getVersion());
-			
-			conf.save();
 		}
 
 		return conf;

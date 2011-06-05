@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import org.bukkit.block.Block;
 import org.bukkit.util.config.Configuration;
 
 /**
