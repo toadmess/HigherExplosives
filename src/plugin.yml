@@ -1,5 +1,5 @@
 name: HigherExplosives
 author: toadmess
 description: Per world control over size, yield and player/creature/terrain/item damage of explosions and TNT fuse durations.
-version: 1.7
+version: 1.8
 main: toadmess.explosives.HEMain

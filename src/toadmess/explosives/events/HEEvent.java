@@ -53,6 +53,7 @@ public class HEEvent {
 			case CAN_CHANGE_EXPLOSION_YIELD:
 			case CAN_PREVENT_TERRAIN_DAMAGE:
 			case AN_EXPLOSION:
+			case AN_EXPLOSION_CANCELLED:
 				this.eventLocation = ((EntityEvent)event).getEntity().getLocation();
 				break;
 				
@@ -106,6 +107,7 @@ public class HEEvent {
 		case TNT_PRIMED_BY_PLAYER:	
 		case TNT_PRIMED_BY_REDSTONE:
 		case AN_EXPLOSION:
+		case AN_EXPLOSION_CANCELLED:
 			return TNTPrimed.class;
 		
 		default: 

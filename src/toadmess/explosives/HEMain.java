@@ -12,7 +12,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
-import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.handlers.EventRouter;
 
 public class HEMain extends JavaPlugin implements ConfConstants {		
@@ -39,9 +38,7 @@ public class HEMain extends JavaPlugin implements ConfConstants {
 		confStore.readConfsForEntity(Fireball.class, this.getConfiguration());
 		
 		final EventRouter router = new EventRouter(this.log);
-		for(final Handler h : confStore.getNeededHandlers(this)) {
-			router.addHandler(h);
-		}
+		confStore.addNeededHandlers(this, router);
 		
 		final BukkitListeners el = new BukkitListeners(this, router, confStore);
 		el.registerNeededEvents(pm, this);

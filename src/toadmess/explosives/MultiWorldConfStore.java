@@ -17,12 +17,14 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.config.Configuration;
 
 import toadmess.explosives.events.Handler;
+import toadmess.explosives.events.handlers.EventRouter;
 import toadmess.explosives.events.handlers.HandleDamageCreature;
 import toadmess.explosives.events.handlers.HandleDamageItem;
 import toadmess.explosives.events.handlers.HandleDamagePlayer;
 import toadmess.explosives.events.handlers.HandleFire;
 import toadmess.explosives.events.handlers.HandlePreventTerrainDamage;
 import toadmess.explosives.events.handlers.HandleRadius;
+import toadmess.explosives.events.handlers.HandleTNTFuse;
 import toadmess.explosives.events.handlers.HandleYield;
 import toadmess.explosives.events.handlers.TNTTracker;
 
@@ -172,7 +174,7 @@ public class MultiWorldConfStore implements ConfConstants {
 		return neededEvents;
 	}
 	
-	public Set<Handler> getNeededHandlers(final Plugin heMain) {
+	public void addNeededHandlers(final Plugin heMain, final EventRouter eventRouter) {
 		final LinkedHashSet<Handler> neededHandlers = new LinkedHashSet<Handler>();
 		
 		// Have just single instances of these. We don't want duplicate handlers in the returned Set
@@ -183,7 +185,8 @@ public class MultiWorldConfStore implements ConfConstants {
 		final HandleDamagePlayer handleDamagePlayer = new HandleDamagePlayer();
 		final HandleDamageCreature handleDamageCreature = new HandleDamageCreature();
 		final HandleDamageItem handleDamageItem = new HandleDamageItem();
-		final TNTTracker tntTracker = new TNTTracker(heMain);
+		final HandleTNTFuse handleTNTFuse = new HandleTNTFuse();
+		final TNTTracker tntTracker = new TNTTracker(heMain, eventRouter);
 		
 		for(final Map<String, EntityConf> worldConfMap : this.worldConfs.values()) {
 			final List<EntityConf> allConfs = new ArrayList<EntityConf>();
@@ -202,10 +205,16 @@ public class MultiWorldConfStore implements ConfConstants {
 				if(c.hasCreatureDamageConfig()) neededHandlers.add(handleDamageCreature);
 				if(c.hasItemDamageConfig()) neededHandlers.add(handleDamageItem);
 				
-				if(c.hasTNTFuseConfig()) neededHandlers.add(tntTracker);
+				if(c.hasTNTFuseConfig()) {
+					neededHandlers.add(tntTracker);
+					neededHandlers.add(handleTNTFuse);
+				}
 			}
 			
 		}
-		return neededHandlers;
+		
+		for(final Handler h : neededHandlers) {
+			eventRouter.addHandler(h);
+		}
 	}
 }

@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.TNTPrimed;
@@ -14,8 +15,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import toadmess.explosives.EntityConf;
-import toadmess.explosives.MCNative;
 import toadmess.explosives.events.HEEvent;
+import toadmess.explosives.events.HEFuseEvent;
 import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.TippingPoint;
 
@@ -36,9 +37,15 @@ public class TNTTracker implements Handler {
 	private final Map<Integer, HEEvent> seenTNTPrimedEntities = new HashMap<Integer, HEEvent>();
 	
 	private final Plugin plugin;
-	
-	public TNTTracker(final Plugin p) {
+
+	/**
+	 * Some event handler that knows how to deal with any new events that we may create (e.g. CAN_CHANGE_TNT_FUSE).
+	 */
+	private Handler eventRouter;
+
+	public TNTTracker(final Plugin p, final Handler eventRouter) {
 		this.plugin = p;
+		this.eventRouter = eventRouter;
 	}
 	
 	@Override
@@ -49,6 +56,7 @@ public class TNTTracker implements Handler {
 			TippingPoint.TNT_PRIMED_BY_REDSTONE,
 			TippingPoint.AN_EXPLOSION,
 			TippingPoint.AN_EXPLOSION_CANCELLED,
+			TippingPoint.CAN_CHANGE_TNT_FUSE,
 		};
 	}
 	
@@ -124,7 +132,6 @@ public class TNTTracker implements Handler {
 				for(final String worldName : worldsToSearch) {
 					final World worldToSearch = TNTTracker.this.plugin.getServer().getWorld(worldName);
 					
-					System.out.println("Searching for new primed TNT in world " + worldName + "..");
 					// TODO: Find an efficient bukkit way to get the TNTPrimed entity near the destroyed TNT block.
 					for(final Entity e : worldToSearch.getEntities()) {
 						if(e instanceof TNTPrimed) {
@@ -132,6 +139,7 @@ public class TNTTracker implements Handler {
 								// This TNTPrimed entity has not been seen before. 
 								// Try and match it up with it's triggering event's config
 								final TNTPrimed tnt = (TNTPrimed) e;
+								final Location tntLocation = tnt.getLocation();
 								 
 								// Go through all of the triggering events (extremely likely to be events of the 
 								// same kind of TippingPoint) and find the nearest TNTPrimed entity to those 
@@ -141,7 +149,7 @@ public class TNTTracker implements Handler {
 									double bestMatchDistanceSq = Double.POSITIVE_INFINITY;
 									
 									for(final HEEvent triggeringEvent : TNTTracker.this.triggerEventsToAssociate) { 
-										double distance = triggeringEvent.getEventLocation().toVector().distanceSquared(tnt.getLocation().toVector());
+										double distance = triggeringEvent.getEventLocation().toVector().distanceSquared(tntLocation.toVector());
 										
 										if(distance < bestMatchDistanceSq) {
 											bestMatchDistanceSq = distance;
@@ -150,10 +158,10 @@ public class TNTTracker implements Handler {
 									}
 								
 									seenTNTPrimedEntities.put(tnt.getEntityId(), bestMatchFound);
-								}
-
-								if(worldConf.getActiveBounds().isWithinBounds(e.getLocation())) {
-									MCNative.multiplyTNTFuseDuration(((TNTPrimed) e), worldConf.getNextTNTFuseMultiplier());
+									
+									// This is a TippingPoint for changing the TNT's fuse duration.
+									final HEEvent tntFuseEvent = new HEFuseEvent(tnt, bestMatchFound);
+									eventRouter.handle(tntFuseEvent);
 								}
 							}
 						}		
