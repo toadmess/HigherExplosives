@@ -28,6 +28,8 @@ public class HEMain extends JavaPlugin implements ConfConstants {
 		
 		final PluginManager pm = getServer().getPluginManager();
 		
+		Gatekeeper.onEnable(pm, this.log);
+		
 		configureWorkarounds(pm);
 		
 		IS_DEBUG_CONF = this.getConfiguration().getBoolean(CONF_DEBUGCONFIG, false);
