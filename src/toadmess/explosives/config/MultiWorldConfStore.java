@@ -1,4 +1,4 @@
-package toadmess.explosives;
+package toadmess.explosives.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;

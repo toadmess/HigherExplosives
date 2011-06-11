@@ -23,6 +23,8 @@ import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 
+import toadmess.explosives.config.ConfConstants;
+import toadmess.explosives.config.MultiWorldConfStore;
 import toadmess.explosives.events.HEEvent;
 import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.TippingPoint;

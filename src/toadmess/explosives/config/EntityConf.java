@@ -1,4 +1,4 @@
-package toadmess.explosives;
+package toadmess.explosives.config;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,6 +9,9 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import org.bukkit.util.config.Configuration;
+
+import toadmess.explosives.Bounds;
+import toadmess.explosives.MCNative;
 
 /**
  * Represents a single entity's configuration within a single world.
@@ -64,7 +67,7 @@ public class EntityConf implements ConfConstants {
 	 * True if the MiningTNT plugin was detected in the list of plugins. False otherwise. 
 	 * Set by the Plugin main class. 
 	 */
-	protected static boolean hasConflictWithMiningTNT = false;
+	public static boolean hasConflictWithMiningTNT = false;
 	
 	public EntityConf(final Configuration conf, final String confPathPrefix, final Logger log) {
 		this(conf, confPathPrefix, log, new Random());

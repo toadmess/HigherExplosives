@@ -1,6 +1,6 @@
 package toadmess.explosives.events.handlers;
 
-import toadmess.explosives.EntityConf;
+import toadmess.explosives.config.EntityConf;
 import toadmess.explosives.events.TippingPoint;
 
 public class HandleDamageItem extends HandleDamageEntity {

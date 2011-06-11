@@ -4,6 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.util.config.Configuration;
 
+import toadmess.explosives.config.ConfConstants;
+
 /**
  * Simple class to check 
  *

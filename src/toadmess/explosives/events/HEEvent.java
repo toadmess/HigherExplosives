@@ -11,8 +11,8 @@ import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityEvent;
 
-import toadmess.explosives.EntityConf;
-import toadmess.explosives.MultiWorldConfStore;
+import toadmess.explosives.config.EntityConf;
+import toadmess.explosives.config.MultiWorldConfStore;
 
 public class HEEvent {
 	public final TippingPoint type;

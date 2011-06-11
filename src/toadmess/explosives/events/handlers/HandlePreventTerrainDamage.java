@@ -2,8 +2,8 @@ package toadmess.explosives.events.handlers;
 
 import org.bukkit.event.Cancellable;
 
-import toadmess.explosives.EntityConf;
 import toadmess.explosives.MCNative;
+import toadmess.explosives.config.EntityConf;
 import toadmess.explosives.events.HEEvent;
 import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.TippingPoint;

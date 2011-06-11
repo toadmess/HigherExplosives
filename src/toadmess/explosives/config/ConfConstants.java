@@ -1,4 +1,4 @@
-package toadmess.explosives;
+package toadmess.explosives.config;
 
 public interface ConfConstants {
 	final String CONF_VERSION = "version";

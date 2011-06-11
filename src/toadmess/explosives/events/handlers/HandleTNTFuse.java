@@ -1,7 +1,7 @@
 package toadmess.explosives.events.handlers;
 
-import toadmess.explosives.EntityConf;
 import toadmess.explosives.MCNative;
+import toadmess.explosives.config.EntityConf;
 import toadmess.explosives.events.HEEvent;
 import toadmess.explosives.events.HEFuseEvent;
 import toadmess.explosives.events.Handler;
