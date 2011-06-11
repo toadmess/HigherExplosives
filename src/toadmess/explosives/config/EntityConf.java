@@ -312,17 +312,15 @@ public class EntityConf implements ConfConstants {
 			return "no specific block yields configured";
 		}
 
-		String str = "{\n";
+		String str = "";
 		
 		for (int i = 0; i < specificYields.length; i++) {
 			if(specificYields[i] != null) {
-				str += "    (Block ID " + i + " has yield " + specificYields[i] + ")\n";
+				str += "(block ID " + i + " has yield " + specificYields[i] + ")\n";
 			}
 		}
 		
-		str += "  }";
-		
-		return str;
+		return "{\n" + indent(str) + "\n}";
 	}
 	
 	public Bounds getActiveBounds() { return this.allowedBounds; }
