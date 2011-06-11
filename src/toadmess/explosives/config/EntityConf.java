@@ -77,6 +77,8 @@ public class EntityConf {
 		this.properties[CONF_ENTITY_YIELD.ordinal()] = readOptionalFloat(conf, confPathPrefix + "." + CONF_ENTITY_YIELD);
 		this.properties[CONF_ENTITY_YIELD_SPECIFIC.ordinal()] = readSpecificYields(conf, confPathPrefix + "." + CONF_ENTITY_YIELD_SPECIFIC);
 		
+		this.properties[CONF_ENTITY_TNT_TRIGGER_PREVENTED.ordinal()] = conf.getProperty(confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_PREVENTED);
+		
 		this.properties[CONF_ENTITY_TNT_TRIGGER_HAND.ordinal()] = readSubConfig(conf, confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_HAND);
 		this.properties[CONF_ENTITY_TNT_TRIGGER_FIRE.ordinal()] = readSubConfig(conf, confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_FIRE);
 		this.properties[CONF_ENTITY_TNT_TRIGGER_REDSTONE.ordinal()] = readSubConfig(conf, confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_REDSTONE);
@@ -250,10 +252,13 @@ public class EntityConf {
 	public String toString() {
 		String str = ""; 
 		
+		str += "activeBounds=" + this.getInheritedProp(CONF_BOUNDS) + "\n";		
+		
 		str += multipliersToString(ConfProps.CONF_ENTITY_RADIUSMULT);
 		str += multipliersToString(ConfProps.CONF_ENTITY_PLAYER_DAMAGEMULT);
 		str += multipliersToString(ConfProps.CONF_ENTITY_CREATURE_DAMAGEMULT);
 		str += multipliersToString(ConfProps.CONF_ENTITY_ITEM_DAMAGEMULT);
+		str += multipliersToString(ConfProps.CONF_ENTITY_TNT_FUSEMULT);
 		
 		str += propToString(ConfProps.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE);
 		str += propToString(ConfProps.CONF_ENTITY_FIRE);
@@ -261,8 +266,8 @@ public class EntityConf {
 		
 		str += specificYieldsToString();
 		
-		str += "activeBounds=" + this.getInheritedProp(CONF_BOUNDS) + "\n";		
-		str += multipliersToString(ConfProps.CONF_ENTITY_TNT_FUSEMULT);
+		str += propToString(ConfProps.CONF_ENTITY_TNT_TRIGGER_PREVENTED);
+		
 		str += subConfigToString(ConfProps.CONF_ENTITY_TNT_TRIGGER_HAND);
 		str += subConfigToString(ConfProps.CONF_ENTITY_TNT_TRIGGER_FIRE);
 		str += subConfigToString(ConfProps.CONF_ENTITY_TNT_TRIGGER_REDSTONE);
@@ -318,9 +323,9 @@ public class EntityConf {
 			if(isSubConfig()) {
 				return "";
 			} else {
-				str += "not configured, terrain damage is as normal";				
+				str += "not configured, will be left unaffected";				
 			}
-		} else if(!hasOwnProp(CONF_ENTITY_PREVENT_TERRAIN_DAMAGE)) {
+		} else if(!hasOwnProp(confProperty)) {
 			str += "inherited";
 		} else {			
 			str += prop;
@@ -378,14 +383,6 @@ public class EntityConf {
 		return "yieldSpecific=" + str + ",\n";
 	}
 	
-	public Bounds getActiveBounds() {
-		return (Bounds) this.getInheritedProp(CONF_BOUNDS);
-	}
-
-	public boolean getFire() {
-		return (Boolean) this.getInheritedProp(CONF_ENTITY_FIRE);
-	}
-	
 	public float getYield() {
 		final Float yield = (Float) this.getInheritedProp(CONF_ENTITY_YIELD);
 		
@@ -399,11 +396,15 @@ public class EntityConf {
 		return yield;
 	}
 	
+	
 	// HACK: Breaks encapsulation and allow modification of the array's contents, but 
 	// why would any caller modify this array's contents? 
 	public Float[] getSpecificYieldConfig() { return (Float[]) this.getInheritedProp(ConfProps.CONF_ENTITY_YIELD_SPECIFIC); }
 	
+	public Bounds getActiveBounds() { return (Bounds) this.getInheritedProp(CONF_BOUNDS); }
+	public boolean getFire() { return (Boolean) this.getInheritedProp(CONF_ENTITY_FIRE); }
 	public boolean getPreventTerrainDamage() { return (Boolean) this.getInheritedProp(ConfProps.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE); }
+	public boolean getTNTPrimePrevented() { return (Boolean) this.getInheritedProp(ConfProps.CONF_ENTITY_TNT_TRIGGER_PREVENTED); }
 	
 	public float getNextRadiusMultiplier() { return getNextMultiplier(ConfProps.CONF_ENTITY_RADIUSMULT); }
 	public float getNextPlayerDamageMultiplier() { return getNextMultiplier(ConfProps.CONF_ENTITY_PLAYER_DAMAGEMULT); }
@@ -427,6 +428,7 @@ public class EntityConf {
 	}
 	public boolean hasSpecificYieldConfig() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_YIELD_SPECIFIC); }
 	public boolean hasPreventTerrainDamageConfig() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE); }
+	public boolean hasTNTPrimePrevented() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_TNT_TRIGGER_PREVENTED); }
 	
 	public boolean hasTNTPrimeByHandConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_HAND); }
 	public boolean hasTNTPrimeByFireConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_FIRE); }
