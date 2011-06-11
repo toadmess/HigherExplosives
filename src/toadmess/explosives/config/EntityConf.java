@@ -249,25 +249,28 @@ public class EntityConf {
 
 	public String toString() {
 		String str = ""; 
-		str += "radiusMultiplier={" + multipliersToString(ConfProps.CONF_ENTITY_RADIUSMULT) + "},\n";
-		str += "playerDamageMultiplier={" + multipliersToString(ConfProps.CONF_ENTITY_PLAYER_DAMAGEMULT) + "},\n";
-		str += "creatureDamageMultiplier={" + multipliersToString(ConfProps.CONF_ENTITY_CREATURE_DAMAGEMULT) + "},\n";
-		str += "itemDamageMultiplier={" + multipliersToString(ConfProps.CONF_ENTITY_ITEM_DAMAGEMULT) + "},\n";
-		str += "fire=" + (hasFireConfig() ? getFire() : "no fire configured. will leave unaffected") + ",\n";
-		str += "yield=" + (hasYieldConfig() ? getYield() : "no yield configured. will leave unaffected") + ",\n";
-		str += "yieldSpecific=" + specificYieldsToString(this.getSpecificYieldConfig()) + ",\n";
-		str += "preventTerrainDamage=" + (hasPreventTerrainDamageConfig() ? getPreventTerrainDamage() : "not configured, terrain damage is as normal") + ",\n";
-		str += "activeBounds=" + this.getInheritedProp(CONF_BOUNDS) + "\n";
 		
-		str += "tntFuseMultiplier={" + multipliersToString(ConfProps.CONF_ENTITY_TNT_FUSEMULT) + "},\n";
-		str += "tntPrimeByHand=" + subConfigToString(this.getTNTPrimeByHandConfig()) + ",\n";
-		str += "tntPrimeByFire=" + subConfigToString(this.getTNTPrimeByFireConfig()) + ",\n";
-		str += "tntPrimeByRedstone=" + subConfigToString(this.getTNTPrimeByRedstoneConfig()) + ",\n";
-		str += "tntPrimeByExplosion=" + subConfigToString(this.getTNTPrimeByExplosionConfig()) + ",\n";
+		str += multipliersToString(ConfProps.CONF_ENTITY_RADIUSMULT);
+		str += multipliersToString(ConfProps.CONF_ENTITY_PLAYER_DAMAGEMULT);
+		str += multipliersToString(ConfProps.CONF_ENTITY_CREATURE_DAMAGEMULT);
+		str += multipliersToString(ConfProps.CONF_ENTITY_ITEM_DAMAGEMULT);
+		
+		str += propToString(ConfProps.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE);
+		str += propToString(ConfProps.CONF_ENTITY_FIRE);
+		str += propToString(ConfProps.CONF_ENTITY_YIELD);
+		
+		str += specificYieldsToString();
+		
+		str += "activeBounds=" + this.getInheritedProp(CONF_BOUNDS) + "\n";		
+		str += multipliersToString(ConfProps.CONF_ENTITY_TNT_FUSEMULT);
+		str += subConfigToString(ConfProps.CONF_ENTITY_TNT_TRIGGER_HAND);
+		str += subConfigToString(ConfProps.CONF_ENTITY_TNT_TRIGGER_FIRE);
+		str += subConfigToString(ConfProps.CONF_ENTITY_TNT_TRIGGER_REDSTONE);
+		str += subConfigToString(ConfProps.CONF_ENTITY_TNT_TRIGGER_EXPLOSION);
 		
 		return "Conf(\n" + indent(str) + "\n)";
 	}
-	
+
 	private String indent(final String lines) {
 		String indented = "";
 		
@@ -279,42 +282,100 @@ public class EntityConf {
 		return indented;
 	}
 
-	private String subConfigToString(final EntityConf subConf) {
-		if(subConf == null) {
-			return "no sub-configuration specified";
-		}
-		return subConf.toString();
-	}
-	
-	private String multipliersToString(final ConfProps multiplierProperty) {
-		@SuppressWarnings("unchecked")
-		final List<List<Float>> paramList = (List<List<Float>>) getInheritedProp(multiplierProperty);
-		if(paramList == null) {
-			return indent("no multiplier configured. will leave unaffected");
-		}
-
-		String str = "\n";
+	private String subConfigToString(final ConfProps subConfProperty) {
+		final EntityConf subConf = (EntityConf) this.properties[subConfProperty.ordinal()];
 		
-		for (final List<?> localList : paramList) {
-			str = str + "(chance:" + localList.get(0) + ", value:" + localList.get(1) + ")\n";
-		}
-		return indent(str) + "\n";
-	}
-
-	private String specificYieldsToString(final Float[] specificYields) {
-		if(specificYields == null) {
-			return "no specific block yields configured";
-		}
-
 		String str = "";
 		
-		for (int i = 0; i < specificYields.length; i++) {
-			if(specificYields[i] != null) {
-				str += "(block ID " + i + " has yield " + specificYields[i] + ")\n";
+		if(isSubConfig()) {
+			// Some sub-config properties don't make sense themselves in sub configs, such as these..
+			switch(subConfProperty) {
+			case CONF_ENTITY_TNT_TRIGGER_HAND:
+			case CONF_ENTITY_TNT_TRIGGER_FIRE:
+			case CONF_ENTITY_TNT_TRIGGER_REDSTONE:
+			case CONF_ENTITY_TNT_TRIGGER_EXPLOSION:
+				return "";
+			default:
+				// Carry on..
 			}
 		}
 		
-		return "{\n" + indent(str) + "\n}";
+		if(subConf == null) {
+			str += "no sub-configuration specified";
+		} else {
+			str += subConf.toString();
+		}
+		
+		return subConfProperty.toString() + "=" + str + ",\n";
+	}
+	
+	private String propToString(final ConfProps confProperty) {
+		String str = "";
+		
+		final Object prop = this.getInheritedProp(confProperty);
+		
+		if(prop == null) {
+			if(isSubConfig()) {
+				return "";
+			} else {
+				str += "not configured, terrain damage is as normal";				
+			}
+		} else if(!hasOwnProp(CONF_ENTITY_PREVENT_TERRAIN_DAMAGE)) {
+			str += "inherited";
+		} else {			
+			str += prop;
+		}
+		
+		return confProperty.toString() + "=" + str + ",\n";
+	}
+	
+	private String multipliersToString(final ConfProps multiplierProperty) {
+		String str = "";
+		
+		@SuppressWarnings("unchecked")
+		final List<List<Float>> paramList = (List<List<Float>>) getInheritedProp(multiplierProperty);
+		if(paramList == null) {
+			if(isSubConfig()) {
+				return ""; // For conciseness, don't bother showing unspecified properties for sub configs
+			} else {
+				str += "no multiplier configured. will leave unaffected";
+			}
+		} else if(!hasOwnProp(multiplierProperty)) {
+			str += "inherited";
+		} else {
+			str += "\n";
+			
+			for (final List<?> localList : paramList) {
+				str = str + "(chance:" + localList.get(0) + ", value:" + localList.get(1) + ")\n";
+			}
+			str = "{" + indent(str) + "\n}";
+		}
+
+		return multiplierProperty + "=" + str + ",\n";
+	}
+
+	private String specificYieldsToString() {
+		final Float[] specificYields = this.getSpecificYieldConfig();
+		
+		String str = "";
+		
+		if(specificYields == null) {
+			if(isSubConfig()) {
+				return "";
+			}
+			str += "no specific block yields configured";
+		} else if(!hasOwnProp(ConfProps.CONF_ENTITY_YIELD_SPECIFIC)) {
+			str += "inherited";
+		} else {
+			for (int i = 0; i < specificYields.length; i++) {
+				if(specificYields[i] != null) {
+					str += "(block ID " + i + " has yield " + specificYields[i] + ")\n";
+				}
+			}
+			str = "{\n" + indent(str) + "\n}";
+		}
+		
+		return "yieldSpecific=" + str + ",\n";
 	}
 	
 	public Bounds getActiveBounds() {
@@ -371,6 +432,10 @@ public class EntityConf {
 	public boolean hasTNTPrimeByFireConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_FIRE); }
 	public boolean hasTNTPrimeByRedstoneConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_REDSTONE); }
 	public boolean hasTNTPrimeByExplosionConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_EXPLOSION); }
+	
+	private boolean hasOwnProp(final ConfProps property) {
+		return (hasInheritedProp(property) && (this.properties[property.ordinal()] != null));
+	}
 	
 	private boolean hasInheritedProp(final ConfProps property) {
 		return null != getInheritedProp(property);
