@@ -1,5 +1,7 @@
 package toadmess.explosives.config;
 
+import static toadmess.explosives.config.ConfProps.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,55 +20,25 @@ import toadmess.explosives.MCNative;
  * 
  * @author John Revill
  */
-public class EntityConf implements ConfConstants {
+public class EntityConf {
 	private final Logger log; 
 	
-	/** 
-	 * A sorted list of pairs of floats representing the radius multipliers to apply when modifying the explosion radius. 
-	 * The pair's head is the chance (0.0 to 1.0) and tail is the multiplier (0.0 and above). 
-	 * The list is sorted according to the pair's chance, pairs with higher chances coming first.
-	 * If null, the configuration provided no radius multipliers. 
-	 */
-	private final List<List<Float>> radiusMultipliers;
 	/**
-	 * A sorted list of pairs of floats representing the damage multipliers to apply when modifying explosion damage to the player.
-	 * If null, the configuration provided no player damage multipliers.
+	 * Sub configuration all have a reference to their parent containing 
+	 * configuration, which allows inheritance of their properties.
+	 * This will be null for root configurations.
 	 */
-	private final List<List<Float>> playerDamageMultipliers;
-	/**
-	 * A sorted list of pairs of floats representing the damage multipliers to apply when modifying explosion damage to creatures.
-	 * If null, the configuration provided no creature damage multipliers.
-	 */
-	private final List<List<Float>> creatureDamageMultipliers;
-	/** Same kind of list of multipliers as the radiusMultiplier, applies to non living item entities. */
-	private final List<List<Float>> itemDamageMultipliers;
-	/** Same kind of list of multipliers as the radiusMultiplier, applies to TNT fuse durations */
-	private final List<List<Float>> fuseMultipliers;
+	private final EntityConf parent;
 	
 	/** Used when conjuring up a new multiplier based on some random chance */
 	private final Random rng;
 
-	private final Bounds allowedBounds;
-	
-	/** Whether the explosion causes fire */
-	private final Boolean fire;
-	
-	/** Whether the explosion causes terrain damage */
-	private final Boolean preventTerrainDamage;
-
-	/** The percentage (from 0.0 to 1.0) of damaged blocks in the explosion that drop items */
-	private final Float yield;
-
-	/** 
-	 * A sparse array whose index is a specific block type ID and whose value is the yield 
-	 * percentage (from 0.0 to 1.0) to use for that block type. 
+	/**
+	 * Contains all of the configuration properties. An array indexed by the ConfProps's ordinal value. 
+	 * If the property has not been specified for this configuration then the value will be 
+	 * null at that index.
 	 */
-	private final Float[] specificYields;
-
-	private final EntityConf tntPrimeByHand;
-	private final EntityConf tntPrimeByFire;
-	private final EntityConf tntPrimeByRedstone;
-	private final EntityConf tntPrimeByExplosion;
+	private Object[] properties;
 	
 	/** 
 	 * True if the MiningTNT plugin was detected in the list of plugins. False otherwise. 
@@ -74,33 +46,41 @@ public class EntityConf implements ConfConstants {
 	 */
 	public static boolean hasConflictWithMiningTNT = false;
 	
-	public EntityConf(final Configuration conf, final String confPathPrefix, final Logger log) {
-		this(conf, confPathPrefix, log, new Random());
+	public EntityConf(final EntityConf parent, final Configuration conf, final String confPathPrefix, final Logger log) {
+		this(parent, conf, confPathPrefix, log, new Random());
 	}
 	
-	public EntityConf(final Configuration conf, final String confPathPrefix, final Logger log, final Random rng) {
+	public EntityConf(final Configuration conf, final String confPathPrefix, final Logger log) {
+		this(null, conf, confPathPrefix, log, new Random());
+	}
+	
+	public EntityConf(final EntityConf parent, final Configuration conf, final String confPathPrefix, final Logger log, final Random rng) {
 		this.log = log;
 		
 		this.rng = rng;
 		
-		this.allowedBounds = new Bounds(conf, confPathPrefix);
+		this.parent = parent;
 		
-		this.radiusMultipliers = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_RADIUSMULT);
-		this.playerDamageMultipliers = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_PLAYER_DAMAGEMULT);
-		this.creatureDamageMultipliers = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_CREATURE_DAMAGEMULT);
-		this.itemDamageMultipliers = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_ITEM_DAMAGEMULT);
-		this.fuseMultipliers = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_TNT_FUSEMULT);
+		this.properties = new Object[ConfProps.values().length];
+		
+		this.properties[CONF_BOUNDS.ordinal()] = new Bounds(conf, confPathPrefix);
+		
+		this.properties[CONF_ENTITY_RADIUSMULT.ordinal()] = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_RADIUSMULT);
+		this.properties[CONF_ENTITY_PLAYER_DAMAGEMULT.ordinal()] = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_PLAYER_DAMAGEMULT);
+		this.properties[CONF_ENTITY_CREATURE_DAMAGEMULT.ordinal()] = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_CREATURE_DAMAGEMULT);
+		this.properties[CONF_ENTITY_ITEM_DAMAGEMULT.ordinal()] = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_ITEM_DAMAGEMULT);
+		this.properties[CONF_ENTITY_TNT_FUSEMULT.ordinal()] = readMultipliers(conf, confPathPrefix + "." + CONF_ENTITY_TNT_FUSEMULT);
 
-		this.fire = (Boolean) conf.getProperty(confPathPrefix + "." + CONF_ENTITY_FIRE);
-		this.preventTerrainDamage = (Boolean) conf.getProperty(confPathPrefix + "." + CONF_ENTITY_PREVENT_TERRAIN_DAMAGE);
+		this.properties[CONF_ENTITY_FIRE.ordinal()] = conf.getProperty(confPathPrefix + "." + CONF_ENTITY_FIRE);
+		this.properties[CONF_ENTITY_PREVENT_TERRAIN_DAMAGE.ordinal()] = conf.getProperty(confPathPrefix + "." + CONF_ENTITY_PREVENT_TERRAIN_DAMAGE);
+
+		this.properties[CONF_ENTITY_YIELD.ordinal()] = readOptionalFloat(conf, confPathPrefix + "." + CONF_ENTITY_YIELD);
+		this.properties[CONF_ENTITY_YIELD_SPECIFIC.ordinal()] = readSpecificYields(conf, confPathPrefix + "." + CONF_ENTITY_YIELD_SPECIFIC);
 		
-		this.yield = readOptionalFloat(conf, confPathPrefix + "." + CONF_ENTITY_YIELD);
-		this.specificYields = readSpecificYields(conf, confPathPrefix + "." + CONF_ENTITY_YIELD_SPECIFIC);
-		
-		this.tntPrimeByHand = readSubConfig(conf, confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_HAND);
-		this.tntPrimeByFire = readSubConfig(conf, confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_FIRE);
-		this.tntPrimeByRedstone = readSubConfig(conf, confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_REDSTONE);
-		this.tntPrimeByExplosion = readSubConfig(conf, confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_EXPLOSION);
+		this.properties[CONF_ENTITY_TNT_TRIGGER_HAND.ordinal()] = readSubConfig(conf, confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_HAND);
+		this.properties[CONF_ENTITY_TNT_TRIGGER_FIRE.ordinal()] = readSubConfig(conf, confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_FIRE);
+		this.properties[CONF_ENTITY_TNT_TRIGGER_REDSTONE.ordinal()] = readSubConfig(conf, confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_REDSTONE);
+		this.properties[CONF_ENTITY_TNT_TRIGGER_EXPLOSION.ordinal()] = readSubConfig(conf, confPathPrefix + "." + CONF_ENTITY_TNT_TRIGGER_EXPLOSION);
 		
 		if(null != conf.getProperty(confPathPrefix + ".trialTNTFuseMultiplier")) {
 			this.log.warning("HigherExplosives: The \"trialTNTFuseMultiplier\" configuration is no longer used. Please rename it to \"" + CONF_ENTITY_TNT_FUSEMULT + "\"");
@@ -118,7 +98,7 @@ public class EntityConf implements ConfConstants {
 			return null; 
 		}
 		
-		return new EntityConf(conf, confPathPrefix, this.log);
+		return new EntityConf(this, conf, confPathPrefix, this.log);
 	}
 
 	private Float readOptionalFloat(final Configuration conf, final String path) {
@@ -131,6 +111,10 @@ public class EntityConf implements ConfConstants {
 		return Double.valueOf(conf.getDouble(path, 0.0D)).floatValue();
 	}
 		
+	/**
+	 * @return A sparse array whose index is a specific block type ID and whose value is the yield 
+	 * percentage (from 0.0 to 1.0) to use for that block type. 
+	 */
 	private Float[] readSpecificYields(final Configuration conf, final String pathToYieldSpecific) {
 		final Object specYieldsProp = conf.getProperty(pathToYieldSpecific);
 		if (specYieldsProp instanceof HashMap<?,?>) {
@@ -156,11 +140,14 @@ public class EntityConf implements ConfConstants {
 	 * @param pathToMultiplier The configuration path prefix up to where the chance/value(s) are listed.
 	 * 
 	 * @return null if no multiplier configuration was found at the given path. 
-	 * OTherwise, a list of pairs of floats. Each pair is a chance (head) and multiplier (tail). 
+	 * Otherwise, a list of pairs of floats. Each pair is a chance (head) and multiplier (tail).
+	 * This is a sorted list of pairs of floats representing the multipliers to apply. 
+	 * The pair's head is the chance (0.0 to 1.0) and tail is the multiplier (0.0 and above). 
+	 * The list is sorted according to the pair's chance, pairs with higher chances coming first.
 	 */
 	private List<List<Float>> readMultipliers(final Configuration conf, final String pathToMultiplier) {
 		final List<List<Float>> multipliers = new ArrayList<List<Float>>(); // A list of pairs of floats. Each pair is a chance (head) and multiplier (tail).
-
+		
 		// First extract the multiplier chance/value pairs from the configuration and add them all to the multipliers list. 
 		final Object multiplierProp = conf.getProperty(pathToMultiplier);
 		if (multiplierProp instanceof Number) {
@@ -170,8 +157,8 @@ public class EntityConf implements ConfConstants {
 				if (multiplierListItemProp instanceof HashMap<?,?>) {
 					final HashMap<?,?> chanceAndValueProp = (HashMap<?,?>) multiplierListItemProp;
 
-					final Object chanceProp = chanceAndValueProp.get(CONF_MULTIPLIER_CHANCE);
-					final Object valueProp = chanceAndValueProp.get(CONF_MULTIPLIER_VALUE);
+					final Object chanceProp = chanceAndValueProp.get(CONF_MULTIPLIER_CHANCE.toString());
+					final Object valueProp = chanceAndValueProp.get(CONF_MULTIPLIER_VALUE.toString());
 
 					if ((chanceProp instanceof Double) && (valueProp instanceof Double)) {
 						addMultiplier(multipliers, (float)Math.min(1.0D, Math.max(0.0D, ((Double)chanceProp).doubleValue())), (float)Math.max(0.0D, ((Double)valueProp).doubleValue()));
@@ -234,6 +221,11 @@ public class EntityConf implements ConfConstants {
 		Collections.sort(multipliers, chanceComparator);
 	}
 
+	@SuppressWarnings("unchecked")
+	private float getNextMultiplier(final ConfProps multiplierProperty) {
+		return getNextMultiplier((List<List<Float>>) this.getInheritedProp(multiplierProperty));
+	}
+	
 	private float getNextMultiplier(final List<List<Float>> sortedMultipliers) {
 		if(sortedMultipliers == null || sortedMultipliers.size() == 0) {
 			// Default to 1.0 to be safe
@@ -257,17 +249,17 @@ public class EntityConf implements ConfConstants {
 
 	public String toString() {
 		String str = ""; 
-		str += "radiusMultiplier={" + multipliersToString(this.radiusMultipliers) + "},\n";
-		str += "playerDamageMultiplier={" + multipliersToString(this.playerDamageMultipliers) + "},\n";
-		str += "creatureDamageMultiplier={" + multipliersToString(this.creatureDamageMultipliers) + "},\n";
-		str += "itemDamageMultiplier={" + multipliersToString(this.itemDamageMultipliers) + "},\n";
+		str += "radiusMultiplier={" + multipliersToString(ConfProps.CONF_ENTITY_RADIUSMULT) + "},\n";
+		str += "playerDamageMultiplier={" + multipliersToString(ConfProps.CONF_ENTITY_PLAYER_DAMAGEMULT) + "},\n";
+		str += "creatureDamageMultiplier={" + multipliersToString(ConfProps.CONF_ENTITY_CREATURE_DAMAGEMULT) + "},\n";
+		str += "itemDamageMultiplier={" + multipliersToString(ConfProps.CONF_ENTITY_ITEM_DAMAGEMULT) + "},\n";
 		str += "fire=" + (hasFireConfig() ? getFire() : "no fire configured. will leave unaffected") + ",\n";
 		str += "yield=" + (hasYieldConfig() ? getYield() : "no yield configured. will leave unaffected") + ",\n";
-		str += "yieldSpecific=" + specificYieldsToString(this.specificYields) + ",\n";
+		str += "yieldSpecific=" + specificYieldsToString(this.getSpecificYieldConfig()) + ",\n";
 		str += "preventTerrainDamage=" + (hasPreventTerrainDamageConfig() ? getPreventTerrainDamage() : "not configured, terrain damage is as normal") + ",\n";
-		str += "activeBounds=" + this.allowedBounds + "\n";
+		str += "activeBounds=" + this.getInheritedProp(CONF_BOUNDS) + "\n";
 		
-		str += "tntFuseMultiplier={" + multipliersToString(this.fuseMultipliers) + "},\n";
+		str += "tntFuseMultiplier={" + multipliersToString(ConfProps.CONF_ENTITY_TNT_FUSEMULT) + "},\n";
 		str += "tntPrimeByHand=" + subConfigToString(this.getTNTPrimeByHandConfig()) + ",\n";
 		str += "tntPrimeByFire=" + subConfigToString(this.getTNTPrimeByFireConfig()) + ",\n";
 		str += "tntPrimeByRedstone=" + subConfigToString(this.getTNTPrimeByRedstoneConfig()) + ",\n";
@@ -294,7 +286,9 @@ public class EntityConf implements ConfConstants {
 		return subConf.toString();
 	}
 	
-	private String multipliersToString(final List<List<Float>> paramList) {
+	private String multipliersToString(final ConfProps multiplierProperty) {
+		@SuppressWarnings("unchecked")
+		final List<List<Float>> paramList = (List<List<Float>>) getInheritedProp(multiplierProperty);
 		if(paramList == null) {
 			return indent("no multiplier configured. will leave unaffected");
 		}
@@ -323,63 +317,103 @@ public class EntityConf implements ConfConstants {
 		return "{\n" + indent(str) + "\n}";
 	}
 	
-	public Bounds getActiveBounds() { return this.allowedBounds; }
+	public Bounds getActiveBounds() {
+		return (Bounds) this.getInheritedProp(CONF_BOUNDS);
+	}
 
-	public boolean getFire() { return hasFireConfig() ? this.fire : false ; }
+	public boolean getFire() {
+		return (Boolean) this.getInheritedProp(CONF_ENTITY_FIRE);
+	}
 	
 	public float getYield() {
-		if(!hasYieldConfig()) {
-			return 0.3F; // Report the yield as the minecraft default.
-		}
-			
-		if(EntityConf.hasConflictWithMiningTNT && this.yield == null) {
+		final Float yield = (Float) this.getInheritedProp(CONF_ENTITY_YIELD);
+		
+		if(EntityConf.hasConflictWithMiningTNT && yield == null) {
 			// There's no yield specified in the config.yml, but because the 
 			// MiningTNT plugin is in use on this server, we set the yield to 1.0.
 			// This is MiningTNT's default.
 			return 1.0F;
 		}
 		
-		return this.yield.floatValue();
+		return yield;
 	}
 	
 	// HACK: Breaks encapsulation and allow modification of the array's contents, but 
 	// why would any caller modify this array's contents? 
-	public Float[] getSpecificYieldConfig() { 
-		return hasSpecificYieldConfig() ? this.specificYields : new Float[]{}; 
+	public Float[] getSpecificYieldConfig() { return (Float[]) this.getInheritedProp(ConfProps.CONF_ENTITY_YIELD_SPECIFIC); }
+	
+	public boolean getPreventTerrainDamage() { return (Boolean) this.getInheritedProp(ConfProps.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE); }
+	
+	public float getNextRadiusMultiplier() { return getNextMultiplier(ConfProps.CONF_ENTITY_RADIUSMULT); }
+	public float getNextPlayerDamageMultiplier() { return getNextMultiplier(ConfProps.CONF_ENTITY_PLAYER_DAMAGEMULT); }
+	public float getNextCreatureDamageMultiplier() { return getNextMultiplier(ConfProps.CONF_ENTITY_CREATURE_DAMAGEMULT); }
+	public float getNextItemDamageMultiplier() { return getNextMultiplier(ConfProps.CONF_ENTITY_ITEM_DAMAGEMULT); }
+	public float getNextTNTFuseMultiplier() { return getNextMultiplier(ConfProps.CONF_ENTITY_TNT_FUSEMULT); }
+
+	public EntityConf getTNTPrimeByHandConfig() { return (EntityConf) this.getInheritedProp(CONF_ENTITY_TNT_TRIGGER_HAND); }
+	public EntityConf getTNTPrimeByFireConfig() { return (EntityConf) this.getInheritedProp(CONF_ENTITY_TNT_TRIGGER_FIRE); }
+	public EntityConf getTNTPrimeByRedstoneConfig() { return (EntityConf) this.getInheritedProp(CONF_ENTITY_TNT_TRIGGER_REDSTONE); }
+	public EntityConf getTNTPrimeByExplosionConfig() { return (EntityConf) this.getInheritedProp(CONF_ENTITY_TNT_TRIGGER_EXPLOSION); }
+	
+	public boolean hasFireConfig() { return this.hasInheritedProp(CONF_ENTITY_FIRE); }
+	public boolean hasRadiusConfig() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_RADIUSMULT); }
+	public boolean hasCreatureDamageConfig() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_CREATURE_DAMAGEMULT); }
+	public boolean hasPlayerDamageConfig() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_PLAYER_DAMAGEMULT); }
+	public boolean hasItemDamageConfig() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_ITEM_DAMAGEMULT); }
+	public boolean hasTNTFuseConfig() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_TNT_FUSEMULT); }
+	public boolean hasYieldConfig() {
+		return this.hasInheritedProp(CONF_ENTITY_YIELD) || EntityConf.hasConflictWithMiningTNT;
+	}
+	public boolean hasSpecificYieldConfig() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_YIELD_SPECIFIC); }
+	public boolean hasPreventTerrainDamageConfig() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE); }
+	
+	public boolean hasTNTPrimeByHandConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_HAND); }
+	public boolean hasTNTPrimeByFireConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_FIRE); }
+	public boolean hasTNTPrimeByRedstoneConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_REDSTONE); }
+	public boolean hasTNTPrimeByExplosionConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_EXPLOSION); }
+	
+	private boolean hasInheritedProp(final ConfProps property) {
+		return null != getInheritedProp(property);
 	}
 	
-	public boolean getPreventTerrainDamage() { return hasPreventTerrainDamageConfig() ? this.preventTerrainDamage : false ; }
-	public float getNextRadiusMultiplier() { return getNextMultiplier(this.radiusMultipliers); }
-	public float getNextPlayerDamageMultiplier() { return getNextMultiplier(this.playerDamageMultipliers); }
-	public float getNextCreatureDamageMultiplier() { return getNextMultiplier(this.creatureDamageMultipliers); }
-	public float getNextItemDamageMultiplier() { return getNextMultiplier(this.itemDamageMultipliers); }
-	public float getNextTNTFuseMultiplier() { return getNextMultiplier(this.fuseMultipliers); }
-
-	public EntityConf getTNTPrimeByHandConfig() { return this.tntPrimeByHand; }
-	public EntityConf getTNTPrimeByFireConfig() { return this.tntPrimeByFire; }
-	public EntityConf getTNTPrimeByRedstoneConfig() { return this.tntPrimeByRedstone; }
-	public EntityConf getTNTPrimeByExplosionConfig() { return this.tntPrimeByExplosion; }
-	
-	public boolean hasFireConfig() { return this.fire != null; }
-	public boolean hasRadiusConfig() { return this.radiusMultipliers != null; }
-	public boolean hasCreatureDamageConfig() { return this.creatureDamageMultipliers != null; }
-	public boolean hasPlayerDamageConfig() { return this.playerDamageMultipliers != null; }
-	public boolean hasItemDamageConfig() { return this.itemDamageMultipliers != null; }
-	public boolean hasYieldConfig() { return (this.yield != null) || EntityConf.hasConflictWithMiningTNT; }
-	public boolean hasSpecificYieldConfig() { return this.specificYields != null; }
-	public boolean hasPreventTerrainDamageConfig() { return this.preventTerrainDamage != null; }
-	
-	public boolean hasTNTFuseConfig() { return this.fuseMultipliers != null; }
-	public boolean hasTNTPrimeByHandConfig() { return this.tntPrimeByHand != null; }
-	public boolean hasTNTPrimeByFireConfig() { return this.tntPrimeByFire != null; }
-	public boolean hasTNTPrimeByRedstoneConfig() { return this.tntPrimeByRedstone != null; }
-	public boolean hasTNTPrimeByExplosionConfig() { return this.tntPrimeByExplosion != null; }
+	private Object getInheritedProp(final ConfProps property) {
+		final Object ownProp = this.properties[property.ordinal()];
+		
+		if(null != ownProp) {
+			return ownProp;
+		}
+		
+		if(isSubConfig()) {
+			return this.parent.getInheritedProp(property);
+		}
+		
+		return null;
+	}
 	
 	public boolean isEmptyConfig() {
-		return !hasFireConfig() && !hasYieldConfig() && !hasSpecificYieldConfig() &&
-			   !hasPreventTerrainDamageConfig() && !hasRadiusConfig() && !hasTNTFuseConfig() && 
-			   !hasCreatureDamageConfig() && !hasPlayerDamageConfig() && !hasItemDamageConfig() &&
-			   !hasTNTPrimeByHandConfig() && !hasTNTPrimeByFireConfig() &&
-			   !hasTNTPrimeByRedstoneConfig() && !hasTNTPrimeByExplosionConfig();
+		for(final ConfProps property : ConfProps.values()) {
+			switch(property) {
+			case CONF_BOUNDS:
+				// Skip the bounds configuration. 
+				// It's not so interesting if the config has no properties. 
+				// And it defaults to having empty bounds as well.
+				continue;
+			case CONF_ENTITY_YIELD:
+				// Yield has a special workaround for MiningTNT
+				if(this.hasYieldConfig()) {
+					return false;
+				}
+				break;
+			default:
+				if(this.hasInheritedProp(property)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	private boolean isSubConfig() {
+		return this.parent != null;
 	}
 }

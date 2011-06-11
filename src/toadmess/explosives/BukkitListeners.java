@@ -1,5 +1,4 @@
 package toadmess.explosives;
-
 import java.util.HashSet;
 
 import org.bukkit.Location;
@@ -23,13 +22,12 @@ import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 
-import toadmess.explosives.config.ConfConstants;
 import toadmess.explosives.config.MultiWorldConfStore;
 import toadmess.explosives.events.HEEvent;
 import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.TippingPoint;
 
-public class BukkitListeners implements ConfConstants {
+public class BukkitListeners {
 	private final MultiWorldConfStore confStore;
 	
 	private final Plugin plugin;

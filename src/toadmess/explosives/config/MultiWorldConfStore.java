@@ -1,5 +1,5 @@
 package toadmess.explosives.config;
-
+import static toadmess.explosives.config.ConfProps.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +34,7 @@ import toadmess.explosives.events.handlers.TNTTracker;
  * 
  * @author John Revill
  */
-public class MultiWorldConfStore implements ConfConstants {
+public class MultiWorldConfStore {
 	/**
 	 * Maps the entity type to a map. The returned map maps the world name to the config to use. 
 	 */
@@ -58,7 +58,7 @@ public class MultiWorldConfStore implements ConfConstants {
 		
 		final String confEntityPath = CONF_ENTITIES + "." + entityName;
 		
-		final boolean isDebugConf = conf.getBoolean(CONF_DEBUGCONFIG, false);
+		final boolean isDebugConf = conf.getBoolean(CONF_DEBUGCONFIG.toString(), false);
 
 		final EntityConf defWorldConfig = new EntityConf(conf, confEntityPath, log);
 		this.add(defWorldConfig, entityType, MultiWorldConfStore.DEF_WORLD_NAME);
@@ -70,7 +70,7 @@ public class MultiWorldConfStore implements ConfConstants {
 			}
 		}
 
-		final List<String> worldNames = conf.getKeys(CONF_WORLDS);
+		final List<String> worldNames = conf.getKeys(CONF_WORLDS.toString());
 		if(null != worldNames) {
 			for(final String worldName : worldNames) {
 				final String worldEntityPath = CONF_WORLDS + "." + worldName + "." + confEntityPath;

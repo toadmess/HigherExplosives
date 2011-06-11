@@ -1,17 +1,18 @@
 package toadmess.explosives;
+import static toadmess.explosives.config.ConfProps.CONF_BOUNDS;
+import static toadmess.explosives.config.ConfProps.CONF_BOUNDS_MAX;
+import static toadmess.explosives.config.ConfProps.CONF_BOUNDS_MIN;
 
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.bukkit.util.config.Configuration;
-
-import toadmess.explosives.config.ConfConstants;
 
 /**
  * Simple class to check 
  *
  * @author John Revill
  */
-public class Bounds implements ConfConstants {
+public class Bounds {
 	private final Vector minVector;
 	private final Vector maxVector;
 	

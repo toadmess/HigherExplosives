@@ -1,5 +1,5 @@
 package toadmess.explosives;
-
+import static toadmess.explosives.config.ConfProps.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -12,12 +12,12 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
-import toadmess.explosives.config.ConfConstants;
+import toadmess.explosives.config.ConfProps;
 import toadmess.explosives.config.EntityConf;
 import toadmess.explosives.config.MultiWorldConfStore;
 import toadmess.explosives.events.handlers.EventRouter;
 
-public class HEMain extends JavaPlugin implements ConfConstants {		
+public class HEMain extends JavaPlugin {		
 	/** True if we should print out some debugging of the configuration */
 	public boolean IS_DEBUG_CONF;
 	
@@ -35,7 +35,7 @@ public class HEMain extends JavaPlugin implements ConfConstants {
 		
 		configureWorkarounds(pm);
 		
-		IS_DEBUG_CONF = this.getConfiguration().getBoolean(CONF_DEBUGCONFIG, false);
+		IS_DEBUG_CONF = this.getConfiguration().getBoolean(CONF_DEBUGCONFIG.toString(), false);
 		
 		final MultiWorldConfStore confStore = new MultiWorldConfStore(this.log);
 		confStore.readConfsForEntity(Creeper.class, this.getConfiguration());
@@ -76,12 +76,12 @@ public class HEMain extends JavaPlugin implements ConfConstants {
 	public Configuration getConfiguration() {
 		final Configuration conf = super.getConfiguration();
 		final String pluginVersion = getDescription().getVersion();
-		final String configVersion = conf.getString(CONF_VERSION, "");
+		final String configVersion = conf.getString(CONF_VERSION.toString(), "");
 		
 		if(null == conf || "".equals(configVersion)) {
 			this.log.info(pluginDescription() + " found no configuration file. Creating a fresh default one.");
 			
-			conf.setProperty(CONF_VERSION, pluginVersion);
+			conf.setProperty(CONF_VERSION.toString(), pluginVersion);
 
 			conf.setProperty(CONF_ENTITIES + ".TNTPrimed." + CONF_ENTITY_RADIUSMULT, 2.0f);
 			conf.setProperty(CONF_ENTITIES + ".TNTPrimed." + CONF_ENTITY_YIELD, 0.15f);
