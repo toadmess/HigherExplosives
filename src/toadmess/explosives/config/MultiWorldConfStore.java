@@ -115,26 +115,16 @@ public class MultiWorldConfStore implements ConfConstants {
 			return null;
 		}
 		
-		final EntityConf ec = procure(entityType, location);
+		final String worldName = location.getWorld().getName();
+		final Map<String, EntityConf> worldConfMap = this.worldConfs.get(entityType);
+		
+		final EntityConf ec;
+		ec = worldConfMap.get(worldConfMap.containsKey(worldName) ? worldName : DEF_WORLD_NAME);
 		
 		if(ec.getActiveBounds().isWithinBounds(location)) {
 			return ec;
 		}
 		return null;
-	}
-	
-	public EntityConf procure(final Class<? extends Entity> entityClass, final Location epicentre) {
-		return procure(entityClass, epicentre.getWorld().getName());
-	}
-	
-	public EntityConf procure(final Class<? extends Entity> entityClass, final String worldName) {
-		final Map<String, EntityConf> worldConfMap = this.worldConfs.get(entityClass);
-		
-		if(worldConfMap.containsKey(worldName)) {
-			return worldConfMap.get(worldName);
-		}
-		
-		return worldConfMap.get(DEF_WORLD_NAME);
 	}
 	
 	/**
