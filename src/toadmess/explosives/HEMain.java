@@ -13,8 +13,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
 import toadmess.explosives.config.ConfProps;
-import toadmess.explosives.config.EntityConf;
 import toadmess.explosives.config.MultiWorldConfStore;
+import toadmess.explosives.config.entity.EntityConf;
 import toadmess.explosives.events.handlers.EventRouter;
 
 public class HEMain extends JavaPlugin {		

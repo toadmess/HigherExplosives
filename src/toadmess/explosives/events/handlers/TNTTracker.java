@@ -14,7 +14,7 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
-import toadmess.explosives.config.EntityConf;
+import toadmess.explosives.config.entity.EntityConf;
 import toadmess.explosives.events.HEEvent;
 import toadmess.explosives.events.HEFuseEvent;
 import toadmess.explosives.events.Handler;

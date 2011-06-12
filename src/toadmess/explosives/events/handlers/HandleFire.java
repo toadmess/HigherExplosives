@@ -2,7 +2,7 @@ package toadmess.explosives.events.handlers;
 
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 
-import toadmess.explosives.config.EntityConf;
+import toadmess.explosives.config.entity.EntityConf;
 import toadmess.explosives.events.HEEvent;
 import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.TippingPoint;

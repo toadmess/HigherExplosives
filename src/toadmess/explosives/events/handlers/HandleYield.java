@@ -4,7 +4,7 @@ import org.bukkit.block.Block;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
 import toadmess.explosives.MCNative;
-import toadmess.explosives.config.EntityConf;
+import toadmess.explosives.config.entity.EntityConf;
 import toadmess.explosives.events.HEEvent;
 import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.TippingPoint;

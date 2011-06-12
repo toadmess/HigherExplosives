@@ -16,6 +16,8 @@ import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.config.Configuration;
 
+import toadmess.explosives.config.entity.EntityConf;
+import toadmess.explosives.config.entity.EntityConfReader;
 import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.handlers.EventRouter;
 import toadmess.explosives.events.handlers.HandleDamageCreature;
@@ -60,7 +62,7 @@ public class MultiWorldConfStore {
 		
 		final boolean isDebugConf = conf.getBoolean(CONF_DEBUGCONFIG.toString(), false);
 
-		final EntityConf defWorldConfig = new EntityConf(conf, confEntityPath, log);
+		final EntityConf defWorldConfig = new EntityConfReader(conf, confEntityPath, log).readEntityConf();
 		this.add(defWorldConfig, entityType, MultiWorldConfStore.DEF_WORLD_NAME);
 		if(isDebugConf) {
 			if(defWorldConfig.isEmptyConfig()) {
@@ -76,7 +78,7 @@ public class MultiWorldConfStore {
 				final String worldEntityPath = CONF_WORLDS + "." + worldName + "." + confEntityPath;
 			
 				if(null != conf.getProperty(worldEntityPath)) {
-					final EntityConf worldConf = new EntityConf(conf, worldEntityPath, this.log);
+					final EntityConf worldConf = new EntityConfReader(conf, worldEntityPath, this.log).readEntityConf();
 					
 					this.add(worldConf, entityType, worldName);
 					if(isDebugConf) {
