@@ -1,5 +1,8 @@
 package toadmess.explosives.config;
-import static toadmess.explosives.config.ConfProps.*;
+import static toadmess.explosives.config.ConfProps.CONF_DEBUGCONFIG;
+import static toadmess.explosives.config.ConfProps.CONF_ENTITIES;
+import static toadmess.explosives.config.ConfProps.CONF_WORLDS;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +30,7 @@ import toadmess.explosives.events.handlers.HandleFire;
 import toadmess.explosives.events.handlers.HandlePreventTerrainDamage;
 import toadmess.explosives.events.handlers.HandleRadius;
 import toadmess.explosives.events.handlers.HandleTNTFuse;
+import toadmess.explosives.events.handlers.HandleTNTPreventPrime;
 import toadmess.explosives.events.handlers.HandleYield;
 import toadmess.explosives.events.handlers.TNTTracker;
 
@@ -136,34 +140,61 @@ public class MultiWorldConfStore {
 	public Set<Type> getNeededBukkitEvents() {
 		final HashSet<Event.Type> neededEvents = new HashSet<Event.Type>();
 		
-		for(final Map<String, EntityConf> worldConfMap : this.worldConfs.values()) {
-			final List<EntityConf> allConfs = new ArrayList<EntityConf>();
-			allConfs.addAll(worldConfMap.values());
-			allConfs.add(worldConfMap.get(DEF_WORLD_NAME));
-			
-			for(final EntityConf c : allConfs) {
-				if(c.hasFireConfig() || c.hasRadiusConfig()) {
-					neededEvents.add(Event.Type.EXPLOSION_PRIME);
-				}
-				
-				if(c.hasPreventTerrainDamageConfig() || c.hasYieldConfig() || c.hasSpecificYieldConfig()) {
-					neededEvents.add(Event.Type.ENTITY_EXPLODE);
-				}
-				
-				if(c.hasPlayerDamageConfig() || c.hasCreatureDamageConfig() || c.hasItemDamageConfig()) {
-					neededEvents.add(Event.Type.ENTITY_DAMAGE);
-				}
-				
-				if(c.hasTNTFuseConfig()) {
-					neededEvents.add(Event.Type.BLOCK_DAMAGE);
-					neededEvents.add(Event.Type.BLOCK_BURN);
-					neededEvents.add(Event.Type.ENTITY_EXPLODE);
-					neededEvents.add(Event.Type.BLOCK_PHYSICS);
-				}
+		// TODO: Shift the knowlege of which configurations require 
+		// which handlers to the individual handlers themselves.
+		// This is an awkward centralised place to have these 
+		// details, easily forgotten and a maintenance pain.
+		for(final EntityConf c : allConfigsAndSubConfigs()) {
+			if(c.hasFireConfig() || c.hasRadiusConfig()) {
+				neededEvents.add(Event.Type.EXPLOSION_PRIME);
 			}
 			
+			if(c.hasPreventTerrainDamageConfig() || c.hasYieldConfig() || c.hasSpecificYieldConfig()) {
+				neededEvents.add(Event.Type.ENTITY_EXPLODE);
+			}
+			
+			if(c.hasPlayerDamageConfig() || c.hasCreatureDamageConfig() || c.hasItemDamageConfig()) {
+				neededEvents.add(Event.Type.ENTITY_DAMAGE);
+			}
+			
+			if(c.hasTNTFuseConfig() || c.hasTNTPrimeByHandConfig() || c.hasTNTPrimeByFireConfig() || 
+			   c.hasTNTPrimeByRedstoneConfig() || c.hasTNTPrimeByExplosionConfig()) {
+				neededEvents.add(Event.Type.BLOCK_DAMAGE);
+				neededEvents.add(Event.Type.BLOCK_BURN);
+				neededEvents.add(Event.Type.ENTITY_EXPLODE);
+				neededEvents.add(Event.Type.BLOCK_PHYSICS);
+			}
 		}
 		return neededEvents;
+	}
+	
+	private Set<EntityConf> allConfigsAndSubConfigs() {
+		final Set<EntityConf> allConfigs = new HashSet<EntityConf>();
+		
+		for(final Map<String, EntityConf> worldConfMap : this.worldConfs.values()) {
+			final List<EntityConf> thisWorldsConfs = new ArrayList<EntityConf>();
+			thisWorldsConfs.addAll(worldConfMap.values());
+			thisWorldsConfs.add(worldConfMap.get(DEF_WORLD_NAME));
+			
+			for(final EntityConf rootConfig : thisWorldsConfs) {
+				allConfigs.add(rootConfig);
+				
+				if(rootConfig.hasTNTPrimeByHandConfig()) {
+					allConfigs.add(rootConfig.getTNTPrimeByHandConfig());
+				}
+				if(rootConfig.hasTNTPrimeByFireConfig()) {
+					allConfigs.add(rootConfig.getTNTPrimeByFireConfig());
+				}
+				if(rootConfig.hasTNTPrimeByRedstoneConfig()) {
+					allConfigs.add(rootConfig.getTNTPrimeByRedstoneConfig());
+				}
+				if(rootConfig.hasTNTPrimeByExplosionConfig()) {
+					allConfigs.add(rootConfig.getTNTPrimeByExplosionConfig());
+				}
+			}
+		}
+		
+		return allConfigs;
 	}
 	
 	public void addNeededHandlers(final Plugin heMain, final EventRouter eventRouter) {
@@ -178,33 +209,38 @@ public class MultiWorldConfStore {
 		final HandleDamageCreature handleDamageCreature = new HandleDamageCreature();
 		final HandleDamageItem handleDamageItem = new HandleDamageItem();
 		final HandleTNTFuse handleTNTFuse = new HandleTNTFuse();
-		final TNTTracker tntTracker = new TNTTracker(heMain, eventRouter);
-		
-		for(final Map<String, EntityConf> worldConfMap : this.worldConfs.values()) {
-			final List<EntityConf> allConfs = new ArrayList<EntityConf>();
-			allConfs.addAll(worldConfMap.values());
-			allConfs.add(worldConfMap.get(DEF_WORLD_NAME));
-			
-			for(final EntityConf c : allConfs) {
-				if(c.hasFireConfig()) neededHandlers.add(handleFire);
-				if(c.hasRadiusConfig()) neededHandlers.add(handleRadius);
-				
-				if(c.hasPreventTerrainDamageConfig()) neededHandlers.add(handlePreventTerrainDamage);
-				if(c.hasYieldConfig()) neededHandlers.add(handleYield);
-				if(c.hasSpecificYieldConfig()) neededHandlers.add(handleYield);
+		final HandleTNTPreventPrime handleTNTPreventPrime = new HandleTNTPreventPrime();
+		final TNTTracker tntTracker = new TNTTracker(heMain, eventRouter);	
 					
-				if(c.hasPlayerDamageConfig()) neededHandlers.add(handleDamagePlayer);
-				if(c.hasCreatureDamageConfig()) neededHandlers.add(handleDamageCreature);
-				if(c.hasItemDamageConfig()) neededHandlers.add(handleDamageItem);
+		// TODO: Shift the knowledge of which configurations require 
+		// which handlers to the individual handlers themselves.
+		// This is an awkward centralised place to have these 
+		// details, easily forgotten and a maintenance pain.
+		for(final EntityConf c : allConfigsAndSubConfigs()) {
+			if(c.hasFireConfig()) neededHandlers.add(handleFire);
+			if(c.hasRadiusConfig()) neededHandlers.add(handleRadius);
+			
+			if(c.hasPreventTerrainDamageConfig()) neededHandlers.add(handlePreventTerrainDamage);
+			if(c.hasYieldConfig()) neededHandlers.add(handleYield);
+			if(c.hasSpecificYieldConfig()) neededHandlers.add(handleYield);
 				
-				if(c.hasTNTFuseConfig()) {
-					neededHandlers.add(tntTracker);
-					neededHandlers.add(handleTNTFuse);
-				}
+			if(c.hasPlayerDamageConfig()) neededHandlers.add(handleDamagePlayer);
+			if(c.hasCreatureDamageConfig()) neededHandlers.add(handleDamageCreature);
+			if(c.hasItemDamageConfig()) neededHandlers.add(handleDamageItem);
+			
+			if(c.hasTNTFuseConfig()) {
+				neededHandlers.add(tntTracker);
+				neededHandlers.add(handleTNTFuse);
 			}
 			
+			if(c.hasTNTPrimeByHandConfig() || c.hasTNTPrimeByFireConfig() || 
+			   c.hasTNTPrimeByRedstoneConfig() || c.hasTNTPrimeByExplosionConfig()) {
+				neededHandlers.add(tntTracker);
+			}
+			
+			if(c.hasTNTPrimePrevented()) neededHandlers.add(handleTNTPreventPrime);
 		}
-		
+			
 		for(final Handler h : neededHandlers) {
 			eventRouter.addHandler(h);
 		}

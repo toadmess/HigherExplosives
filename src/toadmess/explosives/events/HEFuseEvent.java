@@ -24,6 +24,11 @@ public class HEFuseEvent extends HEEvent {
 	}
 			
 	@Override
+	protected Entity getRelevantEntity() {
+		return this.primedTnt;
+	}
+	
+	@Override
 	public String toString() {
 		return "HEFuseEvent(primedTnt="+primedTnt+", triggerEvent="+event+")";
 	}

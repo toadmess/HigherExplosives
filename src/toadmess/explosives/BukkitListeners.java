@@ -146,7 +146,7 @@ public class BukkitListeners {
 				return;
 			}
 
-			handler.handle(new HEEvent(TippingPoint.TNT_PRIMED_BY_PLAYER, event, confStore));
+			handler.handle(new HEEvent(TippingPoint.TNT_PRIME_BY_PLAYER, event, confStore));
 		}
 		
 		@Override
@@ -159,7 +159,7 @@ public class BukkitListeners {
 				return;
 			}
 			
-			handler.handle(new HEEvent(TippingPoint.TNT_PRIMED_BY_REDSTONE, event, confStore));
+			handler.handle(new HEEvent(TippingPoint.TNT_PRIME_BY_REDSTONE, event, confStore));
 		}
 		
 		@Override
@@ -168,7 +168,7 @@ public class BukkitListeners {
 				return;
 			}
 			
-			handler.handle(new HEEvent(TippingPoint.TNT_PRIMED_BY_FIRE, event, confStore));
+			handler.handle(new HEEvent(TippingPoint.TNT_PRIME_BY_FIRE, event, confStore));
 		}
 	}
 		

@@ -179,7 +179,7 @@ public class EntityConf {
 		return true;
 	}
 	
-	protected boolean isSubConfig() {
+	public boolean isSubConfig() {
 		return this.parent != null;
 	}
 	

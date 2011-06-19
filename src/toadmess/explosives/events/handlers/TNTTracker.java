@@ -46,14 +46,17 @@ public class TNTTracker implements Handler {
 	public TNTTracker(final Plugin p, final Handler eventRouter) {
 		this.plugin = p;
 		this.eventRouter = eventRouter;
+		
+		// TODO: Sort this out..
+		HEEvent.setTNTTracker(this);
 	}
 	
 	@Override
 	public TippingPoint[] getTippingPointsHandled() {
 		return new TippingPoint[] {
-			TippingPoint.TNT_PRIMED_BY_FIRE,
-			TippingPoint.TNT_PRIMED_BY_PLAYER,
-			TippingPoint.TNT_PRIMED_BY_REDSTONE,
+			TippingPoint.TNT_PRIME_BY_FIRE,
+			TippingPoint.TNT_PRIME_BY_PLAYER,
+			TippingPoint.TNT_PRIME_BY_REDSTONE,
 			TippingPoint.AN_EXPLOSION,
 			TippingPoint.AN_EXPLOSION_CANCELLED,
 			TippingPoint.CAN_CHANGE_TNT_FUSE,
@@ -63,15 +66,11 @@ public class TNTTracker implements Handler {
 	@Override
 	public void handle(final HEEvent ev) {
 		final EntityConf worldConf = ev.getApplicableConfig();
-		
-		if(!worldConf.hasTNTFuseConfig()) {
-			return;
-		}
-		
+				
 		switch(ev.type) {
-		case TNT_PRIMED_BY_FIRE:
-		case TNT_PRIMED_BY_PLAYER:
-		case TNT_PRIMED_BY_REDSTONE:
+		case TNT_PRIME_BY_FIRE:
+		case TNT_PRIME_BY_PLAYER:
+		case TNT_PRIME_BY_REDSTONE:
 			associateWithTNTPrimedEntity(ev, worldConf);
 			break;
 			
