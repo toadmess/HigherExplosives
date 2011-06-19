@@ -158,7 +158,7 @@ public class MultiWorldConfStore {
 			}
 			
 			if(c.hasTNTFuseConfig() || c.hasTNTPrimeByHandConfig() || c.hasTNTPrimeByFireConfig() || 
-			   c.hasTNTPrimeByRedstoneConfig() || c.hasTNTPrimeByExplosionConfig()) {
+			   c.hasTNTPrimeByRedstoneConfig() || c.hasTNTPrimeByExplosionConfig() || c.hasTNTPrimePrevented()) {
 				neededEvents.add(Event.Type.BLOCK_DAMAGE);
 				neededEvents.add(Event.Type.BLOCK_BURN);
 				neededEvents.add(Event.Type.ENTITY_EXPLODE);
