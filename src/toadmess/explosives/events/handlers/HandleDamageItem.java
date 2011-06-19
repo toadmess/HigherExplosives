@@ -18,4 +18,9 @@ public class HandleDamageItem extends HandleDamageEntity {
 	public TippingPoint[] getTippingPointsHandled() {
 		return new TippingPoint[] { TippingPoint.CAN_CHANGE_ITEM_DAMAGE };
 	}
+	
+	@Override
+	public boolean isNeededBy(final EntityConf thisConfig) {
+		return thisConfig.hasItemDamageConfig(); 
+	}
 }

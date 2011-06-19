@@ -1,6 +1,8 @@
 package toadmess.explosives.events.handlers;
 
 import org.bukkit.block.Block;
+import org.bukkit.event.Event;
+import org.bukkit.event.Event.Type;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
 import toadmess.explosives.MCNative;
@@ -51,5 +53,16 @@ public class HandleYield implements Handler {
 	@Override
 	public TippingPoint[] getTippingPointsHandled() {
 		return new TippingPoint[] { TippingPoint.CAN_CHANGE_EXPLOSION_YIELD };
+	}
+	
+
+	@Override
+	public Type[] getBukkitEventsRequired() {
+		return new Type[] { Event.Type.ENTITY_EXPLODE };
+	}
+	
+	@Override
+	public boolean isNeededBy(final EntityConf thisConfig) {
+		return thisConfig.hasYieldConfig() || thisConfig.hasSpecificYieldConfig(); 
 	}
 }

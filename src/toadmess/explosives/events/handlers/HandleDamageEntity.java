@@ -1,5 +1,7 @@
 package toadmess.explosives.events.handlers;
 
+import org.bukkit.event.Event;
+import org.bukkit.event.Event.Type;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 import toadmess.explosives.config.entity.EntityConf;
@@ -23,4 +25,10 @@ public abstract class HandleDamageEntity implements Handler {
 	
 	protected abstract boolean hasConfig(final EntityConf conf);
 	protected abstract float getDamageMultiplier(final EntityConf conf);
+	
+	@Override
+	public Type[] getBukkitEventsRequired() {
+		return new Type[] { Event.Type.ENTITY_DAMAGE };
+	}
+	
 }

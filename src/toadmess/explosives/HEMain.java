@@ -42,8 +42,7 @@ public class HEMain extends JavaPlugin {
 		confStore.readConfsForEntity(TNTPrimed.class, this.getConfiguration());
 		confStore.readConfsForEntity(Fireball.class, this.getConfiguration());
 		
-		final EventRouter router = new EventRouter(this.log);
-		confStore.addNeededHandlers(this, router);
+		final EventRouter router = new EventRouter(this.log, this, confStore);
 		
 		final BukkitListeners el = new BukkitListeners(this, router, confStore);
 		el.registerNeededEvents(pm, this);

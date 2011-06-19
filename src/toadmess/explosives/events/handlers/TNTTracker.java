@@ -10,6 +10,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.TNTPrimed;
+import org.bukkit.event.Event;
+import org.bukkit.event.Event.Type;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -61,6 +63,22 @@ public class TNTTracker implements Handler {
 			TippingPoint.AN_EXPLOSION_CANCELLED,
 			TippingPoint.CAN_CHANGE_TNT_FUSE,
 		};
+	}
+	
+
+	@Override
+	public Type[] getBukkitEventsRequired() {
+		return new Type[] { 
+				Event.Type.BLOCK_DAMAGE, 
+				Event.Type.BLOCK_BURN, 
+				Event.Type.BLOCK_PHYSICS, 
+				Event.Type.ENTITY_EXPLODE 
+		};
+	}
+	
+	@Override
+	public boolean isNeededBy(final EntityConf thisConfig) {
+		return thisConfig.hasTNTFuseConfig();
 	}
 	
 	@Override

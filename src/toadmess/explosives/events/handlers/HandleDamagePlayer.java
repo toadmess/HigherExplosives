@@ -18,4 +18,9 @@ public class HandleDamagePlayer extends HandleDamageEntity {
 	public TippingPoint[] getTippingPointsHandled() {
 		return new TippingPoint[] { TippingPoint.CAN_CHANGE_PLAYER_DAMAGE };
 	}
+	
+	@Override
+	public boolean isNeededBy(final EntityConf thisConfig) {
+		return thisConfig.hasPlayerDamageConfig(); 
+	}
 }

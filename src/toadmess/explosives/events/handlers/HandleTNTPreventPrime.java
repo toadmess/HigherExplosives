@@ -1,6 +1,7 @@
 package toadmess.explosives.events.handlers;
 
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event.Type;
 import org.bukkit.event.block.BlockPhysicsEvent;
 
 import toadmess.explosives.config.entity.EntityConf;
@@ -36,5 +37,15 @@ public class HandleTNTPreventPrime implements Handler {
 			TippingPoint.TNT_PRIME_BY_PLAYER,
 			TippingPoint.TNT_PRIME_BY_REDSTONE
 		};
+	}	
+
+	@Override
+	public Type[] getBukkitEventsRequired() {
+		return new Type[]{}; // Relies on the TNTTracker
+	}
+	
+	@Override
+	public boolean isNeededBy(final EntityConf thisConfig) {
+		return thisConfig.hasTNTPrimePrevented();
 	}
 }

@@ -24,8 +24,8 @@ import org.bukkit.plugin.PluginManager;
 
 import toadmess.explosives.config.MultiWorldConfStore;
 import toadmess.explosives.events.HEEvent;
-import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.TippingPoint;
+import toadmess.explosives.events.handlers.EventRouter;
 
 public class BukkitListeners {
 	private final MultiWorldConfStore confStore;
@@ -40,12 +40,12 @@ public class BukkitListeners {
 	private final EntityListener entityListener;
 	private final BlockListener blockListener;
 	
-	private final Handler handler ;
+	private final EventRouter router ;
 	
-	public BukkitListeners(final Plugin plugin, final Handler defaultHandler, final MultiWorldConfStore confStore) {
+	public BukkitListeners(final Plugin plugin, final EventRouter router, final MultiWorldConfStore confStore) {
 		this.plugin = plugin;
 		this.confStore = confStore;
-		this.handler = defaultHandler;
+		this.router = router;
 		
 		this.entityListener = new EntityListenerImpl();
 		this.blockListener = new BlockListenerImpl(this.plugin);
@@ -58,8 +58,8 @@ public class BukkitListeners {
 				return;
 			}
 
-			handler.handle(new HEEvent(TippingPoint.CAN_CHANGE_EXPLOSION_RADIUS, event, confStore));
-			handler.handle(new HEEvent(TippingPoint.CAN_CHANGE_EXPLOSION_FIRE_FLAG, event, confStore));
+			router.handle(new HEEvent(TippingPoint.CAN_CHANGE_EXPLOSION_RADIUS, event, confStore));
+			router.handle(new HEEvent(TippingPoint.CAN_CHANGE_EXPLOSION_FIRE_FLAG, event, confStore));
 		}
 
 		@Override
@@ -79,11 +79,11 @@ public class BukkitListeners {
 			final Entity damagee = event.getEntity();
 			
 			if(damagee instanceof Player) {
-				handler.handle(new HEEvent(TippingPoint.CAN_CHANGE_PLAYER_DAMAGE, event, confStore));
+				router.handle(new HEEvent(TippingPoint.CAN_CHANGE_PLAYER_DAMAGE, event, confStore));
 			} else if(damagee instanceof LivingEntity){
-				handler.handle(new HEEvent(TippingPoint.CAN_CHANGE_CREATURE_DAMAGE, event, confStore));
+				router.handle(new HEEvent(TippingPoint.CAN_CHANGE_CREATURE_DAMAGE, event, confStore));
 			} else {
-				handler.handle(new HEEvent(TippingPoint.CAN_CHANGE_ITEM_DAMAGE, event, confStore));
+				router.handle(new HEEvent(TippingPoint.CAN_CHANGE_ITEM_DAMAGE, event, confStore));
 			}
 		}
 
@@ -101,17 +101,17 @@ public class BukkitListeners {
 			}
 			
 			if(!event.isCancelled()) {
-				handler.handle(new HEEvent(TippingPoint.CAN_PREVENT_TERRAIN_DAMAGE, event, confStore));
+				router.handle(new HEEvent(TippingPoint.CAN_PREVENT_TERRAIN_DAMAGE, event, confStore));
 			}
 			
 			if(!event.isCancelled()) {
-				handler.handle(new HEEvent(TippingPoint.CAN_CHANGE_EXPLOSION_YIELD, event, confStore));
+				router.handle(new HEEvent(TippingPoint.CAN_CHANGE_EXPLOSION_YIELD, event, confStore));
 			}
 
 			if(!event.isCancelled()) {
-				handler.handle(new HEEvent(TippingPoint.AN_EXPLOSION, event, confStore));				
+				router.handle(new HEEvent(TippingPoint.AN_EXPLOSION, event, confStore));				
 			} else {
-				handler.handle(new HEEvent(TippingPoint.AN_EXPLOSION_CANCELLED, event, confStore));
+				router.handle(new HEEvent(TippingPoint.AN_EXPLOSION_CANCELLED, event, confStore));
 			}
 		}		
 	}
@@ -135,7 +135,7 @@ public class BukkitListeners {
 			
 			return true;
 		}
-		
+
 		@Override
 		public void onBlockDamage(final BlockDamageEvent event) {
 			if(!commonTNTBlockChecks(event)) {
@@ -146,7 +146,7 @@ public class BukkitListeners {
 				return;
 			}
 
-			handler.handle(new HEEvent(TippingPoint.TNT_PRIME_BY_PLAYER, event, confStore));
+			router.handle(new HEEvent(TippingPoint.TNT_PRIME_BY_PLAYER, event, confStore));
 		}
 		
 		@Override
@@ -159,7 +159,7 @@ public class BukkitListeners {
 				return;
 			}
 			
-			handler.handle(new HEEvent(TippingPoint.TNT_PRIME_BY_REDSTONE, event, confStore));
+			router.handle(new HEEvent(TippingPoint.TNT_PRIME_BY_REDSTONE, event, confStore));
 		}
 		
 		@Override
@@ -168,7 +168,7 @@ public class BukkitListeners {
 				return;
 			}
 			
-			handler.handle(new HEEvent(TippingPoint.TNT_PRIME_BY_FIRE, event, confStore));
+			router.handle(new HEEvent(TippingPoint.TNT_PRIME_BY_FIRE, event, confStore));
 		}
 	}
 		
@@ -178,7 +178,7 @@ public class BukkitListeners {
 	 * cases where the config somehow changes, e.g. commands).
 	 */
 	public void registerNeededEvents(final PluginManager pm, final Plugin heMain) {
-		for(final Event.Type evType : this.confStore.getNeededBukkitEvents()) {
+		for(final Event.Type evType : this.router.getNeededBukkitEvents()) {
 			if(!this.registeredEvents.contains(evType)) { // Only register if we haven't done so before				
 				switch(evType.getCategory()) {
 				case LIVING_ENTITY:
@@ -192,7 +192,4 @@ public class BukkitListeners {
 			}
 		}
 	}
-	
-	public EntityListener getEntityListener() {return this.entityListener;}
-	public BlockListener getBlockListener() {return this.blockListener;}
 }

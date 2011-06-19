@@ -1,5 +1,7 @@
 package toadmess.explosives.events.handlers;
 
+import org.bukkit.event.Event;
+import org.bukkit.event.Event.Type;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 
 import toadmess.explosives.config.entity.EntityConf;
@@ -23,5 +25,16 @@ public class HandleRadius implements Handler {
 	@Override
 	public TippingPoint[] getTippingPointsHandled() {
 		return new TippingPoint[] { TippingPoint.CAN_CHANGE_EXPLOSION_RADIUS };
+	}
+	
+
+	@Override
+	public Type[] getBukkitEventsRequired() {
+		return new Type[] { Event.Type.EXPLOSION_PRIME };
+	}
+	
+	@Override
+	public boolean isNeededBy(final EntityConf thisConfig) {
+		return thisConfig.hasRadiusConfig();
 	}
 }

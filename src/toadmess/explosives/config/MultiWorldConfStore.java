@@ -4,6 +4,7 @@ import static toadmess.explosives.config.ConfProps.CONF_ENTITIES;
 import static toadmess.explosives.config.ConfProps.CONF_WORLDS;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -133,42 +134,7 @@ public class MultiWorldConfStore {
 		return null;
 	}
 	
-	/**
-	 * Finds all the event types required by any and all configs in all worlds.
-	 * @return A collection of the event types that we should register and listen to
-	 */
-	public Set<Type> getNeededBukkitEvents() {
-		final HashSet<Event.Type> neededEvents = new HashSet<Event.Type>();
-		
-		// TODO: Shift the knowlege of which configurations require 
-		// which handlers to the individual handlers themselves.
-		// This is an awkward centralised place to have these 
-		// details, easily forgotten and a maintenance pain.
-		for(final EntityConf c : allConfigsAndSubConfigs()) {
-			if(c.hasFireConfig() || c.hasRadiusConfig()) {
-				neededEvents.add(Event.Type.EXPLOSION_PRIME);
-			}
-			
-			if(c.hasPreventTerrainDamageConfig() || c.hasYieldConfig() || c.hasSpecificYieldConfig()) {
-				neededEvents.add(Event.Type.ENTITY_EXPLODE);
-			}
-			
-			if(c.hasPlayerDamageConfig() || c.hasCreatureDamageConfig() || c.hasItemDamageConfig()) {
-				neededEvents.add(Event.Type.ENTITY_DAMAGE);
-			}
-			
-			if(c.hasTNTFuseConfig() || c.hasTNTPrimeByHandConfig() || c.hasTNTPrimeByFireConfig() || 
-			   c.hasTNTPrimeByRedstoneConfig() || c.hasTNTPrimeByExplosionConfig() || c.hasTNTPrimePrevented()) {
-				neededEvents.add(Event.Type.BLOCK_DAMAGE);
-				neededEvents.add(Event.Type.BLOCK_BURN);
-				neededEvents.add(Event.Type.ENTITY_EXPLODE);
-				neededEvents.add(Event.Type.BLOCK_PHYSICS);
-			}
-		}
-		return neededEvents;
-	}
-	
-	private Set<EntityConf> allConfigsAndSubConfigs() {
+	public Set<EntityConf> allConfigsAndSubConfigs() {
 		final Set<EntityConf> allConfigs = new HashSet<EntityConf>();
 		
 		for(final Map<String, EntityConf> worldConfMap : this.worldConfs.values()) {
@@ -194,55 +160,6 @@ public class MultiWorldConfStore {
 			}
 		}
 		
-		return allConfigs;
-	}
-	
-	public void addNeededHandlers(final Plugin heMain, final EventRouter eventRouter) {
-		final LinkedHashSet<Handler> neededHandlers = new LinkedHashSet<Handler>();
-		
-		// Have just single instances of these. We don't want duplicate handlers in the returned Set
-		final HandleFire handleFire = new HandleFire();
-		final HandleRadius handleRadius = new HandleRadius();
-		final HandlePreventTerrainDamage handlePreventTerrainDamage = new HandlePreventTerrainDamage();
-		final HandleYield handleYield = new HandleYield();
-		final HandleDamagePlayer handleDamagePlayer = new HandleDamagePlayer();
-		final HandleDamageCreature handleDamageCreature = new HandleDamageCreature();
-		final HandleDamageItem handleDamageItem = new HandleDamageItem();
-		final HandleTNTFuse handleTNTFuse = new HandleTNTFuse();
-		final HandleTNTPreventPrime handleTNTPreventPrime = new HandleTNTPreventPrime();
-		final TNTTracker tntTracker = new TNTTracker(heMain, eventRouter);	
-					
-		// TODO: Shift the knowledge of which configurations require 
-		// which handlers to the individual handlers themselves.
-		// This is an awkward centralised place to have these 
-		// details, easily forgotten and a maintenance pain.
-		for(final EntityConf c : allConfigsAndSubConfigs()) {
-			if(c.hasFireConfig()) neededHandlers.add(handleFire);
-			if(c.hasRadiusConfig()) neededHandlers.add(handleRadius);
-			
-			if(c.hasPreventTerrainDamageConfig()) neededHandlers.add(handlePreventTerrainDamage);
-			if(c.hasYieldConfig()) neededHandlers.add(handleYield);
-			if(c.hasSpecificYieldConfig()) neededHandlers.add(handleYield);
-				
-			if(c.hasPlayerDamageConfig()) neededHandlers.add(handleDamagePlayer);
-			if(c.hasCreatureDamageConfig()) neededHandlers.add(handleDamageCreature);
-			if(c.hasItemDamageConfig()) neededHandlers.add(handleDamageItem);
-			
-			if(c.hasTNTFuseConfig()) {
-				neededHandlers.add(tntTracker);
-				neededHandlers.add(handleTNTFuse);
-			}
-			
-			if(c.hasTNTPrimeByHandConfig() || c.hasTNTPrimeByFireConfig() || 
-			   c.hasTNTPrimeByRedstoneConfig() || c.hasTNTPrimeByExplosionConfig()) {
-				neededHandlers.add(tntTracker);
-			}
-			
-			if(c.hasTNTPrimePrevented()) neededHandlers.add(handleTNTPreventPrime);
-		}
-			
-		for(final Handler h : neededHandlers) {
-			eventRouter.addHandler(h);
-		}
-	}
+		return Collections.unmodifiableSet(allConfigs);
+	}	
 }

@@ -1,6 +1,8 @@
 package toadmess.explosives.events.handlers;
 
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
+import org.bukkit.event.Event.Type;
 
 import toadmess.explosives.MCNative;
 import toadmess.explosives.config.entity.EntityConf;
@@ -30,5 +32,16 @@ public class HandlePreventTerrainDamage implements Handler {
 	@Override
 	public TippingPoint[] getTippingPointsHandled() {
 		return new TippingPoint[] { TippingPoint.CAN_PREVENT_TERRAIN_DAMAGE };
+	}
+	
+
+	@Override
+	public Type[] getBukkitEventsRequired() {
+		return new Type[] { Event.Type.ENTITY_EXPLODE };
+	}
+	
+	@Override
+	public boolean isNeededBy(final EntityConf thisConfig) {
+		return thisConfig.hasPreventTerrainDamageConfig(); 
 	}
 }
