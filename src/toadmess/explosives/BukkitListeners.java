@@ -180,7 +180,6 @@ public class BukkitListeners {
 	public void registerNeededEvents(final PluginManager pm, final Plugin heMain) {
 		for(final Event.Type evType : this.router.getNeededBukkitEvents()) {
 			if(!this.registeredEvents.contains(evType)) { // Only register if we haven't done so before		
-				System.out.println("registerNeededEvents: " + evType);
 				switch(evType.getCategory()) {
 				case LIVING_ENTITY:
 					pm.registerEvent(evType, this.entityListener, Event.Priority.Normal, heMain);
