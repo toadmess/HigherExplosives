@@ -18,7 +18,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 
 import toadmess.explosives.config.entity.EntityConf;
 import toadmess.explosives.events.HEEvent;
-import toadmess.explosives.events.HEFuseEvent;
+import toadmess.explosives.events.HEWrappedTNTEvent;
 import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.TippingPoint;
 
@@ -59,6 +59,7 @@ public class TNTTracker implements Handler {
 			TippingPoint.TNT_PRIME_BY_FIRE,
 			TippingPoint.TNT_PRIME_BY_PLAYER,
 			TippingPoint.TNT_PRIME_BY_REDSTONE,
+			TippingPoint.TNT_PRIME_BY_EXPLOSION,
 			TippingPoint.AN_EXPLOSION,
 			TippingPoint.AN_EXPLOSION_CANCELLED,
 			TippingPoint.CAN_CHANGE_TNT_FUSE,
@@ -69,16 +70,18 @@ public class TNTTracker implements Handler {
 	@Override
 	public Type[] getBukkitEventsRequired() {
 		return new Type[] { 
-				Event.Type.BLOCK_DAMAGE, 
-				Event.Type.BLOCK_BURN, 
-				Event.Type.BLOCK_PHYSICS, 
-				Event.Type.ENTITY_EXPLODE 
+			Event.Type.BLOCK_DAMAGE, 
+			Event.Type.BLOCK_BURN, 
+			Event.Type.BLOCK_PHYSICS, 
+			Event.Type.ENTITY_EXPLODE 
 		};
 	}
 	
 	@Override
 	public boolean isNeededBy(final EntityConf thisConfig) {
-		return thisConfig.hasTNTFuseConfig();
+		return thisConfig.hasTNTFuseConfig() || 
+			   thisConfig.hasTNTPrimeByHandConfig() || thisConfig.hasTNTPrimeByFireConfig() || 
+			   thisConfig.hasTNTPrimeByRedstoneConfig() || thisConfig.hasTNTPrimeByExplosionConfig();
 	}
 	
 	@Override
@@ -116,7 +119,7 @@ public class TNTTracker implements Handler {
 	private void cleanupIfPrimedTNT(final EntityExplodeEvent ev) {
 		final Entity entity = ev.getEntity();
 		if(ev.getEntity() instanceof TNTPrimed) {
-			seenTNTPrimedEntities.remove(entity.getEntityId());				
+			seenTNTPrimedEntities.remove(entity.getEntityId());
 		}
 	}
 	
@@ -161,31 +164,50 @@ public class TNTTracker implements Handler {
 								// Go through all of the triggering events (extremely likely to be events of the 
 								// same kind of TippingPoint) and find the nearest TNTPrimed entity to those 
 								// event's locations.
-								{
-									HEEvent bestMatchFound = null;
-									double bestMatchDistanceSq = Double.POSITIVE_INFINITY;
-									
-									for(final HEEvent triggeringEvent : TNTTracker.this.triggerEventsToAssociate) { 
-										double distance = triggeringEvent.getEventLocation().toVector().distanceSquared(tntLocation.toVector());
-										
-										if(distance < bestMatchDistanceSq) {
-											bestMatchDistanceSq = distance;
-											bestMatchFound = triggeringEvent;
-										}
-									}
+								HEEvent bestMatchFound = null;
+								double bestMatchDistanceSq = Double.POSITIVE_INFINITY;
 								
-									seenTNTPrimedEntities.put(tnt.getEntityId(), bestMatchFound);
+								for(final HEEvent triggeringEvent : TNTTracker.this.triggerEventsToAssociate) { 
+									double distance = triggeringEvent.getEventLocation().toVector().distanceSquared(tntLocation.toVector());
 									
+									if(distance < bestMatchDistanceSq) {
+										bestMatchDistanceSq = distance;
+										bestMatchFound = triggeringEvent;
+									}
+								}
+								
+								seenTNTPrimedEntities.put(tnt.getEntityId(), bestMatchFound);										
+							
+								if(bestMatchFound.type == TippingPoint.AN_EXPLOSION) {
+									// This TNT was primed by another nearby explosion, a useful tipping point
+									final HEEvent primeTntEvent;
+									primeTntEvent = routeNewEvent(TippingPoint.TNT_PRIME_BY_EXPLOSION, tnt, bestMatchFound);
+									
+									// Make sure that our tracking hashtable contains a reference to the actual 
+									// triggering event itself rather than the explosion event that caused the triggering event.  
+									seenTNTPrimedEntities.put(tnt.getEntityId(), primeTntEvent);
+								}
+								
+								if(tnt.isDead()) {
+									// The priming of the TNT was prevented by removing the entity,
+									// Do housekeeping on our hashtable of entity IDs
+									seenTNTPrimedEntities.remove(tnt.getEntityId());
+								} else {
 									// This is a TippingPoint for changing the TNT's fuse duration.
-									final HEEvent tntFuseEvent = new HEFuseEvent(tnt, bestMatchFound);
-									eventRouter.handle(tntFuseEvent);
+									routeNewEvent(TippingPoint.CAN_CHANGE_TNT_FUSE, tnt, bestMatchFound);
 								}
 							}
-						}		
-					}
+						}
+					}		
 				}
 				
 				TNTTracker.this.triggerEventsToAssociate.clear();
+			}
+
+			private HEEvent routeNewEvent(final TippingPoint tp, final TNTPrimed tnt, final HEEvent bestMatchFound) {
+				final HEEvent tntEvent = new HEWrappedTNTEvent(tp, tnt, bestMatchFound);
+				eventRouter.handle(tntEvent);
+				return tntEvent;
 			}
 		});
 		

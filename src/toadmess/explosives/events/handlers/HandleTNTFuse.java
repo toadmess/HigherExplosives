@@ -5,7 +5,7 @@ import org.bukkit.event.Event.Type;
 import toadmess.explosives.MCNative;
 import toadmess.explosives.config.entity.EntityConf;
 import toadmess.explosives.events.HEEvent;
-import toadmess.explosives.events.HEFuseEvent;
+import toadmess.explosives.events.HEWrappedTNTEvent;
 import toadmess.explosives.events.Handler;
 import toadmess.explosives.events.TippingPoint;
 
@@ -18,7 +18,7 @@ public class HandleTNTFuse implements Handler {
 			return;
 		}
 		
-		final HEFuseEvent fuseEvent = (HEFuseEvent) ev;
+		final HEWrappedTNTEvent fuseEvent = (HEWrappedTNTEvent) ev;
 		
 		MCNative.multiplyTNTFuseDuration(fuseEvent.primedTnt, worldConf.getNextTNTFuseMultiplier());
 	}
@@ -35,8 +35,6 @@ public class HandleTNTFuse implements Handler {
 	
 	@Override
 	public boolean isNeededBy(final EntityConf thisConfig) {
-		return thisConfig.hasTNTFuseConfig() || 
-			   thisConfig.hasTNTPrimeByHandConfig() || thisConfig.hasTNTPrimeByFireConfig() || 
-			   thisConfig.hasTNTPrimeByRedstoneConfig() || thisConfig.hasTNTPrimeByExplosionConfig();
+		return thisConfig.hasTNTFuseConfig();
 	}
 }

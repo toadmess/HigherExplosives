@@ -78,6 +78,11 @@ public class HEEvent {
 				return fromThisParentConfig.getTNTPrimeByRedstoneConfig();
 			}
 			break;
+		case TNT_PRIME_BY_EXPLOSION:
+			if(fromThisParentConfig.hasTNTPrimeByExplosionConfig()) {
+				return fromThisParentConfig.getTNTPrimeByExplosionConfig();
+			}
+			break;
 		default:
 			// This event is not the triggering event, so let's go and find the triggering event..
 			final HEEvent triggeringEvent = findTriggeringEvent(getRelevantEntity());
@@ -123,7 +128,7 @@ public class HEEvent {
 			case TNT_PRIME_BY_REDSTONE:
 				this.eventLocation = ((BlockEvent) event).getBlock().getLocation();
 				break;
-				
+			
 			default: 
 				System.err.println("HEEvent.getEventLocation(): Not sure what the location is of unknown event type " + this.type);
 			}

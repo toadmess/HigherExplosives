@@ -4,11 +4,11 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.TNTPrimed;
 
-public class HEFuseEvent extends HEEvent {
+public class HEWrappedTNTEvent extends HEEvent {
 	public final TNTPrimed primedTnt;
 	
-	public HEFuseEvent(final TNTPrimed primedTnt, final HEEvent triggeringEvent) {
-		super(TippingPoint.CAN_CHANGE_TNT_FUSE, triggeringEvent.event, triggeringEvent.confStore);
+	public HEWrappedTNTEvent(final TippingPoint tp, final TNTPrimed primedTnt, final HEEvent triggeringEvent) {
+		super(tp, triggeringEvent.event, triggeringEvent.confStore);
 		
 		this.primedTnt = primedTnt;
 	}
@@ -30,6 +30,6 @@ public class HEFuseEvent extends HEEvent {
 	
 	@Override
 	public String toString() {
-		return "HEFuseEvent(primedTnt="+primedTnt+", triggerEvent="+event+")";
+		return "HEWrappedTNTEvent(tp="+this.type+", primedTnt="+primedTnt+", triggerEvent="+event+")";
 	}
 }
