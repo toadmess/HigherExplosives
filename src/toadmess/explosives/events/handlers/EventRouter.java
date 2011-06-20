@@ -24,13 +24,9 @@ import toadmess.explosives.events.TippingPoint;
  * If all is good then delegate the event on to all the Handlers that are registered with that type of TippingPoint.
  */
 public class EventRouter implements Handler {
-	private final Logger log;
-	
 	private final ArrayList<ArrayList<Handler>> handlers;
 	
-	public EventRouter(final Logger l, final Plugin p, final MultiWorldConfStore confStore) {
-		this.log = l;
-		
+	public EventRouter(final Plugin p, final MultiWorldConfStore confStore) {
 		// Initialise the handlers list
 		this.handlers = new ArrayList<ArrayList<Handler>>();
 		for(final TippingPoint event : TippingPoint.values()) {

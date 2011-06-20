@@ -5,7 +5,7 @@ import static toadmess.explosives.config.ConfProps.CONF_BOUNDS_MIN;
 
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
-import org.bukkit.util.config.Configuration;
+import org.bukkit.util.config.ConfigurationNode;
 
 /**
  * Simple class to check 
@@ -16,7 +16,7 @@ public class Bounds {
 	private final Vector minVector;
 	private final Vector maxVector;
 	
-	public Bounds(final Configuration conf, final String confPathPrefix) {
+	public Bounds(final ConfigurationNode conf, final String confPathPrefix) {
 		final String confPathMin = confPathPrefix + "." + CONF_BOUNDS + "." + CONF_BOUNDS_MIN;
 		final String confPathMax = confPathPrefix + "." + CONF_BOUNDS + "." + CONF_BOUNDS_MAX;
 

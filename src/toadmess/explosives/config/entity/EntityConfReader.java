@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import org.bukkit.util.config.Configuration;
+import org.bukkit.util.config.ConfigurationNode;
 
 import toadmess.explosives.Bounds;
 import toadmess.explosives.MCNative;
@@ -18,20 +18,20 @@ import toadmess.explosives.config.ConfProps;
 
 public class EntityConfReader {
 	private final Logger log;
-	private final Configuration conf;
+	private final ConfigurationNode conf;
 	private final String confPathPrefix;
 	private final EntityConf parent; 
 	private final Random rng;
 	
-	public EntityConfReader(final Configuration conf, final String confPathPrefix, final Logger log) {
+	public EntityConfReader(final ConfigurationNode conf, final String confPathPrefix, final Logger log) {
 		this(conf, confPathPrefix, log, null, new Random());
 	}
 	
-	public EntityConfReader(final Configuration conf, final String confPathPrefix, final Logger log, final EntityConf parent) {
+	public EntityConfReader(final ConfigurationNode conf, final String confPathPrefix, final Logger log, final EntityConf parent) {
 		this(conf, confPathPrefix, log, parent, new Random());
 	}
 	
-	public EntityConfReader(final Configuration conf, final String confPathPrefix, final Logger log, final EntityConf parent, final Random rng) {
+	public EntityConfReader(final ConfigurationNode conf, final String confPathPrefix, final Logger log, final EntityConf parent, final Random rng) {
 		this.log = log;
 		this.conf = conf;
 		this.confPathPrefix = confPathPrefix;
@@ -66,6 +66,10 @@ public class EntityConfReader {
 		readSubConfig(ec, properties, CONF_ENTITY_TNT_TRIGGER_EXPLOSION);
 		readSubConfig(ec, properties, CONF_ENTITY_CREEPER_CHARGED);
 		
+		readConfigListWithChainedInheritance(ec, properties, CONF_PERMISSIONS_LIST);
+		properties[CONF_PERMISSIONS_NODE_NAME.ordinal()] = this.conf.getProperty(CONF_PERMISSIONS_NODE_NAME.toString());
+		properties[CONF_PERMISSIONS_GROUP_NAME.ordinal()] = this.conf.getProperty(CONF_PERMISSIONS_GROUP_NAME.toString());
+		
 		if(null != this.conf.getProperty(confPathPrefix + ".trialTNTFuseMultiplier")) {
 			this.log.warning("HigherExplosives: The \"trialTNTFuseMultiplier\" configuration is no longer used. Please rename it to \"" + CONF_ENTITY_TNT_FUSEMULT + "\"");
 		}
@@ -79,7 +83,7 @@ public class EntityConfReader {
 		
 		return ec;
 	}
-
+	
 	private void readSubConfig(final EntityConf parent, final Object[] properties, final ConfProps confProperty) {
 		final String confPath = this.confPathPrefix + "." + confProperty.toString();
 		
@@ -92,6 +96,55 @@ public class EntityConfReader {
 			properties[confProperty.ordinal()] = ecr.readEntityConf();			
 		}
 		
+	}
+	
+	private void readConfigListWithChainedInheritance(final EntityConf parent, final Object[] properties, final ConfProps confProperty) {
+		final String confPath = this.confPathPrefix + "." + confProperty.toString();
+		final Object confProp = this.conf.getProperty(confPath);
+		
+		if(this.conf.getProperty(confPath) == null) {
+			// There is no sub entity config at this configuration path 
+			properties[confProperty.ordinal()] = null;
+		} else {
+			if (!(confProp instanceof List<?>)) {
+				this.log.warning("HigherExplosives: Config problem. Ignoring "+confProperty+" property under " + confPath + ". Was expecting a list of permission node names and their configs.");
+				return;
+			}
+
+			final ArrayList<EntityConf> listConfs = new ArrayList<EntityConf>();
+			EntityConf inheritedParent = this.parent;
+			for(final ConfigurationNode confNode : conf.getNodeList(confPath, null)) {
+				final List<String> permissionConfKeys = confNode.getKeys(null);
+				
+				final boolean hasPermConfig = permissionConfKeys.contains(CONF_PERMISSIONS_CONFIG.toString());
+				final boolean hasPermName = permissionConfKeys.contains(CONF_PERMISSIONS_NODE_NAME.toString());
+				final boolean hasGroupName = permissionConfKeys.contains(CONF_PERMISSIONS_GROUP_NAME.toString());
+				
+				if(!hasPermName && !hasGroupName) {
+					this.log.warning("HigherExplosives: Config problem under " + confPath);
+					this.log.warning("HigherExplosives: An item in the \"" + confProperty + "\" list is missing either a \""+CONF_PERMISSIONS_NODE_NAME+"\" or \""+CONF_PERMISSIONS_GROUP_NAME+"\" property");
+					return;
+				}
+				
+				if(!hasPermConfig) {
+					final String problemPermName = confNode.getString((hasPermName ? CONF_PERMISSIONS_NODE_NAME : CONF_PERMISSIONS_GROUP_NAME).toString());
+					this.log.warning("HigherExplosives: Config problem under " + confPath);
+					this.log.warning("HigherExplosives: The " + problemPermName + " item in the \"" + confProperty + "\" list is missing a \""+CONF_PERMISSIONS_CONFIG+"\" property");
+					return;
+				}
+
+				final EntityConfReader ecr = new EntityConfReader(confNode, CONF_PERMISSIONS_CONFIG.toString(), this.log, inheritedParent);
+				
+				final EntityConf permissionBasedConfig = ecr.readEntityConf();
+				
+				listConfs.add(permissionBasedConfig);
+				
+				inheritedParent = permissionBasedConfig;
+			}
+			listConfs.trimToSize();
+			
+			properties[confProperty.ordinal()] = (listConfs.size() == 0) ? null : listConfs; 
+		}
 	}
 
 	private void readProperty(final Object[] properties, final ConfProps confProperty) {
@@ -126,7 +179,6 @@ public class EntityConfReader {
 	 */
 	private void readSpecificYields(final Object[] properties) {
 		final String pathToYieldSpecific = this.confPathPrefix + "." + CONF_ENTITY_YIELD_SPECIFIC;
-		
 		final Object specYieldsProp = this.conf.getProperty(pathToYieldSpecific);
 		if (specYieldsProp instanceof HashMap<?,?>) {
 			final HashMap<?,?> specYields = (HashMap<?,?>) specYieldsProp;

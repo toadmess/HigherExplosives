@@ -27,6 +27,9 @@ public enum ConfProps {
 	CONF_ENTITY_CREEPER_CHARGED("creeperCharged"),
 	
 	CONF_PERMISSIONS_LIST("permissionsBasedConfigs"),
+	CONF_PERMISSIONS_NODE_NAME("withPermission"),
+	CONF_PERMISSIONS_GROUP_NAME("withGroup"),
+	CONF_PERMISSIONS_CONFIG("useConfig"),
 	
 	CONF_MULTIPLIER_CHANCE("chance"),
 	CONF_MULTIPLIER_VALUE("value"),

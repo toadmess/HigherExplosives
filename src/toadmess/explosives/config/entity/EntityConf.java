@@ -1,13 +1,6 @@
 package toadmess.explosives.config.entity;
 
-import static toadmess.explosives.config.ConfProps.CONF_BOUNDS;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_FIRE;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_EXPLOSION;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_FIRE;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_HAND;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_REDSTONE;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_YIELD;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_CREEPER_CHARGED;
+import static toadmess.explosives.config.ConfProps.*;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -95,7 +88,6 @@ public class EntityConf {
 		return yield;
 	}
 	
-	
 	// HACK: Breaks encapsulation and allow modification of the array's contents, but 
 	// why would any caller modify this array's contents? 
 	public Float[] getSpecificYieldConfig() { return (Float[]) this.getInheritedProp(ConfProps.CONF_ENTITY_YIELD_SPECIFIC); }
@@ -117,6 +109,16 @@ public class EntityConf {
 	public EntityConf getTNTPrimeByExplosionConfig() { return (EntityConf) this.getInheritedProp(CONF_ENTITY_TNT_TRIGGER_EXPLOSION); }
 	public EntityConf getCreeperChargedConfig() { return (EntityConf) this.getInheritedProp(CONF_ENTITY_CREEPER_CHARGED); }
 	
+	@SuppressWarnings("unchecked")
+	public List<EntityConf> getPermissionsBasedConfigs() { return (List<EntityConf>) this.getInheritedProp(CONF_PERMISSIONS_LIST); }
+	public String getPermissionNodeName() { 
+		// Not inherited. Only makes sense for sub configs in a permissionsBasedConfigs (CONF_PERMISSIONS_LIST) list. 
+		return (String) this.getOwnProp(CONF_PERMISSIONS_NODE_NAME);
+	}
+	public String getPermissionGroupName() { 
+		// Not inherited. Only makes sense for sub configs in a permissionsBasedConfigs (CONF_PERMISSIONS_LIST) list.
+		return (String) this.getOwnProp(CONF_PERMISSIONS_GROUP_NAME);
+	}
 	
 	public boolean hasFireConfig() { return this.hasInheritedProp(CONF_ENTITY_FIRE); }
 	public boolean hasRadiusConfig() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_RADIUSMULT); }
@@ -136,6 +138,8 @@ public class EntityConf {
 	public boolean hasTNTPrimeByRedstoneConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_REDSTONE); }
 	public boolean hasTNTPrimeByExplosionConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_EXPLOSION); }
 	public boolean hasCreeperChargedConfig() { return this.hasInheritedProp(CONF_ENTITY_CREEPER_CHARGED); }
+	
+	public boolean hasPermissionsBasedConfigs() { return this.hasInheritedProp(CONF_PERMISSIONS_LIST); }
 	
 	protected boolean hasOwnProp(final ConfProps property) {
 		return (hasInheritedProp(property) && (getOwnProp(property) != null));
@@ -213,6 +217,9 @@ public class EntityConf {
 		}
 		if(this.hasCreeperChargedConfig()) {
 			allConfigs.add(this.getCreeperChargedConfig());
+		}
+		if(this.hasPermissionsBasedConfigs()) {
+			allConfigs.addAll(this.getPermissionsBasedConfigs());
 		}
 		
 		return Collections.unmodifiableSet(allConfigs);
