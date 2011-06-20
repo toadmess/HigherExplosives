@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,25 +14,10 @@ import java.util.logging.Logger;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Type;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.util.config.Configuration;
 
 import toadmess.explosives.config.entity.EntityConf;
 import toadmess.explosives.config.entity.EntityConfReader;
-import toadmess.explosives.events.Handler;
-import toadmess.explosives.events.handlers.EventRouter;
-import toadmess.explosives.events.handlers.HandleDamageCreature;
-import toadmess.explosives.events.handlers.HandleDamageItem;
-import toadmess.explosives.events.handlers.HandleDamagePlayer;
-import toadmess.explosives.events.handlers.HandleFire;
-import toadmess.explosives.events.handlers.HandlePreventTerrainDamage;
-import toadmess.explosives.events.handlers.HandleRadius;
-import toadmess.explosives.events.handlers.HandleTNTFuse;
-import toadmess.explosives.events.handlers.HandleTNTPreventPrime;
-import toadmess.explosives.events.handlers.HandleYield;
-import toadmess.explosives.events.handlers.TNTTracker;
 
 /**
  * Contains all of the different EntityConf instances for all worlds and all entities.
@@ -143,24 +127,7 @@ public class MultiWorldConfStore {
 			thisWorldsConfs.add(worldConfMap.get(DEF_WORLD_NAME));
 			
 			for(final EntityConf rootConfig : thisWorldsConfs) {
-				allConfigs.add(rootConfig);
-				// TODO: Shift this lot into the EntityConf in a method like getAllSubConfigs(). 
-				// It shouldn't be necessary to put knowledge of specific sub configs into this class
-				if(rootConfig.hasTNTPrimeByHandConfig()) {
-					allConfigs.add(rootConfig.getTNTPrimeByHandConfig());
-				}
-				if(rootConfig.hasTNTPrimeByFireConfig()) {
-					allConfigs.add(rootConfig.getTNTPrimeByFireConfig());
-				}
-				if(rootConfig.hasTNTPrimeByRedstoneConfig()) {
-					allConfigs.add(rootConfig.getTNTPrimeByRedstoneConfig());
-				}
-				if(rootConfig.hasTNTPrimeByExplosionConfig()) {
-					allConfigs.add(rootConfig.getTNTPrimeByExplosionConfig());
-				}
-				if(rootConfig.hasCreeperChargedConfig()) {
-					allConfigs.add(rootConfig.getCreeperChargedConfig());
-				}
+				allConfigs.addAll(rootConfig.getConfigAndAllSubConfigs());
 			}
 		}
 		

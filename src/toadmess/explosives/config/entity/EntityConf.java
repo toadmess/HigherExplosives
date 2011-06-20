@@ -9,8 +9,11 @@ import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_REDST
 import static toadmess.explosives.config.ConfProps.CONF_ENTITY_YIELD;
 import static toadmess.explosives.config.ConfProps.CONF_ENTITY_CREEPER_CHARGED;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import toadmess.explosives.Bounds;
 import toadmess.explosives.config.ConfProps;
@@ -189,5 +192,29 @@ public class EntityConf {
 	
 	public String toString() {
 		return (new EntityConfPrinter(this)).stringify();
+	}
+
+	public Set<EntityConf> getConfigAndAllSubConfigs() {
+		final Set<EntityConf> allConfigs = new HashSet<EntityConf>();
+		
+		allConfigs.add(this);
+		
+		if(this.hasTNTPrimeByHandConfig()) {
+			allConfigs.add(this.getTNTPrimeByHandConfig());
+		}
+		if(this.hasTNTPrimeByFireConfig()) {
+			allConfigs.add(this.getTNTPrimeByFireConfig());
+		}
+		if(this.hasTNTPrimeByRedstoneConfig()) {
+			allConfigs.add(this.getTNTPrimeByRedstoneConfig());
+		}
+		if(this.hasTNTPrimeByExplosionConfig()) {
+			allConfigs.add(this.getTNTPrimeByExplosionConfig());
+		}
+		if(this.hasCreeperChargedConfig()) {
+			allConfigs.add(this.getCreeperChargedConfig());
+		}
+		
+		return Collections.unmodifiableSet(allConfigs);
 	}
 }
