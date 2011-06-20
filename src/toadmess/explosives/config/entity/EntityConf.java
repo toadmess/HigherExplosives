@@ -40,9 +40,24 @@ public class EntityConf {
 	 */
 	public static boolean hasConflictWithMiningTNT = false;
 	
-	public EntityConf(final EntityConf parent, final Random rng) {		
+	/**
+	 * Creates a normal EntityConfig with a specific parent to inherit from. 
+	 * If the parent is null, no properties are inherited.
+	 */
+	protected EntityConf(final EntityConf parent, final Random rng) {		
 		this.parent = parent;
 		this.rng = rng;
+	}
+	
+	/**
+	 * Creates an EntityConf by copying an existing EntityConf, but using a different parent. 
+     * This constructor is most likely used for a configuration with a modified inheritance 
+     * chain, such as a chain of Permissions based configurations tailored to a specific player.
+	 */
+	public EntityConf(final EntityConf configToCopy, final EntityConf newParent, final Random rng) {
+		this(newParent, rng);
+		
+		this.setProperties(configToCopy.properties);
 	}
 
 	protected void setProperties(final Object[] allTheReadConfigProperties) {
@@ -204,7 +219,10 @@ public class EntityConf {
 		allConfigs.add(this);
 		
 		if(this.hasTNTPrimeByHandConfig()) {
-			allConfigs.add(this.getTNTPrimeByHandConfig());
+			final EntityConf tntPrimeHandConf = this.getTNTPrimeByHandConfig();
+			if(allConfigs.add(tntPrimeHandConf)) {
+				allConfigs.addAll(tntPrimeHandConf.getConfigAndAllSubConfigs());
+			}
 		}
 		if(this.hasTNTPrimeByFireConfig()) {
 			allConfigs.add(this.getTNTPrimeByFireConfig());

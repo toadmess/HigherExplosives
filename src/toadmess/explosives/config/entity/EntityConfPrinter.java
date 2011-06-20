@@ -43,7 +43,7 @@ public class EntityConfPrinter {
 		
 		str += subConfigListToString(ConfProps.CONF_PERMISSIONS_LIST);
 		
-		return "Conf(\n" + indent(str) + "\n)";
+		return "Conf("+permissionNamesToString()+"\n" + indent(str) + "\n)";
 	}
 
 	private String indent(final String lines) {
@@ -55,6 +55,24 @@ public class EntityConfPrinter {
 		}
 		
 		return indented;
+	}
+	
+	private String permissionNamesToString() {
+		final String permName = this.toPrint.getPermissionNodeName();
+		final String groupName = this.toPrint.getPermissionGroupName();
+		
+		String appliesTo = "";
+		if(permName != null) {
+			appliesTo += "permission \"" + permName + "\"";
+		}
+		if(groupName != null) {
+			if(permName != null) appliesTo += " and "; 
+			appliesTo += "group \"" + groupName + "\"";
+		}
+		if(!"".equals(appliesTo)) {
+			appliesTo = " [for " + appliesTo + "]";
+		}
+		return appliesTo;
 	}
 
 	private String subConfigListToString(final ConfProps subConfListProperty) {
@@ -68,23 +86,10 @@ public class EntityConfPrinter {
 		String str = "";
 		
 		for(final EntityConf ec : subConfs) {
-			final String permName = ec.getPermissionNodeName();
-			final String groupName = ec.getPermissionGroupName();
-			
-			String appliesTo = "With ";
-			if(permName != null) {
-				appliesTo += "permission \"" + permName + "\"";
-			}
-			if(groupName != null) {
-				if(permName != null) appliesTo += " and "; 
-				appliesTo += "group \"" + groupName + "\"";
-			}
-			appliesTo += ": ";
-			
 			if("".equals(str)) {
-				str += appliesTo + ec.toString();				
+				str += ec.toString();				
 			} else {
-				str += ",\n" + appliesTo + ec.toString().replace("inherited", "NB: inherits from permissions configs above if player also has those extra permissions");
+				str += ",\n" + ec.toString().replace("inherited", "NB: inherits from permissions configs above if player also has those extra permissions");
 			}
 			
 		}

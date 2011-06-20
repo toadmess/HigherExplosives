@@ -1,16 +1,22 @@
 package toadmess.explosives.events;
 
+import java.util.List;
+import java.util.Random;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.Event;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityEvent;
 
+import toadmess.explosives.Gatekeeper;
 import toadmess.explosives.config.MultiWorldConfStore;
 import toadmess.explosives.config.entity.EntityConf;
 import toadmess.explosives.events.handlers.TNTTracker;
@@ -65,7 +71,29 @@ public class HEEvent {
 		switch(this.type) {
 		case TNT_PRIME_BY_PLAYER:
 			if(fromThisParentConfig.hasTNTPrimeByHandConfig()) {
-				return fromThisParentConfig.getTNTPrimeByHandConfig();
+				EntityConf permissionChainHead = fromThisParentConfig.getTNTPrimeByHandConfig();
+				
+				if(permissionChainHead.hasPermissionsBasedConfigs()) {
+					for(final EntityConf permissionConfig : permissionChainHead.getPermissionsBasedConfigs()) {
+						final Player suspect = ((BlockDamageEvent) event).getPlayer(); 
+						
+						final String reqPermission = permissionConfig.getPermissionNodeName();
+						if(reqPermission != null && !Gatekeeper.hasPermission(suspect, reqPermission)) {
+							continue;
+						}
+						
+						final String reqGroup = permissionConfig.getPermissionGroupName();
+						if(reqGroup != null && !Gatekeeper.inGroup(suspect, reqGroup)) {
+							continue;
+						}
+						
+						// This player has the needed permissions for this permissions based sub config. 
+						// Add this sub config to the chain of permissions.
+						permissionChainHead = new EntityConf(permissionConfig, permissionChainHead, new Random());
+					}
+				}
+				
+				return permissionChainHead;
 			}
 			break;
 		case TNT_PRIME_BY_FIRE:

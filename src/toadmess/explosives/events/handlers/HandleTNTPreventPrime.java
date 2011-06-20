@@ -14,7 +14,7 @@ public class HandleTNTPreventPrime implements Handler {
 	@Override
 	public void handle(final HEEvent ev) {
 		final EntityConf worldConf = ev.getApplicableConfig();
-
+		
 		if(!worldConf.hasTNTPrimePrevented()) {
 			return;
 		}
