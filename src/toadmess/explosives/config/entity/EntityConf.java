@@ -7,6 +7,7 @@ import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_FIRE;
 import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_HAND;
 import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_REDSTONE;
 import static toadmess.explosives.config.ConfProps.CONF_ENTITY_YIELD;
+import static toadmess.explosives.config.ConfProps.CONF_ENTITY_CREEPER_CHARGED;
 
 import java.util.List;
 import java.util.Random;
@@ -111,6 +112,8 @@ public class EntityConf {
 	public EntityConf getTNTPrimeByFireConfig() { return (EntityConf) this.getInheritedProp(CONF_ENTITY_TNT_TRIGGER_FIRE); }
 	public EntityConf getTNTPrimeByRedstoneConfig() { return (EntityConf) this.getInheritedProp(CONF_ENTITY_TNT_TRIGGER_REDSTONE); }
 	public EntityConf getTNTPrimeByExplosionConfig() { return (EntityConf) this.getInheritedProp(CONF_ENTITY_TNT_TRIGGER_EXPLOSION); }
+	public EntityConf getCreeperChargedConfig() { return (EntityConf) this.getInheritedProp(CONF_ENTITY_CREEPER_CHARGED); }
+	
 	
 	public boolean hasFireConfig() { return this.hasInheritedProp(CONF_ENTITY_FIRE); }
 	public boolean hasRadiusConfig() { return this.hasInheritedProp(ConfProps.CONF_ENTITY_RADIUSMULT); }
@@ -129,6 +132,7 @@ public class EntityConf {
 	public boolean hasTNTPrimeByFireConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_FIRE); }
 	public boolean hasTNTPrimeByRedstoneConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_REDSTONE); }
 	public boolean hasTNTPrimeByExplosionConfig() { return this.hasInheritedProp(CONF_ENTITY_TNT_TRIGGER_EXPLOSION); }
+	public boolean hasCreeperChargedConfig() { return this.hasInheritedProp(CONF_ENTITY_CREEPER_CHARGED); }
 	
 	protected boolean hasOwnProp(final ConfProps property) {
 		return (hasInheritedProp(property) && (getOwnProp(property) != null));

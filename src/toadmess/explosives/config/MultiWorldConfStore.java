@@ -144,7 +144,8 @@ public class MultiWorldConfStore {
 			
 			for(final EntityConf rootConfig : thisWorldsConfs) {
 				allConfigs.add(rootConfig);
-				
+				// TODO: Shift this lot into the EntityConf in a method like getAllSubConfigs(). 
+				// It shouldn't be necessary to put knowledge of specific sub configs into this class
 				if(rootConfig.hasTNTPrimeByHandConfig()) {
 					allConfigs.add(rootConfig.getTNTPrimeByHandConfig());
 				}
@@ -156,6 +157,9 @@ public class MultiWorldConfStore {
 				}
 				if(rootConfig.hasTNTPrimeByExplosionConfig()) {
 					allConfigs.add(rootConfig.getTNTPrimeByExplosionConfig());
+				}
+				if(rootConfig.hasCreeperChargedConfig()) {
+					allConfigs.add(rootConfig.getCreeperChargedConfig());
 				}
 			}
 		}

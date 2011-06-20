@@ -84,25 +84,21 @@ public class HEEvent {
 			}
 			break;
 		default:
-			// This event is not the triggering event, so let's go and find the triggering event..
-			final HEEvent triggeringEvent = findTriggeringEvent(getRelevantEntity());
+			final Entity relevantEntity = getRelevantEntity();
 			
-			if(triggeringEvent != null) {
-				return triggeringEvent.getApplicableConfig();
+			if(relevantEntity instanceof TNTPrimed && tntTracker != null) {
+				final HEEvent triggeringEvent = tntTracker.getTriggerFor((TNTPrimed) relevantEntity);
+				if(triggeringEvent != null) {
+					return triggeringEvent.getApplicableConfig();
+				}
+			} else if(relevantEntity instanceof Creeper && 
+					  ((Creeper) relevantEntity).isPowered() &&
+					  fromThisParentConfig.hasCreeperChargedConfig()) {
+				return fromThisParentConfig.getCreeperChargedConfig();
 			}
 		}
 		
 		return fromThisParentConfig;
-	}
-	
-	protected HEEvent findTriggeringEvent(final Entity relevantEntity) {
-		if(relevantEntity instanceof TNTPrimed && tntTracker != null) {
-			return tntTracker.getTriggerFor((TNTPrimed) relevantEntity);
-		} else if(relevantEntity instanceof Creeper) {
-			// TODO: Charged creeper sub configs if the creeper in question was charged
-		}
-		
-		return null;
 	}
 	
 	public Location getEventLocation() {

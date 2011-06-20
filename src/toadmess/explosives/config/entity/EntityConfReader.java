@@ -1,22 +1,6 @@
 package toadmess.explosives.config.entity;
 
-import static toadmess.explosives.config.ConfProps.CONF_BOUNDS;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_CREATURE_DAMAGEMULT;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_FIRE;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_ITEM_DAMAGEMULT;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_PLAYER_DAMAGEMULT;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_PREVENT_TERRAIN_DAMAGE;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_RADIUSMULT;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_FUSEMULT;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_EXPLOSION;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_FIRE;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_HAND;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_PREVENTED;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_TNT_TRIGGER_REDSTONE;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_YIELD;
-import static toadmess.explosives.config.ConfProps.CONF_ENTITY_YIELD_SPECIFIC;
-import static toadmess.explosives.config.ConfProps.CONF_MULTIPLIER_CHANCE;
-import static toadmess.explosives.config.ConfProps.CONF_MULTIPLIER_VALUE;
+import static toadmess.explosives.config.ConfProps.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,6 +64,7 @@ public class EntityConfReader {
 		readSubConfig(ec, properties, CONF_ENTITY_TNT_TRIGGER_FIRE);
 		readSubConfig(ec, properties, CONF_ENTITY_TNT_TRIGGER_REDSTONE);
 		readSubConfig(ec, properties, CONF_ENTITY_TNT_TRIGGER_EXPLOSION);
+		readSubConfig(ec, properties, CONF_ENTITY_CREEPER_CHARGED);
 		
 		if(null != this.conf.getProperty(confPathPrefix + ".trialTNTFuseMultiplier")) {
 			this.log.warning("HigherExplosives: The \"trialTNTFuseMultiplier\" configuration is no longer used. Please rename it to \"" + CONF_ENTITY_TNT_FUSEMULT + "\"");

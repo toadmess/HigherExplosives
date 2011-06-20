@@ -23,6 +23,8 @@ public enum ConfProps {
 	CONF_ENTITY_TNT_TRIGGER_EXPLOSION("tntPrimeByExplosion"),
 		
 	CONF_ENTITY_TNT_TRIGGER_PREVENTED("tntPrimePrevented"),
+	
+	CONF_ENTITY_CREEPER_CHARGED("creeperCharged"),
 		
 	CONF_MULTIPLIER_CHANCE("chance"),
 	CONF_MULTIPLIER_VALUE("value"),

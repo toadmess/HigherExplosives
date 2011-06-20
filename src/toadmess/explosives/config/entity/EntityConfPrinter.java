@@ -1,7 +1,5 @@
 package toadmess.explosives.config.entity;
 
-import static toadmess.explosives.config.ConfProps.CONF_BOUNDS;
-
 import java.util.List;
 
 import toadmess.explosives.config.ConfProps;
@@ -41,6 +39,7 @@ public class EntityConfPrinter {
 		str += subConfigToString(ConfProps.CONF_ENTITY_TNT_TRIGGER_FIRE);
 		str += subConfigToString(ConfProps.CONF_ENTITY_TNT_TRIGGER_REDSTONE);
 		str += subConfigToString(ConfProps.CONF_ENTITY_TNT_TRIGGER_EXPLOSION);
+		str += subConfigToString(ConfProps.CONF_ENTITY_CREEPER_CHARGED);
 		
 		return "Conf(\n" + indent(str) + "\n)";
 	}
@@ -68,6 +67,7 @@ public class EntityConfPrinter {
 			case CONF_ENTITY_TNT_TRIGGER_FIRE:
 			case CONF_ENTITY_TNT_TRIGGER_REDSTONE:
 			case CONF_ENTITY_TNT_TRIGGER_EXPLOSION:
+			case CONF_ENTITY_CREEPER_CHARGED:
 				return "";
 			default:
 				// Carry on..
