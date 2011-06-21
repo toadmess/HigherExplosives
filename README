@@ -11,7 +11,7 @@ The explosion size, player damage, and creature damage can all be configured to 
 
 All tweaks can be selectively applied to several different worlds.
 
-HigherExplosives v1.7 was tested with recommended build 818 and a Minecraft 1.6.6 client.
+HigherExplosives v2.0 was tested with recommended build 860 and a Minecraft 1.6.6 client.
 
 Features
 --------
@@ -28,6 +28,10 @@ Features
 - Fuse length of TNT can be tweaked.
 - Explosions can be nullified altogether (just set the blast radius to 0)
 - Restrict explosion modifications to certain area bounds
+- TNT triggered by redstone, fire, explosion, or by a player's hand can be configured separately
+- The triggering of TNT can be prevented (either generally, or specifically for fire, explosion, hand, or redstone)
+- Permissions support for TNT triggered by hand. Any number of different configurations for players with certain permissions and/or groups can be applied.
+- Charged creeper's explosions can be configured
 
 Known Issues
 ------------
@@ -47,12 +51,12 @@ entities:
     TNTPrimed:
         radiusMultiplier: 2.0
         yield: 0.15
-version: '1.7'
+version: '2.0'
 
 Example configuration
 ---------------------
 
-Here's a sizeable example configration that covers most of the features, together with an explanation below it:
+Here's a sizeable example configration that covers most of the simple features, together with an explanation below it:
 
 entities:
     TNTPrimed:
@@ -92,7 +96,7 @@ worlds:
                     2: 0.8  # Grass
                     3: 0.8  # Dirt
                     12: 0.8 # Sand
-version: '1.7'
+version: '2.0'
 debugConfig: true
 
 In this example config, the size of TNT explosions are doubled and the number of items they drop is set at 15%. This would by applied by default in all worlds except the world named "world_nether" and the world named "wildwest".
@@ -126,15 +130,29 @@ Main Configuration Properties
 
 - "itemDamageMultiplier": takes the same form as the other multipliers above, but applies to any non-living entities caught in the blast (including items on the ground, paintings and other things like that). Set it to 0.0 to stop items from being destroyed in blasts.
 
-- "tntFuseMultiplier": It takes the same muliplier form as the "radiusMultiplier" and will multiply the normal length of TNT's fuses. It will affect the fuse length of TNT primed by hand, by fire, by other explosions (including creepers and fireballs), and by redstone.
+- "tntFuseMultiplier": It takes the same muliplier form as the "radiusMultiplier" and will multiply the normal length of TNT's fuses. It will affect the fuse length of TNT primed by hand, by fire, by other explosions (including creepers and fireballs), and by redstone. It only makes sense to have this property on a TNTPrimed entity's configuration (or one of its nested configurations).
 
-- "version": a mandatory property, but it just lets the plugin show a warning if the configuration's version is different to the plugin's version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
+- "tntPrimePrevented": This will prevent any TNT blocks from being primed, or activated, by fire, redstone, player, or explosion. In each of these cases the TNT block will remain unaffected, unless it's caught in an explosion, in which case it will simply be destroyed rather than triggering another explosion. It only makes sense to have this property on a TNTPrimed entity's configuration (or one of its nested configurations).
 
-- "fire": this property is included for completeness. I didn't see any difference when I tested it myself, but it probably flags whether the explosion causes fire or not.
+- "fire": If true (like the minecraft default for ghast fireballs) the explosion will spray fire around in the crater. If false, it will not. This can be used for TNTPrimed, Creeper, or Fireball entities.
 
 - "preventTerrainDamage": if true, the explosions cause no damage to terrain. Defaults to false if it's missing.
 
+- "version": a mandatory property, but it just lets the plugin show a warning if the configuration's version is different to the plugin's version. If it's missing, the configuration is considered to be missing and the default configuration will be written to the file probably overwriting anything that might be there.
+
 - "debugConfig": helps check and/or diagnose what the plugin thinks the configuration is. Use "debugConfig: true" to turn it on. It defaults to false if not specified.
+
+- "creeperCharged": This allows a specific configuration for Creeper explosions when those creepers are charged by lightning. See the "Nested Configurations" section of the README file for more details on how to use this kind of configuration property. It only makes sense to have this property on a Creeper entity's configuration.
+
+- "tntPrimeByHand": Allows a specific configuration for TNT blocks that are activated by a player hitting them. See the "Nested Configurations" section of the README file for more details on how to use this kind of configuration property. It only makes sense to have this property on a TNTPrimed entity's configuration.
+
+- "tntPrimeByRedstone": Allows a specific configuration for TNT blocks that are activated by redstone. See the "Nested Configurations" section of the README file for more details on how to use this kind of configuration property. It only makes sense to have this property on a TNTPrimed entity's configuration.
+
+- "tntPrimeByFire": Allows a specific configuration for TNT blocks that are activated by fire. See the "Nested Configurations" section of the README file for more details on how to use this kind of configuration property. It only makes sense to have this property on a TNTPrimed entity's configuration.
+
+- "tntPrimeByExplosion": Allows a specific configuration for TNT blocks that are activated by any kind of explosion (including those from Creepers, Fireballs, TNTPrimed, or other plugins). See the "Nested Configurations" section of the README file for more details on how to use this kind of configuration property. It only makes sense to have this property on a TNTPrimed entity's configuration.
+
+- "permissionsBasedConfigs": Allows zero, one, or more specific configuration to be used when a TNTPrimed entity is activated by a player's hand. Depending on the permissions and/or groups that the player has (as set up in the Permissions plugin), their TNT's explosions can take on very different configurations. This is a nested configuration that can lie underneath the "tntPrimeByHand" nested configuration. See the "Nested Configurations" section for general background details on the "tntPrimeByHand" property, but for specific details look to the "Permissions Based Configurations" section of the README file.
 
 
 Multi world configuration
@@ -270,9 +288,129 @@ The "yield" property provides a default yield for blocks that aren't in the "yie
             3: 0.0   # Dirt blocks
             12: 0.0  # Sand blocks
 
+Nested Configurations
+---------------------
+
+Some properties describe a different way in which an entity explodes. For example, the "creeperCharged" property only applies when a creeper explodes after having been charged bu lightning. Or, for example, the "tntPrimeByFire" property only applies when a TNT block is consumed by fire and its fuse is primed for explosion.
+
+These kinds of property can include any of the normal properties, so the resulting explosion can be radically changed from the usual configuration for that entity. As an example, the following configuration will make Creeper explosions spray fire all over if, and only if, those creepers have been charged by lightning:
+
+    Creeper:
+        creeperCharged:
+            fire: true   # Charged creepers spray fire everywhere!
+
+If a property is not present in a nested configuration, but is present in the parent configuration, then the nested configuration will inherited the parent's property. For example, the config below will make both normal creepers and charged creepers explode with twice the default blast radius.
+
+    Creeper:
+        radiusMultiplier: 2.0
+        creeperCharged:
+            fire: true
+
+If this nested configuration's inheritance of parent properties is not desired, the property must be explicitly set in the nested configuration. The example below will cause normal creepers to have twice the default blast radius, and cause charged creepers to have 4 times the normal blast radius (and spray fire everywhere).
+
+    Creeper:
+        radiusMultiplier: 2.0
+        creeperCharged:
+            radiusMultiplier: 2.0
+            fire: true
+
+Any number of properties can be included in the nested configuration (but any further nested configurations will just be ignored as it doesn't make much sense).
+
+TNT has a number of different nested configuration properties, such as "tntPrimeByFire", "tntPrimeByPlayer", etc. It's fine to have a nested configuration for several, or all, of these properties. As mentioned above, all of them will inherit properties from their parent TNTPrimed configuration. So the configuration below will prevent the activation of all TNT blocks unless they were activated by redstone. The "tntPrimeByFire" nested configuration in this example inherits the "tntPrimePrevented" from its parent and so TNT will not be activated by fire (and wont spray fire everywhere).
+
+    TNTPrimed:
+        tntPrimePrevented: true
+
+        tntPrimeByRedstone:
+            tntPrimePrevented: false
+
+        tntPrimeByFire:
+            fire: true
+
+Adding "debugConfig: true" to the config.yml file will printed out your configuration as the plugin sees it, and will highlight where the inheritance of properties occurs in nested configurations.
+
+Permissions Based Configurations
+--------------------------------
+
+Support for permissions needs the Permissions plugin to be installed, or some other compatible permissions plugin that has disguised itself as the Permissions plugin.
+
+The "permissionsBasedConfigs" property can be used within a "tntPrimeByHand" nested configuration. It lets certain configurations be applied, provided those players have the necessary permission, or belong to the necessary group, for the configuration.
+
+The HigherExplosives plugin does not mandate any specific permission node names or group names, instead you can use anything you like, including those that are already used by other plugins.
+
+Below is a substantial annotated example with two different permissions:
+
+entities:
+    TNTPrimed:
+        playerDamageMultiplier: 0.0 # All nested configs will inherit this property unless overridden
+
+        tntPrimeByHand:
+            yield: 0.0  # Any permissions based configs will inherit this property too
+
+            # Follows with an ordered list of extra configs for players with specific permissions/groups
+            # If a player has both the 'miner.ore' permission and is in the 'bomb.disposal' group, then
+            # just the 'bomb.disposal' config is applied, but it will inherit all the properties from the
+            # 'miner.ore' config.
+            permissionsBasedConfigs:
+
+            - withPermission: 'miner.ore'  # Only active for players with the "miner.org" permission node
+              useConfig:       # Always drops ore blocks
+                  yieldSpecific:
+                      15: 1.0  # Iron ore
+                      16: 1.0  # Coal ore
+                      14: 1.0  # Gold ore
+                      56: 1.0  # Diamond ore, etc.
+
+            - withGroup: 'bomb.disposal'     # Only active for players in the "bomb.disposal" group
+              useConfig:                     # Configure TNT to be unpredictable and dangerous for these players
+                  tntFuseMultiplier:
+                  - {chance: 0.2, value: 0.0}
+                  - {chance: 0.8, value: 4.0}
+                  playerDamageMultiplier: 1.0 # This overrides the inherited property
+
+
+        tntPrimeByRedstone:  # Make careful detonation with redstone produce bigger blasts and explode instantly
+            tntFuseMultiplier: 0.0
+            radiusMultiplier: 2.0
+
+        tntPrimeByFire:   # Disable TNT detonation by fire
+            tntPrimePrevented: true
+
+        tntPrimeByExplosion:   # Disable TNT detonation by explosion (though the TNT block will be destroyed)
+            tntPrimePrevented: true
+
+In this example there are several nested configurations, but only "tntPrimeByHand" can contain the "permissionsBasedConfigs" property. "permissionsBasedConfigs" contains a list of configurations, where each item begins with a "-" and contains two or three properties called "withPermission", "withGroup", and "useConfig". "useConfig" contains a nested configuration to be used for any players that have the permission named by "withPermission" and belong to the group named by "withGroup". At least one of "withPermission" or "withGroup" must be present, but if they are both present then the player must satisfy both of them for the nested configuration to be used.
+
+In the example above, players who have the "miner.ore" permission and who activate TNT with their hand will find that blocks caught in the explosions will not drop anything unless they're blocks of ore, in which case they will always drop ore. The nested configuration for "miner.ore" inherits both the "yield" property and the "playerDamageMultiplier" property from its parent "tntPrimeByHand" configuration.
+
+In a similar way, players who are members of the "bomb.disposal" group will find that TNT can damage them. They'll also find that the fuse duration of the primed TNT is usually twice as long as normal, but sometimes the TNT will explode immediately. The "bomb.disposal" nested config will inherit properties from the "tntPrimeByHand" config, so the block yield will be 0.0 in any blast.
+
+If there is a player who has both the "miner.ore" permission and belongs to the "bomb.disposal" group, then they will cause both of the permissions based nested configs to apply. In such a case, the "bomb.disposal" nested configuration will be used, but it will inherit any properties from the "miner.ore" configuration above it. The "miner.ore" configuration still inherits from the "tntPrimeByHand", which still inherits from the root "TNTPrimed" config.
+
+The ordering of the items in the "permissionsBasedConfigs" list is important if you expect some players to have permissions for more than one config. Where multiple permissions based configs apply, they will form a chain of inheritance. This chain begins with the lowest matching permission config, which then inherits properties from the next highest matching permission config. The highest matching permission config will then inherit from the "tntPrimeByHand" config.
+
+So, for example, the configuration below will cause players who have "dirty.bomb" and "trigger.tnt" permissions, but not "non.flammable" permissions to have explosions with fire sprayed everywhere. If players have all three permissions, they would have explosions without fire, as the "non.flammable" overrides the "dirty.bomb". If a player does not have the "trigger.tnt" permission, then they will not even be able to trigger the TNT by hand.
+
+    TNTPrimed:
+        tntPrimeByHand:
+           tntPrimePrevented: true
+            permissionsBasedConfigs:
+            - withPermission: 'dirty.bomb'
+              useConfig:
+                  fire: true
+            - withPermission: 'non.flammable'
+                  fire: false
+            - withPermission: 'trigger.tnt'
+              useConfig:
+                  tntPrimePrevented: false
 
 Changelog:
 ----------
+
+Version 2.0
+- Nested configurations allow completely different behaviour for TNT depending on whether it was activated by fire, player, redstone, or some other explosion.
+- Permissions plugin support. Allows any number of configurations to be applied when a player's hand triggers a TNT block, so long as the player has the necessary permission and/or belongs to the necessary group.
+- Charged creepers can now be specifically configured with the "creeperCharged" nested configuration.
 
 Version 1.7
 - The yield of specific block types can now be individually configured via the "yieldSpecific" property.
